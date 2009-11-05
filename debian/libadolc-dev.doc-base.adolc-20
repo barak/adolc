@@ -1,0 +1,13 @@
+Document: adolc-20
+Title: ADOL-C: A Package for the Automatic Differentiation of
+ Algorithms Written in C/C++
+Author: Andrea Walther and Andreas Griewank
+Abstract: The C++ package ADOL-C described here facilitates the
+ evaluation of first and higher derivatives of vector functions that
+ are defined by computer programs written in C or C++. The resulting
+ derivative evaluation routines may be called from C, C++, Fortran, or
+ any other language that can be linked with C.
+Section: Programming/C++
+
+Format: PDF
+Files: /usr/share/doc/libadolc-dev/adolc-20.pdf.gz

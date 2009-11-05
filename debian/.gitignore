@@ -1,0 +1,7 @@
+/*.debhelper
+/*.log
+/*.substvars
+/files
+/libadolc-dev/
+/libadolc2/
+/tmp

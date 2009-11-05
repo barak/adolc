@@ -1,0 +1,5 @@
+adolc (2.1.0-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 05 Nov 2009 16:33:58 -0500
