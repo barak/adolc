@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.h
- Revision: $Id: sparsedrivers.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: sparsedrivers.h 62 2009-12-07 17:49:24Z awalther $
  Contents: This file containts some "Easy To Use" interfaces of sparse package.
  
  Copyright (c) Andrea Walther
@@ -33,7 +33,7 @@ BEGIN_C_DECLS
 /*                                                                          */
 
 ADOLC_DLL_EXPORT int jac_pat
-(short,int,int,double*,unsigned int**,int*);
+(short,int,int,const double*,unsigned int**,int*);
 
 /*--------------------------------------------------------------------------*/
 /*                                         seed matrix for sparse jacobian  */
@@ -48,7 +48,7 @@ ADOLC_DLL_EXPORT void generate_seed_jac
 /*                options[3]);                                              */
 
 ADOLC_DLL_EXPORT int sparse_jac
-(short, int , int, int, double*, int *,
+(short, int , int, int, const double*, int *,
  unsigned int **, unsigned int **, double **,int*);
 
 
@@ -77,6 +77,11 @@ ADOLC_DLL_EXPORT int sparse_hess
 (short, int , int, double*, int *,
  unsigned int **, unsigned int **, double **,int*);
 
+int set_HP(
+    short          tag,        /* tape identification                     */
+    int            indep,      /* number of independent variables         */
+    unsigned int ** HP);
+
 /*--------------------------------------------------------------------------*/
 /*                                                   JACOBIAN BLOCK PATTERN */
 
@@ -89,7 +94,7 @@ ADOLC_DLL_EXPORT int sparse_hess
 #define PQ_STRIPMINE_MAX 30
 
 ADOLC_DLL_EXPORT int bit_vector_propagation
-(short, int, int, double*, unsigned int**, int*);
+(short, int, int, const double*, unsigned int**, int*);
 
 
 END_C_DECLS

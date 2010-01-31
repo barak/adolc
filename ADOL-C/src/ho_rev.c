@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ho_rev.c
- Revision: $Id: ho_rev.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: ho_rev.c 62 2009-12-07 17:49:24Z awalther $
  Contents: Contains the routines :
            hos_reverse (higher-order-scalar reverse mode): 
               define _HOS_
@@ -364,7 +364,6 @@ int hov_ti_reverse(
 {
     /************************************************************************/
     /*                                                       ALL VARIABLES  */
-    ADOLC_OPENMP_THREAD_NUMBER;
     unsigned char operation;   /* operation code */
     int dc, ret_c=3;
 
@@ -422,6 +421,7 @@ int hov_ti_reverse(
     int q = 1;
 #endif
 
+    ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
 
 #if defined(ADOLC_DEBUG)

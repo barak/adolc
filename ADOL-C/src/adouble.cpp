@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.cpp
- Revision: $Id: adouble.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: adouble.cpp 62 2009-12-07 17:49:24Z awalther $
  Contents: adouble.C contains that definitions of procedures used to 
            define various badouble, adub, and adouble operations. 
            These operations actually have two purposes.
@@ -23,6 +23,8 @@
 #include <adouble.h>
 #include <oplate.h>
 #include <taping_p.h>
+
+using namespace std;
 
 /****************************************************************************/
 /*                                                        HELPFUL FUNCTIONS */
@@ -1551,7 +1553,7 @@ adub asinh ( const badouble& x ) {
     }
 
     ADOLC_GLOBAL_TAPE_VARS.store[locat] =
-        ADOLC_MATH_NSP::asinh(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
+        ADOLC_MATH_NSP_ERF::asinh(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
     ADOLC_OPENMP_RESTORE_THREAD_NUMBER;
     return locat;
 }
@@ -1577,7 +1579,7 @@ adub acosh ( const badouble& x ) {
     }
 
     ADOLC_GLOBAL_TAPE_VARS.store[locat] =
-        ADOLC_MATH_NSP::acosh(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
+        ADOLC_MATH_NSP_ERF::acosh(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
     ADOLC_OPENMP_RESTORE_THREAD_NUMBER;
     return locat;
 }
@@ -1603,7 +1605,7 @@ adub atanh ( const badouble& x ) {
     }
 
     ADOLC_GLOBAL_TAPE_VARS.store[locat] =
-        ADOLC_MATH_NSP::atanh(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
+        ADOLC_MATH_NSP_ERF::atanh(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
     ADOLC_OPENMP_RESTORE_THREAD_NUMBER;
     return locat;
 }
@@ -1615,7 +1617,8 @@ adub erf( const badouble& x ) {
     ADOLC_OPENMP_GET_THREAD_NUMBER;
     locint locat = next_loc();
 
-    adouble y = exp(-x*x);
+    adouble y = 2.0 /
+        ADOLC_MATH_NSP_ERF::sqrt(ADOLC_MATH_NSP::acos(-1.0))*exp(-x*x);
 
     if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) { // old: write_quad(erf_op,locat,x.location,y.location);
         put_op(erf_op);
@@ -1629,7 +1632,7 @@ adub erf( const badouble& x ) {
     }
 
     ADOLC_GLOBAL_TAPE_VARS.store[locat] =
-        ADOLC_MATH_NSP::erf(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
+        ADOLC_MATH_NSP_ERF::erf(ADOLC_GLOBAL_TAPE_VARS.store[x.location]);
     ADOLC_OPENMP_RESTORE_THREAD_NUMBER;
     return locat;
 }

@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 62 2009-12-07 17:49:24Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -44,7 +44,7 @@ pkginclude_HEADERS   = adolc.h adalloc.h adouble.h adutils.h adutilsc.h \
 
 lib_LTLIBRARIES      = libadolc.la
 
-libadolc_la_LDFLAGS  = -version-info 0:0:0
+libadolc_la_LDFLAGS  = -version-info 2:1:1
 
 if SPARSE
 libadolc_la_SOURCES  = adalloc.c malloc.c adouble.cpp \

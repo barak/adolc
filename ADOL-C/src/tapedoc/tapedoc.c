@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tapedoc/tapedoc.c
- Revision: $Id: tapedoc.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: tapedoc.c 62 2009-12-07 17:49:24Z awalther $
  Contents: Routine tape_doc(..) writes the taped operations in LaTeX-code 
            to the file tape_doc.tex
  
@@ -255,7 +255,6 @@ void tape_doc(short tnum,         /* tape id */
 {
     /****************************************************************************/
     /*                                                            ALL VARIABLES */
-    ADOLC_OPENMP_THREAD_NUMBER;
     unsigned char operation;
 
     locint size = 0;
@@ -278,6 +277,7 @@ void tape_doc(short tnum,         /* tape id */
     int loc_a[4];
     double val_a[4], cst_d[2];
 
+    ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
 
     /****************************************************************************/
