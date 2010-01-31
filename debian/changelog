@@ -1,11 +1,7 @@
-adolc (2.1.1-1) unstable; urgency=low
+adolc (2.1.2-1) unstable; urgency=low
 
   * New Upstream Version
+  * Repackage from scratch (closes: #496490, #553565, #561056)
+  * Increment soname (closes: #452242, #512516)
 
- -- Barak A. Pearlmutter <bap@debian.org>  Sun, 31 Jan 2010 11:39:56 +0100
-
-adolc (2.1.0-1) unstable; urgency=low
-
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
-
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 05 Nov 2009 16:33:58 -0500
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 31 Jan 2010 11:40:52 +0100
