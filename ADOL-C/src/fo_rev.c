@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fo_rev.c
- Revision: $Id: fo_rev.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: fo_rev.c 62 2009-12-07 17:49:24Z awalther $
  Contents: Contains the routines :
            fos_reverse (first-order-scalar reverse mode)  : define _FOS_
            fov_reverse (first-order-vector reverse mode)  : define _FOV_
@@ -256,7 +256,6 @@ int int_reverse_safe(
 {
     /****************************************************************************/
     /*                                                           ALL VARIABLES  */
-    ADOLC_OPENMP_THREAD_NUMBER;
     unsigned char operation;   /* operation code */
     int ret_c = 3;             /* return value */
 
@@ -348,6 +347,7 @@ int int_reverse_safe(
 #endif
 
 
+    ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
 
 #if defined(ADOLC_DEBUG)
@@ -1783,7 +1783,7 @@ int int_reverse_safe(
 #ifdef _FOS_
     free(dp_A);
 #endif
-#ifdef _HOV_
+#ifdef _FOV_
     myfree2(dpp_A);
 #endif
 #ifdef _INT_REV_

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/drivers.c
- Revision: $Id: drivers.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: drivers.c 62 2009-12-07 17:49:24Z awalther $
  Contents: Easy to use drivers for optimization and nonlinear equations
            (Implementation of the C/C++ callable interfaces).
  
@@ -44,7 +44,7 @@ int function(short tag,
 /* gradient(tag, n, x[n], g[n])                                             */
 int gradient(short tag,
              int n,
-             double* argument,
+             const double* argument,
              double* result) {
     int rc= -1;
     double one = 1.0;
