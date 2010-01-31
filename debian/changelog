@@ -5,3 +5,142 @@ adolc (2.1.2-1) unstable; urgency=low
   * Increment soname (closes: #452242, #512516)
 
  -- Barak A. Pearlmutter <bap@debian.org>  Sun, 31 Jan 2010 11:40:52 +0100
+
+adolc (1.10.2-4) unstable; urgency=low
+
+  * dh7-ianize
+  * dpkg-gensymbols -c3 instead of -c4 (closes: #496490)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 04 Jan 2009 21:22:21 +0100
+
+adolc (1.10.2-3) unstable; urgency=low
+
+  * include symbols file; invoke dpkg-gensymbols in debian/rules
+  * add man pages for binaries in libadolc-examples
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 18 Aug 2008 20:09:16 +0100
+
+adolc (1.10.2-2) unstable; urgency=low
+
+  * Add homepage field to debian/control
+  * stop ignoring make clean errors in debian/rules
+  * rev deb std to 3.8.0
+  * rev deb helper to 7
+  * embellish debian/copyright file
+  * remove COPYING file from binary packages; info in debian/copyright
+  * source section in debian/control
+  * move adolc-example binaries to /usr/bin/ with names adolc-*
+  * debian/rules strip issues
+  * include .la file
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sat, 09 Aug 2008 21:43:38 +0100
+
+adolc (1.10.2-1) unstable; urgency=low
+
+  * new upstream release with a tiny bug fix and major
+    semantics-preserving white space changes throughout
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 14 Sep 2006 13:18:24 +0100
+
+adolc (1.10.1-3) unstable; urgency=low
+
+  * configure --with-docexa --with-addexa, allowing removal of
+    examples{,/additional_examples}/Makefile.debian
+  * do not include upstream installation instructions INSTALL
+  * use approved mechanisms to install ChangeLog as upstream changelog
+  * update debian/watch
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 12 Sep 2006 14:04:15 +0100
+
+adolc (1.10.1-2) unstable; urgency=low
+
+  * POSIX awk/sh (closes: #381483)
+  * work around 64-bit printf("%d",sizeof(int)) warnings
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun,  6 Aug 2006 01:46:49 +0100
+
+adolc (1.10.1-1) unstable; urgency=low
+
+  * new upstream release
+  * now uses autoconf, rewrite debian/rules etc as appropriate
+  * policy revs
+  * too small to justify -doc, merge into -dev package (closes: #218542)
+  * rename lib package to libadolc0 to match upstream .so name
+  * rename examples package to libadolc-examples to avoid future thrash
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue,  1 Aug 2006 19:00:38 +0100
+
+adolc (1.8.7-11) unstable; urgency=low
+
+  * patch for GCC 3.4 from Andreas Jochens <aj@andaco.de> (closes: #262513)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sat, 31 Jul 2004 11:40:29 -0600
+
+adolc (1.8.7-10) unstable; urgency=low
+
+  * rev to policy 3.6.1
+  * recompile using GCC 3.3.2, and associated minor source tweaks
+  * remove some warning suppression & backwards-compatibility flags
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Wed,  8 Oct 2003 02:46:02 +0100
+
+adolc (1.8.7-9) unstable; urgency=low
+
+  * missing build dependency on gs-common for ps2pdf (closes: #198834)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 26 Jun 2003 13:38:18 -0600
+
+adolc (1.8.7-8) unstable; urgency=low
+
+  * update for GCC 3.x transition (recompile and squelch warnings)
+  * update for policy 3.5.10
+  * update for debhelper 4
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Tue,  4 Sep 2001 03:05:25 -0600
+
+adolc (1.8.7-7) unstable; urgency=low
+
+  * use GCC for linking shared library (closes: #108088)
+  * add exit code to main routine of helf-diff-exam
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Wed,  8 Aug 2001 16:44:25 -0600
+
+adolc (1.8.7-6) unstable; urgency=low
+
+  * address -Wall warnings in the include files
+  * address most -Wall warnings in the actual libraries
+  * get rid of library major number in name of -dev package
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Sun, 15 Jul 2001 03:20:09 -0600
+
+adolc (1.8.7-5) unstable; urgency=low
+
+  * add build dependency on tetex-extra (closes: #104763)
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Sat, 14 Jul 2001 04:19:24 -0600
+
+adolc (1.8.7-4) unstable; urgency=low
+
+  * undocumented man page stubs
+  * copyright info: released under the GNU Lesser General Public License
+  * increase BUFSIZE & TBUFSIZE from 65536 to 524288.  (should be dynamic)
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Thu, 12 Jul 2001 20:06:17 -0600
+
+adolc (1.8.7-3) unstable; urgency=low
+
+  * Add ldconfig to runtime library postinst
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Mon, 20 Nov 2000 02:05:47 -0700
+
+adolc (1.8.7-2) unstable; urgency=low
+
+  * Fix Makefile to install .h files into -dev package
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Thu, 16 Nov 2000 15:46:27 -0700
+
+adolc (1.8.7-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Barak Pearlmutter <bap@cs.unm.edu>  Tue, 20 Jun 2000 00:41:45 -0600
