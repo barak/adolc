@@ -2,7 +2,7 @@ Source: adolc
 Priority: extra
 Maintainer: Barak A. Pearlmutter <bap@debian.org>
 Build-Depends: debhelper (>= 7), autotools-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Section: libs
 Homepage: http://www.coin-or.org/projects/ADOL-C.xml
 Vcs-Git: git://git.debian.org/git/collab-maint/adolc.git
@@ -11,7 +11,7 @@ Vcs-Browser: http://git.debian.org/?p=collab-maint/adolc.git
 Package: libadolc-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libadolc2 (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, libadolc1 (= ${binary:Version})
 Description: ADOLC development libs and headers
  The ADOLC system automatically calculates exact derivatives of a
  C/C++ function.  It uses C++ overloading to record arithmetic
@@ -21,7 +21,7 @@ Description: ADOLC development libs and headers
  This package contains the development library, header files,
  and user's manual.
 
-Package: libadolc2
+Package: libadolc1
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
