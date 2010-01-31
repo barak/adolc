@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.cpp
- Revision: $Id: sparsedrivers.cpp 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: sparsedrivers.cpp 66 2009-12-10 13:57:53Z awalther $
  Contents: "Easy To Use" C++ interfaces of SPARSE package
  
  Copyright (c) Andrea Walther
@@ -221,6 +221,7 @@ int sparse_jac(
     int ret_val;
     BipartiteGraphPartialColoringInterface *g;
     TapeInfos *tapeInfos;
+    JacobianRecovery1D jr1d;
 
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
@@ -326,10 +327,15 @@ int sparse_jac(
 
     /* recover compressed Jacobian => ColPack library */
 
-    if (options[3] == 1)
-      JacobianRecovery1D::RecoverForPD2RowWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+//     if (options[3] == 1)
+//       JacobianRecovery1D::RecoverForPD2RowWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+//     else
+//       JacobianRecovery1D::RecoverForPD2ColumnWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+// 
+     if (options[3] == 1)
+      jr1d.RecoverForPD2RowWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
     else
-      JacobianRecovery1D::RecoverForPD2ColumnWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+      jr1d.RecoverForPD2ColumnWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
     
     return ret_val;
 
@@ -368,6 +374,7 @@ int sparse_hess(
     GraphColoringInterface *g;
     TapeInfos *tapeInfos;
     double *v, *w, **X, yt, lag=1;
+    HessianRecovery hr;
 
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
@@ -421,6 +428,7 @@ int sparse_hess(
 	  g->GenerateSeedHessian(sHinfos.HP, indep, &Seed, &dummy, &sHinfos.p, 
 		  	         "STAR", "SMALLEST_LAST"); 
 
+	
 	sHinfos.Hcomp = myalloc2(indep,sHinfos.p);
         sHinfos.Xppp = myalloc3(indep,sHinfos.p,1);
 
@@ -428,7 +436,10 @@ int sparse_hess(
 	  for (l=0;l<sHinfos.p;l++)
             sHinfos.Xppp[i][l][0] = Seed[i][l];
 
-	delete[] Seed;
+	for (i=0; i<indep; i++)
+	  delete Seed[i];
+
+	delete Seed;
 	Seed = NULL;
 
         sHinfos.Yppp = myalloc3(1,sHinfos.p,1);
@@ -513,10 +524,15 @@ int sparse_hess(
 
     /* recover compressed Hessian => ColPack library */
 
+//     if (options[1] == 0)
+//       HessianRecovery::IndirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+//     else
+//       HessianRecovery::DirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+ 
     if (options[1] == 0)
-      HessianRecovery::IndirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+      hr.IndirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
     else
-      HessianRecovery::DirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+      hr.DirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
  
     return ret_val;
 
