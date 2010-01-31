@@ -7,6 +7,7 @@ Section: libs
 Homepage: http://www.coin-or.org/projects/ADOL-C.xml
 Vcs-Git: git://git.debian.org/git/collab-maint/adolc.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/adolc.git
+Vcs-Svn: https://projects.coin-or.org/svn/ADOL-C
 
 Package: libadolc-dev
 Section: libdevel
