@@ -1,3 +1,11 @@
+adolc (2.1.2-2) unstable; urgency=low
+
+  * Rename package libadolc1 to libadolc2
+    - avoid conflicts: libadolc1 in old libadolc0
+    - put actual shared libraries in the shared library package
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 01 Feb 2010 13:08:28 +0100
+
 adolc (2.1.2-1) unstable; urgency=low
 
   * New Upstream Version

@@ -12,7 +12,7 @@ Vcs-Svn: https://projects.coin-or.org/svn/ADOL-C
 Package: libadolc-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libadolc1 (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, libadolc2 (= ${binary:Version})
 Description: ADOLC development libs and headers
  The ADOLC system automatically calculates exact derivatives of a
  C/C++ function.  It uses C++ overloading to record arithmetic
@@ -22,7 +22,7 @@ Description: ADOLC development libs and headers
  This package contains the development library, header files,
  and user's manual.
 
-Package: libadolc1
+Package: libadolc2
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
