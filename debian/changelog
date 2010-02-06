@@ -1,3 +1,10 @@
+adolc (2.1.2-3) unstable; urgency=low
+
+  * cp recent autoconf/config.{sub,guess} (closes: #568682) autoupdate;
+    autoconf; aclocal; automake; autoconf; echo fun and productive
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sat, 06 Feb 2010 21:59:36 +0000
+
 adolc (2.1.2-2) unstable; urgency=low
 
   * Rename package libadolc1 to libadolc2
