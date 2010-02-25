@@ -1,4 +1,4 @@
-Document: adolc-20
+Document: adolc-manual
 Title: ADOL-C: A Package for the Automatic Differentiation of
  Algorithms Written in C/C++
 Author: Andrea Walther and Andreas Griewank
@@ -10,4 +10,4 @@ Abstract: The C++ package ADOL-C described here facilitates the
 Section: Programming/C++
 
 Format: PDF
-Files: /usr/share/doc/libadolc-dev/adolc-20.pdf.gz
+Files: /usr/share/doc/libadolc-dev/adolc-manual.pdf.gz
