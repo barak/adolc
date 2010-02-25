@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     helm-diff-exam.cpp
- Revision: $Id: helm-diff-exam.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: helm-diff-exam.cpp 91 2010-02-24 07:56:58Z awalther $
  Contents: example for  Helmholtz energy example 
            Computes gradient using divide differences
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 
     /*--------------------------------------------------------------------------*/
     result2 = energy(n,x,bv);                                    /* basepoint */
-    fprintf(stdout,"%14.6le -- energy\n",result2);
+    fprintf(stdout,"%14.6E -- energy\n",result2);
 
     /*--------------------------------------------------------------------------*/
     for (l=0; l<n; l++)                            /* directional derivatives */
@@ -90,9 +90,9 @@ int main(int argc, char *argv[]) {
         result1 = energy(n,x,bv);
         x[l]    = x[l]-delta;
         q       = (result1-result2)/delta;
-        fprintf(stdout,"%3d: %14.6le,  \n",l,q);
+        fprintf(stdout,"%3d: %14.6E,  \n",l,q);
     }
-    fprintf(stdout,"%14.6le -- energy\n",result2);
+    fprintf(stdout,"%14.6E -- energy\n",result2);
 
     free((char*) bv);
     free((char*) x);

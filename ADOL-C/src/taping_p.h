@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping_p.h
- Revision: $Id: taping_p.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: taping_p.h 91 2010-02-24 07:56:58Z awalther $
  Contents: declarations for used by taping routines
  
  Copyright (c) Andreas Kowarz
@@ -34,7 +34,7 @@ enum WORKMODES {
     ADOLC_FOS_REVERSE,
     ADOLC_FOV_REVERSE,
     ADOLC_HOS_REVERSE,
-    ADOLC_HOV_REVERSE,
+    ADOLC_HOV_REVERSE
 };
 
 /****************************************************************************/
@@ -123,6 +123,7 @@ extern void *failAdditionalInfo6;
 
 typedef struct SparseJacInfos {
     void *g;
+    void *jr1d;
 
     double *y;
     double **Seed;
@@ -135,6 +136,7 @@ typedef struct SparseJacInfos {
 
 typedef struct SparseHessInfos {
     void *g;
+    void *hr;
 
     double **Hcomp;
     double*** Xppp;
@@ -242,8 +244,8 @@ typedef struct TapeInfos {
     /* evaluation reverse */
     revreal *rp_T;
     revreal **rpp_T;
-    double *dp_A;
-    double **dpp_A;
+    revreal *rp_A;
+    revreal **rpp_A;
     unsigned long int **upp_A;
 
     /* extern diff. fcts */

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/drivers.h
- Revision: $Id: drivers.h 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: drivers.h 91 2010-02-24 07:56:58Z awalther $
  Contents: Easy to use drivers for optimization and nonlinear equations
            (with C and C++ callable interfaces including Fortran 
             callable versions).
@@ -39,7 +39,7 @@ ADOLC_DLL_EXPORT fint gradient_(fint*,fint*,fdouble*,fdouble*);
 /*--------------------------------------------------------------------------*/
 /*                                                                 jacobian */
 /* jacobian(tag, m, n, x[n], J[m][n])                                       */
-ADOLC_DLL_EXPORT int jacobian(short,int,int,double*,double**);
+ADOLC_DLL_EXPORT int jacobian(short,int,int,const double*,double**);
 ADOLC_DLL_EXPORT fint jacobian_(fint*,fint*,fint*,fdouble*,fdouble*);
 
 /*--------------------------------------------------------------------------*/

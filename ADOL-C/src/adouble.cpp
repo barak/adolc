@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.cpp
- Revision: $Id: adouble.cpp 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: adouble.cpp 91 2010-02-24 07:56:58Z awalther $
  Contents: adouble.C contains that definitions of procedures used to 
            define various badouble, adub, and adouble operations. 
            These operations actually have two purposes.
@@ -1425,12 +1425,12 @@ adouble pow ( const badouble& x, const badouble& y) {
     double vx = x.getValue();
     double vy = y.getValue();
 
-    if (!(vx > 0))
+    if (!(vx > 0)) { 
         if (vx < 0 || vy >= 0)
             fprintf(DIAG_OUT,"\nADOL-C message: exponent of zero/negative basis deactivated\n");
         else
             fprintf(DIAG_OUT,"\nADOL-C message: negative exponent and zero basis deactivated\n");
-
+    }
     condassign(a1,-y, ADOLC_MATH_NSP::pow(vx,vy), pow(x,vy));
     condassign(a2, fabs(x), pow(x, vy),a1);
     condassign(ret,x+0.0, exp(y*log(x)),a2);

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vgenmain.cpp
- Revision: $Id: vgenmain.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: vgenmain.cpp 91 2010-02-24 07:56:58Z awalther $
  Contents: Vector Generic Main File: 
        for use with function modules containing several vector
        function examples 
@@ -39,7 +39,7 @@
 
 /****************************************************************************/
 /*                                                                   MACROS */
-#define TIMEFORMAT " %12.6le units,   %12.6le seconds\n"
+#define TIMEFORMAT " %12.6E units,   %12.6E seconds\n"
 
 
 /****************************************************************************/

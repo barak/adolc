@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/drivers.c
- Revision: $Id: drivers.c 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: drivers.c 91 2010-02-24 07:56:58Z awalther $
  Contents: Easy to use drivers for optimization and nonlinear equations
            (Implementation of the C/C++ callable interfaces).
  
@@ -86,7 +86,7 @@ int vec_jac(short tag,
 int jacobian(short tag,
              int depen,
              int indep,
-             double *argument,
+             const double *argument,
              double **jacobian) {
     int rc;
     double *result, **I;
@@ -104,6 +104,9 @@ int jacobian(short tag,
         MINDEC(rc,fov_reverse(tag,depen,indep,depen,I,jacobian));
         myfreeI2(depen, I);
     }
+
+    myfree1(result);
+
     return rc;
 }
 

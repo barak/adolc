@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 39 2009-07-15 18:11:02Z awalther $
+## Revision: $Id: Makefile.am 91 2010-02-24 07:56:58Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -19,3 +19,7 @@ SUBDIRS              = ADOL-C
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure ADOL-C/src/config.h.in \
                        ADOL-C/src/stamp-h.in *~ *.orig
+
+test: all
+	cd ADOL-C; $(MAKE) test
+

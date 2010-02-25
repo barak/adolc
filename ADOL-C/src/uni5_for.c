@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: uni5_for.c 91 2010-02-24 07:56:58Z awalther $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_   
@@ -902,7 +902,6 @@ int  hov_forward(
 
     init_for_sweep(tnum);
 
-#if !defined(_NONLIND_)
       if ( (depcheck != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS]) ||
             (indcheck != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]) ) {
         fprintf(DIAG_OUT,"ADOL-C error: forward sweep on tape %d  aborted!\n"
@@ -914,19 +913,6 @@ int  hov_forward(
                 ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]);
         exit (-1);
     }
-#else
-      if ( (1 != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS]) ||
-            (indcheck != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]) ) {
-        fprintf(DIAG_OUT,"ADOL-C error: forward sweep on tape %d  aborted!\n"
-                "Number of dependent(%u) and/or independent(%u) variables passed"
-                " to forward is\ninconsistent with number "
-                "recorded on tape (%d, %d) \n", tnum,
-                1, indcheck,
-                ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS],
-                ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]);
-        exit (-1);
-    }
-#endif
 
 
     /****************************************************************************/

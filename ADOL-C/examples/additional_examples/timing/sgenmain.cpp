@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sgenmain.cpp
- Revision: $Id: sgenmain.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: sgenmain.cpp 91 2010-02-24 07:56:58Z awalther $
  Contents: Scalar Generic Main File: 
        for use with function modules containing several scalar
        examples 
@@ -37,7 +37,7 @@
 
 /****************************************************************************/
 /*                                                                   MACROS */
-#define TIMEFORMAT " %12.6le units,   %12.6le seconds\n"
+#define TIMEFORMAT " %12.6E units,   %12.6E seconds\n"
 
 
 /****************************************************************************/
@@ -318,7 +318,7 @@ int main() {
         if (controlParameters[cpZosFW] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,depTape);
         }
     }
@@ -369,7 +369,7 @@ int main() {
         if (controlParameters[cpFosFW] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,YP[0]);
         }
 
@@ -428,7 +428,7 @@ int main() {
         if (controlParameters[cpHosFW] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,YP[0]);
         }
 
@@ -794,7 +794,7 @@ int main() {
         if (controlParameters[cpFunction] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,depTape);
         }
     }

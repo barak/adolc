@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tape_handling.cpp
- Revision: $Id: tape_handling.cpp 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: tape_handling.cpp 91 2010-02-24 07:56:58Z awalther $
  Contents: management of tape infos
 
  Copyright (c) Andreas Kowarz, Andrea Walther
@@ -338,6 +338,7 @@ void setTapeInfoJacSparse(short tapeID, SparseJacInfos sJinfos) {
 		    tapeInfos->pTapeInfos.sJinfos.nnz_in=sJinfos.nnz_in;
 		    tapeInfos->pTapeInfos.sJinfos.p=sJinfos.p;
 		    tapeInfos->pTapeInfos.sJinfos.g=sJinfos.g;
+		    tapeInfos->pTapeInfos.sJinfos.jr1d=sJinfos.jr1d;
             }
         }
     }
@@ -368,6 +369,7 @@ void setTapeInfoHessSparse(short tapeID, SparseHessInfos sHinfos) {
 		    tapeInfos->pTapeInfos.sHinfos.nnz_in=sHinfos.nnz_in;
 		    tapeInfos->pTapeInfos.sHinfos.p=sHinfos.p;
 		    tapeInfos->pTapeInfos.sHinfos.g=sHinfos.g;
+		    tapeInfos->pTapeInfos.sHinfos.hr=sHinfos.hr;
             }
         }
     }
