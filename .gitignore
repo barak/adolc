@@ -4,6 +4,8 @@
 *~
 .deps/
 .libs/
+/ADOL-C/test/powexam
+/ADOL-C/test/speelpenning
 /config.log
 /config.status
 /libtool
