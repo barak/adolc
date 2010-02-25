@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.c
- Revision: $Id: taping.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: taping.c 91 2010-02-24 07:56:58Z awalther $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 
@@ -1556,8 +1556,8 @@ void end_sweep() {
         fclose(ADOLC_CURRENT_TAPE_INFOS.val_file);
         ADOLC_CURRENT_TAPE_INFOS.val_file = NULL;
     }
-    if (ADOLC_CURRENT_TAPE_INFOS.deg_save > 0) releaseTape(1); /* keep value stack */
-    else releaseTape(0); /* no value stack */
+    if (ADOLC_CURRENT_TAPE_INFOS.deg_save > 0) releaseTape(); /* keep value stack */
+    else releaseTape(); /* no value stack */
 }
 
 /* --- Operations --- */

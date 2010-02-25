@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vgenodemain.cpp
- Revision: $Id: vgenodemain.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: vgenodemain.cpp 91 2010-02-24 07:56:58Z awalther $
  Contents: example for ODE Generic Main File: 
        for use with function modules containing vector examples 
        (e.g. vgen_eutroph.C)
@@ -36,7 +36,7 @@
 
 /****************************************************************************/
 /*                                                                   MACROS */
-#define TIMEFORMAT " %12.6le units,   %12.6le scunits,   %12.6le seconds\n"
+#define TIMEFORMAT " %12.6E units,   %12.6E scunits,   %12.6E seconds\n"
 
 
 /****************************************************************************/
@@ -253,7 +253,7 @@ int main() {
                 avg = 0.1;
             err += fabs(w[j][i]*tau-indeps2[j][i+1]*(i+1))/avg;
         }
-    fprintf(stdout,"%14.6le = total error \n",err);
+    fprintf(stdout,"%14.6E = total error \n",err);
 
     /*------------------------------------------------------------------------*/
     /* If desired print out Jacobians of Taylor coeffcients with
@@ -265,7 +265,7 @@ int main() {
             fprintf(stdout,"\n\t<-- B(%d)\n",i);
             for (j=0; j<indepDim; j++) {
                 for (k=0; k<indepDim; k++)
-                    fprintf(stdout,"%14.6le ",B[j][k][i]);
+                    fprintf(stdout,"%14.6E ",B[j][k][i]);
                 fprintf(stdout,"\n");
             }
         }
@@ -289,7 +289,7 @@ int main() {
                            fabs(1-(w[j][i+1]-indeps2[j][i+1])/h/B[j][k][i])
                            : fabs((w[j][i+1]-indeps2[j][i+1])/h) ;
             }
-            fprintf(stdout," Relative truncation errors in B(%d) ---> %14.6le\n",
+            fprintf(stdout," Relative truncation errors in B(%d) ---> %14.6E\n",
                     i,err);
         }
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     LUdet.cpp
- Revision: $Id: LUdet.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: LUdet.cpp 91 2010-02-24 07:56:58Z awalther $
  Contents: example for
              * Computation of the determinant of a matrix
                by LU-decomposition of the system matrix without pivoting 
@@ -82,13 +82,13 @@ int main() { /*-----------------------------------------------------------------
     /* marking deps */
     Adet >>= det;
     trace_off();
-    fprintf(stdout," Determinant (original):  %16.4le\n",det);
+    fprintf(stdout," Determinant (original):  %16.4E\n",det);
 
 
     /*------------------------------------------------------------------------*/
     /* Recomputation of determinant */
     function(tag,depen,indep,args,&det);
-    fprintf(stdout," Determinant (from tape): %16.4le\n",det);
+    fprintf(stdout," Determinant (from tape): %16.4E\n",det);
 
 
     /*------------------------------------------------------------------------*/
@@ -97,7 +97,7 @@ int main() { /*-----------------------------------------------------------------
     fprintf(stdout," Gradient:\n");
     for (i=0; i<size; i++) {
         for (j=0; j<size; j++)
-            fprintf(stdout," %14.6le",grad[i*size+j]);
+            fprintf(stdout," %14.6E",grad[i*size+j]);
         fprintf(stdout,"\n");
     }
 
@@ -107,7 +107,7 @@ int main() { /*-----------------------------------------------------------------
     fprintf(stdout," Part of Hessian:\n");
     for (i=0; i<size; i++) {
         for (j=0; j<size; j++)
-            fprintf(stdout," %14.6le",hess[0][i*size+j]);
+            fprintf(stdout," %14.6E",hess[0][i*size+j]);
         fprintf(stdout,"\n");
     }
 

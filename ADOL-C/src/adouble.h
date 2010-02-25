@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: adouble.h 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: adouble.h 91 2010-02-24 07:56:58Z awalther $
  Contents: adouble.h contains the basis for the class of adouble
            included here are all the possible functions defined on
            the adouble class.  Notice that, as opposed to ealier versions,
@@ -33,11 +33,6 @@ using std::cin;
 using std::cerr;
 using std::ostream;
 using std::istream;
-#ifdef ATRIG_ERF
-#if defined(AD_ERR_FUN)
-#include <tr1/cmath>
-#endif
-#endif
 
 #include <common.h>
 
@@ -866,7 +861,7 @@ adouble log(const adouble &a) {
     adouble tmp;
     tmp.val=ADOLC_MATH_NSP::log(a.val);
     FOR_I_EQ_0_LT_NUMDIR
-    if (a.val>0 || a.val==0 && a.ADVAL_I>=0) tmp.ADVAL_I=a.ADVAL_I/a.val;
+      if ((a.val>0 || a.val==0) && a.ADVAL_I>=0) tmp.ADVAL_I=a.ADVAL_I/a.val;
     else tmp.ADVAL_I=makeNaN();
     return tmp;
 }
@@ -875,7 +870,7 @@ adouble sqrt(const adouble &a) {
     adouble tmp;
     tmp.val=ADOLC_MATH_NSP::sqrt(a.val);
     FOR_I_EQ_0_LT_NUMDIR
-    if (a.val>0 || a.val==0 && a.ADVAL_I>=0) tmp.ADVAL_I=a.ADVAL_I/tmp.val/2;
+      if ((a.val>0 || a.val==0) && a.ADVAL_I>=0) tmp.ADVAL_I=a.ADVAL_I/tmp.val/2;
     else tmp.ADVAL_I=makeNaN();
     return tmp;
 }
