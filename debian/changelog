@@ -1,8 +1,9 @@
-adolc (2.1.5-2) UNRELEASED; urgency=low
+adolc (2.1.5-2) unstable; urgency=low
 
   * move upstream SVN repo info from debian/control into debian/copyright
+  * Switch to dpkg-source 3.0 (git) format
 
- -- Barak A. Pearlmutter <bap@debian.org>  Sun, 21 Mar 2010 13:59:38 +0000
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 25 Mar 2010 18:56:37 +0000
 
 adolc (2.1.5-1) unstable; urgency=low
 
