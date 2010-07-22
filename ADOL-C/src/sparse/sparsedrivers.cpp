@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.cpp
- Revision: $Id: sparsedrivers.cpp 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: sparsedrivers.cpp 122 2010-07-21 16:40:21Z awalther $
  Contents: "Easy To Use" C++ interfaces of SPARSE package
  
  Copyright (c) Andrea Walther
@@ -976,15 +976,15 @@ void freeSparseJacInfos(double *y, double **Seed, double **B, unsigned int **JP,
 
     free(JP);
 
+#ifdef HAVE_LIBCOLPACK
     // yields segmentation fault, check again !!
     // if (g) 
     //   delete (BipartiteGraphPartialColoringInterface *) g;
 
     if (jr1d)
 	delete (JacobianRecovery1D*)jr1d;
-
+#endif
 }
-
 /*****************************************************************************/
 /*                                                 FREE SPARSE HESSIAN INFOS */
 
@@ -1015,13 +1015,14 @@ void freeSparseHessInfos(double **Hcomp, double ***Xppp, double ***Yppp, double 
 
     free(HP);
 
+#ifdef HAVE_LIBCOLPACK
     // yields segmentation fault, check again !!
     // // if (g) 
     // //   delete (BipartiteGraphPartialColoringInterface *) g;
 
     if (hr)
 	delete (HessianRecovery*) hr;
-
+#endif
 }
 
 END_C_DECLS

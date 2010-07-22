@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac 119 2010-07-20 16:37:46Z awalther $
+# Revision: $Id: configure.ac 123 2010-07-21 16:42:21Z awalther $
 #
 # Copyright (C) Andrea Walther, Andreas Kowarz
 #               
@@ -9,13 +9,13 @@
 ##############################################################################
 define([ADOLC_VER], [2])
 define([ADOLC_SUB], [1])
-define([ADOLC_LVL], [6])
+define([ADOLC_LVL], [7])
 
 AC_PREREQ(2.57)
 AC_INIT(adolc,
         ADOLC_VER.ADOLC_SUB.ADOLC_LVL,
         [adol-c@list.coin-or.org])
-AC_REVISION($Revision: 119 $)
+AC_REVISION($Revision: 123 $)
 AC_CONFIG_SRCDIR([ADOL-C/src/adolc.h])
 AC_CONFIG_AUX_DIR(autoconf)
 AC_CONFIG_HEADERS([ADOL-C/src/config.h])
