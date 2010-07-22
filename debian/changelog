@@ -1,8 +1,9 @@
 adolc (2.1.7-1) unstable; urgency=low
 
   * New Upstream Version
+  * address build failure by creating autoconf/mkinstalldirs
 
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 22 Jul 2010 09:52:44 +0100
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 22 Jul 2010 10:04:51 +0100
 
 adolc (2.1.5-2) unstable; urgency=low
 
