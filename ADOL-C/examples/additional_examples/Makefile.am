@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -11,8 +11,6 @@
 ##############################################################################
 
 MAINTAINERCLEANFILES = Makefile.in *~
-
-EXTRA_DIST           = Makefile.win
 
 if ADDEXA
 SUBDIRS              = clock hessmat lufact ode sparse tapesave timing \

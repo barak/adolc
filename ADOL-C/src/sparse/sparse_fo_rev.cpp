@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparse_fo_rev.cpp
- Revision: $Id: sparse_fo_rev.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: sparse_fo_rev.cpp 116 2010-07-20 12:29:32Z awalther $
  Contents: All "Easy To Use" C++ interfaces of SPARSE package
  
  Copyright (c) Andrea Walther, Christo Mitev
@@ -11,10 +11,8 @@
  recipient's acceptance of the terms of the accompanying license file.
  
 ----------------------------------------------------------------------------*/
-
-
-#include <sparse/sparse_fo_rev.h>
-#include <interfaces.h>
+#include <adolc/sparse/sparse_fo_rev.h>
+#include <adolc/interfaces.h>
 
 #include <math.h>
 

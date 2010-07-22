@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     interfacesf.c
- Revision: $Id: interfacesf.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: interfacesf.c 116 2010-07-20 12:29:32Z awalther $
  Contents: Genuine Fortran callable C Interfaces to ADOL-C forward 
            & reverse calls.
  
@@ -14,9 +14,9 @@
   
 ----------------------------------------------------------------------------*/
 
-#include <interfaces.h>
-#include <adalloc.h>
-#include <fortutils.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
+#include <adolc/fortutils.h>
 
 BEGIN_C_DECLS
 

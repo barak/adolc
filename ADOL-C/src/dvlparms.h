@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     dvlparms.h
- Revision: $Id: dvlparms.h 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: dvlparms.h 116 2010-07-20 12:29:32Z awalther $
  Contents: Developer parameters:
            These parameters are intended for use by the developers and 
            maintainers of ADOL-C to specify library wide definitions.
@@ -19,12 +19,19 @@
 #define ADOLC_DVLPARMS_H 1
 
 /*--------------------------------------------------------------------------*/
+/* Directory where tapes are created */
+#define ADOLC_TAPE_DIR        "."
 /* File names for the tapes */
 #define ADOLC_TAYLORS_NAME    "ADOLC-Taylors_"
 #define ADOLC_VALUES_NAME     "ADOLC-Values_"
 #define ADOLC_LOCATIONS_NAME  "ADOLC-Locations_"
 #define ADOLC_OPERATIONS_NAME "ADOLC-Operations_"
 
+#ifdef _WINDOWS
+#define PATHSEPARATOR         "\\"
+#else
+#define PATHSEPARATOR         "/"
+#endif
 /****************************************************************************/
 /* Tells ADOL-C which name space offers the mathematical functions          */
 #define ADOLC_MATH_NSP std

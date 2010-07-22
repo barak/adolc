@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: adouble.h 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: adouble.h 116 2010-07-20 12:29:32Z awalther $
  Contents: adouble.h contains the basis for the class of adouble
            included here are all the possible functions defined on
            the adouble class.  Notice that, as opposed to ealier versions,
@@ -34,7 +34,7 @@ using std::cerr;
 using std::ostream;
 using std::istream;
 
-#include <common.h>
+#include <adolc/common.h>
 
 /* NOTICE: There are automatic includes at the end of this file! */
 

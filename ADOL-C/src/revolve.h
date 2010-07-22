@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     revolve.h
- Revision: $Id: revolve.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: revolve.h 116 2010-07-20 12:29:32Z awalther $
  Contents: optimal binomial checkpointing adapted for ADOL-C
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz
@@ -15,7 +15,7 @@
 #if !defined(ADOLC_REVOLVE_H)
 #define ADOLC_REVOLVE_H 1
 
-#include <common.h>
+#include <adolc/common.h>
 
 BEGIN_C_DECLS
 

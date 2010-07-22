@@ -39,12 +39,14 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_triplet = @host@
+@SPARSE_TRUE@am__append_1 = @COLPACK_LIBS@
 ACLOCAL = @ACLOCAL@
 ADDEXA_FALSE = @ADDEXA_FALSE@
 ADDEXA_TRUE = @ADDEXA_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AM_MAKEFLAGS = @AM_MAKEFLAGS@
 AR = @AR@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
@@ -54,6 +56,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COLPACK_CFLAGS = @COLPACK_CFLAGS@
+COLPACK_LIBS = @COLPACK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -66,6 +70,7 @@ DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 DOCEXA_FALSE = @DOCEXA_FALSE@
 DOCEXA_TRUE = @DOCEXA_TRUE@
+DOLT_BASH = @DOLT_BASH@
 DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -74,8 +79,11 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FC = @FC@
 FFLAGS = @FFLAGS@
 GREP = @GREP@
+HAVE_LIBCOLPACK_FALSE = @HAVE_LIBCOLPACK_FALSE@
+HAVE_LIBCOLPACK_TRUE = @HAVE_LIBCOLPACK_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -85,9 +93,14 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTCOMPILE = @LTCOMPILE@
+LTCXXCOMPILE = @LTCXXCOMPILE@
 LTLIBOBJS = @LTLIBOBJS@
+MAKEFLAGS = @MAKEFLAGS@
 MAKEINFO = @MAKEINFO@
+MCS = @MCS@
 NMEDIT = @NMEDIT@
+OBJC = @OBJC@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -99,6 +112,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PAREXA_FALSE = @PAREXA_FALSE@
 PAREXA_TRUE = @PAREXA_TRUE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+Q = @Q@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -106,7 +120,9 @@ SHELL = @SHELL@
 SPARSE_FALSE = @SPARSE_FALSE@
 SPARSE_TRUE = @SPARSE_TRUE@
 STRIP = @STRIP@
+V = @V@
 VERSION = @VERSION@
+_lib = @_lib@
 ac_adolc_cflags = @ac_adolc_cflags@
 ac_adolc_cxxflags = @ac_adolc_cxxflags@
 ac_aux_dir = @ac_aux_dir@
@@ -152,6 +168,7 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+shavedir = @shavedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
@@ -171,8 +188,7 @@ MAINTAINERCLEANFILES = Makefile.in *~ *.orig adolc_config.h config.h.in
 
 EXTRA_DIST = uni5_for.c fo_rev.c ho_rev.c \
                        taping_p.h malloc.h \
-                       externfcts_p.h checkpointing_p.h buffer_temp.h \
-                       Makefile.win
+                       externfcts_p.h checkpointing_p.h buffer_temp.h 
 
 
 pkginclude_HEADERS = adolc.h adalloc.h adouble.h adutils.h adutilsc.h \
@@ -185,7 +201,9 @@ pkginclude_HEADERS = adolc.h adalloc.h adouble.h adutils.h adutilsc.h \
 
 lib_LTLIBRARIES = libadolc.la
 
-libadolc_la_LDFLAGS = -version-info 2:1:1
+libadolc_la_LDFLAGS = -version-info 2:1:1 $(am__append_1)
+
+BUILT_SOURCES = $(top_builddir)/ADOL-C/src/adolc/adolc.h
 
 @SPARSE_TRUE@libadolc_la_SOURCES = adalloc.c malloc.c adouble.cpp \
 @SPARSE_TRUE@                       convolut.c fortutils.c \
@@ -299,16 +317,11 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/taping.Plo ./$(DEPDIR)/zos_forward.Plo
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
-	$(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -326,7 +339,7 @@ DIST_COMMON = $(pkginclude_HEADERS) $(srcdir)/Makefile.in Makefile.am \
 DIST_SUBDIRS = drivers sparse tapedoc
 SOURCES = $(libadolc_la_SOURCES)
 
-all: config.h
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
@@ -688,13 +701,15 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-recursive
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile $(LTLIBRARIES) $(HEADERS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(pkgincludedir)
 
-install: install-recursive
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
 uninstall: uninstall-recursive
@@ -719,6 +734,7 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-recursive
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
@@ -791,6 +807,9 @@ uninstall-info: uninstall-info-recursive
 	uninstall-info-recursive uninstall-libLTLIBRARIES \
 	uninstall-pkgincludeHEADERS uninstall-recursive
 
+
+$(top_builddir)/ADOL-C/src/adolc/adolc.h:
+	$(LN_S) $(top_srcdir)/ADOL-C/src adolc
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

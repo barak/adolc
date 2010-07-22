@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
 ##               Hristo Mitev, Sebastian Schlenkrich, Jean Utke, Olaf Vogel
@@ -16,7 +16,7 @@ AM_CXXFLAGS             = @ac_adolc_cxxflags@
 AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C/src
 
 if SPARSE
-LDADD                   = -ladolc $(libdir)/libColPack.a
+LDADD                   = -ladolc @COLPACK_LIBS@
 AM_LDFLAGS              = -L../../../src
 else
 LDADD                   = -ladolc 
@@ -25,7 +25,24 @@ endif
 
 INCLUDES                = -I$(top_builddir) -I$(top_builddir)/examples/additional_examples
 
-EXTRA_DIST              = rotations.h *.ctrl Makefile.win
+CTRLFILES               = detexam.ctrl \
+                          eutrophexam.ctrl \
+                          experimental.ctrl \
+                          ficexam.ctrl \
+                          gearexam.ctrl \
+                          griewankexam.ctrl \
+                          helmholtzexam.ctrl \
+                          michalewitzexam.ctrl \
+                          pargearexam.ctrl \
+                          powexam.ctrl \
+                          robertsonexam.ctrl \
+                          rosenbrockexam.ctrl \
+                          shuttlexam.ctrl \
+                          simplevec.ctrl \
+                          speelpenning.ctrl
+
+
+EXTRA_DIST              = rotations.h $(CTRLFILES)
 
 MAINTAINERCLEANFILES    = Makefile.in in_tape.1 op_tape.1 vs_tape1 *~ *.orig
 
@@ -34,6 +51,7 @@ noinst_PROGRAMS         = detexam speelpenning griewankexam michalewitzexam \
                           rosenbrockexam powexam helmholtzexam shuttlexam \
                           gearexam pargearexam simplevec eutrophexam \
                           robertsonexam ficexam experimental
+endif
 
 detexam_SOURCES         = sfunc_determinant.cpp sgenmain.cpp \
                           ../clock/myclock.cpp
@@ -79,4 +97,3 @@ ficexam_SOURCES         = ../ode/vfunc_fic.cpp vgenmain.cpp \
 
 experimental_SOURCES    = sfunc_experimental.cpp sgenmain.cpp \
                           ../clock/myclock.cpp
-endif

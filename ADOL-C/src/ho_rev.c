@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ho_rev.c
- Revision: $Id: ho_rev.c 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: ho_rev.c 116 2010-07-20 12:29:32Z awalther $
  Contents: Contains the routines :
            hos_reverse (higher-order-scalar reverse mode): 
               define _HOS_
@@ -264,11 +264,11 @@ results   Taylor-Jacobians       ------------          Taylor Jacobians
 
 /****************************************************************************/
 /*                                                       NECESSARY INCLUDES */
-#include <interfaces.h>
-#include <adalloc.h>
-#include <oplate.h>
-#include <taping_p.h>
-#include <convolut.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
+#include <adolc/oplate.h>
+#include "taping_p.h"
+#include <adolc/convolut.h>
 
 #include <math.h>
 
@@ -2106,6 +2106,7 @@ int hov_ti_reverse(
     /* clean up */
     free((char*)*rpp_T);
     free((char*) rpp_T);
+    free(*rpp_A);
     free(rpp_A);
     free(rp_Ttemp);
     free(rp_Ttemp2);

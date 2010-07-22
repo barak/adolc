@@ -1,7 +1,7 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
 ## subdirectory tapedoc
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C)  Andrea Walther, Andreas Kowarz
 ##
@@ -17,8 +17,6 @@ AM_LDFLAGS                = -no-undefined
 AM_CPPFLAGS               = -I$(top_srcdir)/ADOL-C/src 
 
 MAINTAINERCLEANFILES      = Makefile.in *~ *.orig
-
-EXTRA_DIST                = Makefile.win
 
 INCLUDES                  = -I$(top_builddir)
 

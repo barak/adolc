@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     speelpenning.cpp
- Revision: $Id: speelpenning.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: speelpenning.cpp 116 2010-07-20 12:29:32Z awalther $
  Contents: speelpennings example, described in the manual
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -51,7 +51,7 @@ int main() {
     } // end for
     y >>= yp;
     delete[] x;                        
-    trace_off();
+    trace_off(1);
 
     tapestats(1,tape_stats);             // reading of tape statistics
     cout<<"maxlive "<<tape_stats[NUM_MAX_LIVES]<<"\n";

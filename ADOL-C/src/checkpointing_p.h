@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     checkpointing_p.h
- Revision: $Id: checkpointing_p.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: checkpointing_p.h 116 2010-07-20 12:29:32Z awalther $
  Contents: private functions for the checkpointing functions.
  
  Copyright (c) Andreas Kowarz
@@ -15,10 +15,10 @@
 #if !defined(ADOLC_CHECKPOINTING_P_H)
 #define ADOLC_CHECKPOINTING_P_H 1
 
-#include <common.h>
-#include <checkpointing.h>
-#include <buffer_temp.h>
-#include <taping_p.h>
+#include <adolc/common.h>
+#include <adolc/checkpointing.h>
+#include "buffer_temp.h"
+#include "taping_p.h"
 
 #include <stack>
 using std::stack;

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     checkpointing.cpp
- Revision: $Id: checkpointing.cpp 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: checkpointing.cpp 116 2010-07-20 12:29:32Z awalther $
  Contents: checkpointing algorithms
  
  Copyright (c) Andreas Kowarz
@@ -12,14 +12,14 @@
  
 ---------------------------------------------------------------------------*/
 
-#include <oplate.h>
-#include <adalloc.h>
-#include <taping_p.h>
-#include <externfcts.h>
-#include <interfaces.h>
-#include <checkpointing.h>
-#include <checkpointing_p.h>
-#include <revolve.h>
+#include <adolc/oplate.h>
+#include <adolc/adalloc.h>
+#include "taping_p.h"
+#include <adolc/externfcts.h>
+#include <adolc/interfaces.h>
+#include <adolc/checkpointing.h>
+#include "checkpointing_p.h"
+#include <adolc/revolve.h>
 
 #include <cstring>
 

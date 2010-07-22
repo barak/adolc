@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C) Andrea Walther
 ##
@@ -15,7 +15,7 @@ AM_CXXFLAGS            = @ac_adolc_cxxflags@
 AM_CPPFLAGS            = -I$(top_srcdir)/ADOL-C/src
 
 if SPARSE
-LDADD                  = -ladolc $(libdir)/libColPack.a
+LDADD                  = -ladolc @COLPACK_LIBS@
 AM_LDFLAGS             = -L../../../src
 else
 LDADD                  = -ladolc 
@@ -26,10 +26,8 @@ INCLUDES               = -I$(top_builddir) -I$(top_builddir)/examples/additional
 
 MAINTAINERCLEANFILES   = Makefile.in *~ *.orig
 
-EXTRA_DIST             = Makefile.win
-
 if ADDEXA
 noinst_PROGRAMS        = fixpoint_exam
+endif
 
 fixpoint_exam_SOURCES  = fixpoint_exam.cpp 
-endif

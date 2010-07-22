@@ -45,6 +45,7 @@ ADDEXA_TRUE = @ADDEXA_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AM_MAKEFLAGS = @AM_MAKEFLAGS@
 AR = @AR@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
@@ -54,6 +55,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COLPACK_CFLAGS = @COLPACK_CFLAGS@
+COLPACK_LIBS = @COLPACK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -66,6 +69,7 @@ DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 DOCEXA_FALSE = @DOCEXA_FALSE@
 DOCEXA_TRUE = @DOCEXA_TRUE@
+DOLT_BASH = @DOLT_BASH@
 DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -74,8 +78,11 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FC = @FC@
 FFLAGS = @FFLAGS@
 GREP = @GREP@
+HAVE_LIBCOLPACK_FALSE = @HAVE_LIBCOLPACK_FALSE@
+HAVE_LIBCOLPACK_TRUE = @HAVE_LIBCOLPACK_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -85,9 +92,14 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTCOMPILE = @LTCOMPILE@
+LTCXXCOMPILE = @LTCXXCOMPILE@
 LTLIBOBJS = @LTLIBOBJS@
+MAKEFLAGS = @MAKEFLAGS@
 MAKEINFO = @MAKEINFO@
+MCS = @MCS@
 NMEDIT = @NMEDIT@
+OBJC = @OBJC@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -99,6 +111,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PAREXA_FALSE = @PAREXA_FALSE@
 PAREXA_TRUE = @PAREXA_TRUE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+Q = @Q@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -106,7 +119,9 @@ SHELL = @SHELL@
 SPARSE_FALSE = @SPARSE_FALSE@
 SPARSE_TRUE = @SPARSE_TRUE@
 STRIP = @STRIP@
+V = @V@
 VERSION = @VERSION@
+_lib = @_lib@
 ac_adolc_cflags = @ac_adolc_cflags@
 ac_adolc_cxxflags = @ac_adolc_cxxflags@
 ac_aux_dir = @ac_aux_dir@
@@ -152,6 +167,7 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+shavedir = @shavedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
@@ -159,7 +175,7 @@ AM_CFLAGS = @ac_adolc_cflags@
 AM_CXXFLAGS = @ac_adolc_cxxflags@
 AM_CPPFLAGS = -I$(top_srcdir)/ADOL-C/src 
 
-@SPARSE_TRUE@LDADD = -ladolc $(libdir)/libColPack.a
+@SPARSE_TRUE@LDADD = -ladolc @COLPACK_LIBS@
 @SPARSE_FALSE@LDADD = -ladolc 
 @SPARSE_TRUE@AM_LDFLAGS = -L../../../src
 @SPARSE_FALSE@AM_LDFLAGS = -L../../../src
@@ -168,11 +184,9 @@ INCLUDES = -I$(top_builddir) -I$(top_builddir)/examples/additional_examples
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig
 
-EXTRA_DIST = Makefile.win
-
 @ADDEXA_TRUE@noinst_PROGRAMS = checkpointing
 
-@ADDEXA_TRUE@checkpointing_SOURCES = checkpointing.cpp 
+checkpointing_SOURCES = checkpointing.cpp 
 subdir = ADOL-C/examples/additional_examples/checkpointing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/autoconf/mkinstalldirs
@@ -182,11 +196,10 @@ CONFIG_CLEAN_FILES =
 @ADDEXA_FALSE@noinst_PROGRAMS =
 PROGRAMS = $(noinst_PROGRAMS)
 
-am__checkpointing_SOURCES_DIST = checkpointing.cpp
-@ADDEXA_TRUE@am_checkpointing_OBJECTS = checkpointing.$(OBJEXT)
+am_checkpointing_OBJECTS = checkpointing.$(OBJEXT)
 checkpointing_OBJECTS = $(am_checkpointing_OBJECTS)
 checkpointing_LDADD = $(LDADD)
-@SPARSE_TRUE@checkpointing_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@checkpointing_DEPENDENCIES =
 @SPARSE_FALSE@checkpointing_DEPENDENCIES =
 checkpointing_LDFLAGS =
 
@@ -196,13 +209,10 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/checkpointing.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(am__checkpointing_SOURCES_DIST)
+DIST_SOURCES = $(checkpointing_SOURCES)
 DIST_COMMON = README $(srcdir)/Makefile.in Makefile.am
 SOURCES = $(checkpointing_SOURCES)
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparse_fo_rev.h
- Revision: $Id: sparse_fo_rev.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: sparse_fo_rev.h 116 2010-07-20 12:29:32Z awalther $
  Contents: This file containts some "Easy To Use" interfaces of sparse package.
  
  
@@ -15,7 +15,7 @@
 #if !defined (ADOLC_SPARSE_SPARSE_H)
 #define ADOLC_SPARSE_SPARSE_H 1
 
-#include <common.h>
+#include <adolc/common.h>
 
 #if defined(__cplusplus)
 /****************************************************************************/

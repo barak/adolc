@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adolc.h
- Revision: $Id: adolc.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: adolc.h 116 2010-07-20 12:29:32Z awalther $
  Contents: Provides all C/C++ interfaces of ADOL-C.
            NOTICE: ALL C/C++ headers will be included DEPENDING ON 
            whether the source code is plain C or C/C++ code. 
@@ -18,17 +18,17 @@
 #if !defined(ADOLC_ADOLC_H)
 #define ADOLC_ADOLC_H 1
 
-#include <common.h>
+#include <adolc/common.h>
 
 /****************************************************************************/
 /*                                                  Now the pure C++ THINGS */
 #if defined(__cplusplus)
 /*--------------------------------------------------------------------------*/
 /* Operator overloading things (active doubles & vectors) */
-#  include <adouble.h>
-#  include <externfcts.h>
-#  include <checkpointing.h>
-#  include <fixpoint.h>
+#  include <adolc/adouble.h>
+#  include <adolc/externfcts.h>
+#  include <adolc/checkpointing.h>
+#  include <adolc/fixpoint.h>
 #endif
 
 /****************************************************************************/
@@ -36,32 +36,32 @@
 
 /*--------------------------------------------------------------------------*/
 /* interfaces to basic forward/reverse routines */
-#include <interfaces.h>
+#include <adolc/interfaces.h>
 
 /*--------------------------------------------------------------------------*/
 /* interfaces to "Easy To Use" driver routines for ... */
-#include <drivers/drivers.h>    /* optimization & nonlinear equations */
-#include <drivers/taylor.h>     /* higher order tensors & inverse/implicit functions */
-#include <drivers/odedrivers.h> /* ordinary differential equations */
+#include <adolc/drivers/drivers.h>    /* optimization & nonlinear equations */
+#include <adolc/drivers/taylor.h>     /* higher order tensors & inverse/implicit functions */
+#include <adolc/drivers/odedrivers.h> /* ordinary differential equations */
 
 /*--------------------------------------------------------------------------*/
 /* interfaces to TAPEDOC package */
-#include <tapedoc/tapedoc.h>
+#include <adolc/tapedoc/tapedoc.h>
 
 /*--------------------------------------------------------------------------*/
 /* interfaces to SPARSE package */
 #if defined(SPARSE)
-#include <sparse/sparsedrivers.h>
-#include <sparse/sparse_fo_rev.h>
+#include <adolc/sparse/sparsedrivers.h>
+#include <adolc/sparse/sparse_fo_rev.h>
 #endif
 
 /*--------------------------------------------------------------------------*/
 /* tape and value stack utilities */
-#include <taping.h>
+#include <adolc/taping.h>
 
 /*--------------------------------------------------------------------------*/
 /* allocation utilities */
-#include <adalloc.h>
+#include <adolc/adalloc.h>
 
 /****************************************************************************/
 #endif

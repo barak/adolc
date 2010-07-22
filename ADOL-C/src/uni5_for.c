@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: uni5_for.c 116 2010-07-20 12:29:32Z awalther $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_   
@@ -27,13 +27,13 @@
  
 ----------------------------------------------------------------------------*/
 
-#include <interfaces.h>
-#include <adalloc.h>
-#include <taping.h>
-#include <taping_p.h>
-#include <oplate.h>
-#include <externfcts.h>
-#include <externfcts_p.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
+#include <adolc/taping.h>
+#include "taping_p.h"
+#include <adolc/oplate.h>
+#include <adolc/externfcts.h>
+#include "externfcts_p.h"
 
 #include <math.h>
 

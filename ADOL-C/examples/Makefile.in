@@ -39,12 +39,14 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_triplet = @host@
+@SPARSE_TRUE@am__append_1 = @COLPACK_CFLAGS@
 ACLOCAL = @ACLOCAL@
 ADDEXA_FALSE = @ADDEXA_FALSE@
 ADDEXA_TRUE = @ADDEXA_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AM_MAKEFLAGS = @AM_MAKEFLAGS@
 AR = @AR@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
@@ -54,6 +56,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COLPACK_CFLAGS = @COLPACK_CFLAGS@
+COLPACK_LIBS = @COLPACK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -66,6 +70,7 @@ DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 DOCEXA_FALSE = @DOCEXA_FALSE@
 DOCEXA_TRUE = @DOCEXA_TRUE@
+DOLT_BASH = @DOLT_BASH@
 DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -74,8 +79,11 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FC = @FC@
 FFLAGS = @FFLAGS@
 GREP = @GREP@
+HAVE_LIBCOLPACK_FALSE = @HAVE_LIBCOLPACK_FALSE@
+HAVE_LIBCOLPACK_TRUE = @HAVE_LIBCOLPACK_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -85,9 +93,14 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTCOMPILE = @LTCOMPILE@
+LTCXXCOMPILE = @LTCXXCOMPILE@
 LTLIBOBJS = @LTLIBOBJS@
+MAKEFLAGS = @MAKEFLAGS@
 MAKEINFO = @MAKEINFO@
+MCS = @MCS@
 NMEDIT = @NMEDIT@
+OBJC = @OBJC@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -99,6 +112,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PAREXA_FALSE = @PAREXA_FALSE@
 PAREXA_TRUE = @PAREXA_TRUE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+Q = @Q@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -106,7 +120,9 @@ SHELL = @SHELL@
 SPARSE_FALSE = @SPARSE_FALSE@
 SPARSE_TRUE = @SPARSE_TRUE@
 STRIP = @STRIP@
+V = @V@
 VERSION = @VERSION@
+_lib = @_lib@
 ac_adolc_cflags = @ac_adolc_cflags@
 ac_adolc_cxxflags = @ac_adolc_cxxflags@
 ac_aux_dir = @ac_aux_dir@
@@ -152,23 +168,28 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+shavedir = @shavedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 AM_CFLAGS = @ac_adolc_cflags@
 AM_CXXFLAGS = @ac_adolc_cxxflags@
-AM_CPPFLAGS = -I$(top_srcdir)/ADOL-C/src
+AM_CPPFLAGS = -I$(top_srcdir)/ADOL-C/src $(am__append_1)
 
-@SPARSE_TRUE@LDADD = -ladolc $(libdir)/libColPack.a
+@SPARSE_TRUE@LDADD = -ladolc 
 @SPARSE_FALSE@LDADD = -ladolc 
-@SPARSE_TRUE@AM_LDFLAGS = -L../src
+@SPARSE_TRUE@AM_LDFLAGS = -L../src @COLPACK_LIBS@
 @SPARSE_FALSE@AM_LDFLAGS = -L../src
 
 INCLUDES = -I$(top_builddir)
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig ADOLC-*.tap
 
-EXTRA_DIST = Makefile.win
+EXTRA_DIST = adolc_examples.sln \
+                          detexam.vcxproj speelpenning.vcxproj odexam.vcxproj \
+                          tapeless_scalar.vcxproj tapeless_vector.vcxproj \
+                          Readme_VC++.txt
+
 
 @PAREXA_TRUE@SUBDIRS = additional_examples
 
@@ -178,17 +199,17 @@ EXTRA_DIST = Makefile.win
 @DOCEXA_TRUE@                          tapeless_scalar tapeless_vector
 
 
-@DOCEXA_TRUE@detexam_SOURCES = detexam.cpp
+detexam_SOURCES = detexam.cpp
 
-@DOCEXA_TRUE@speelpenning_SOURCES = speelpenning.cpp
+speelpenning_SOURCES = speelpenning.cpp
 
-@DOCEXA_TRUE@powexam_SOURCES = powexam.cpp
+powexam_SOURCES = powexam.cpp
 
-@DOCEXA_TRUE@odexam_SOURCES = odexam.cpp 
+odexam_SOURCES = odexam.cpp 
 
-@DOCEXA_TRUE@tapeless_scalar_SOURCES = tapeless_scalar.cpp
+tapeless_scalar_SOURCES = tapeless_scalar.cpp
 
-@DOCEXA_TRUE@tapeless_vector_SOURCES = tapeless_vector.cpp
+tapeless_vector_SOURCES = tapeless_vector.cpp
 subdir = ADOL-C/examples
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/autoconf/mkinstalldirs
@@ -200,46 +221,40 @@ CONFIG_CLEAN_FILES =
 @DOCEXA_FALSE@noinst_PROGRAMS =
 PROGRAMS = $(noinst_PROGRAMS)
 
-am__detexam_SOURCES_DIST = detexam.cpp
-@DOCEXA_TRUE@am_detexam_OBJECTS = detexam.$(OBJEXT)
+am_detexam_OBJECTS = detexam.$(OBJEXT)
 detexam_OBJECTS = $(am_detexam_OBJECTS)
 detexam_LDADD = $(LDADD)
-@SPARSE_TRUE@detexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@detexam_DEPENDENCIES =
 @SPARSE_FALSE@detexam_DEPENDENCIES =
 detexam_LDFLAGS =
-am__odexam_SOURCES_DIST = odexam.cpp
-@DOCEXA_TRUE@am_odexam_OBJECTS = odexam.$(OBJEXT)
+am_odexam_OBJECTS = odexam.$(OBJEXT)
 odexam_OBJECTS = $(am_odexam_OBJECTS)
 odexam_LDADD = $(LDADD)
-@SPARSE_TRUE@odexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@odexam_DEPENDENCIES =
 @SPARSE_FALSE@odexam_DEPENDENCIES =
 odexam_LDFLAGS =
-am__powexam_SOURCES_DIST = powexam.cpp
-@DOCEXA_TRUE@am_powexam_OBJECTS = powexam.$(OBJEXT)
+am_powexam_OBJECTS = powexam.$(OBJEXT)
 powexam_OBJECTS = $(am_powexam_OBJECTS)
 powexam_LDADD = $(LDADD)
-@SPARSE_TRUE@powexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@powexam_DEPENDENCIES =
 @SPARSE_FALSE@powexam_DEPENDENCIES =
 powexam_LDFLAGS =
-am__speelpenning_SOURCES_DIST = speelpenning.cpp
-@DOCEXA_TRUE@am_speelpenning_OBJECTS = speelpenning.$(OBJEXT)
+am_speelpenning_OBJECTS = speelpenning.$(OBJEXT)
 speelpenning_OBJECTS = $(am_speelpenning_OBJECTS)
 speelpenning_LDADD = $(LDADD)
-@SPARSE_TRUE@speelpenning_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@speelpenning_DEPENDENCIES =
 @SPARSE_FALSE@speelpenning_DEPENDENCIES =
 speelpenning_LDFLAGS =
-am__tapeless_scalar_SOURCES_DIST = tapeless_scalar.cpp
-@DOCEXA_TRUE@am_tapeless_scalar_OBJECTS = tapeless_scalar.$(OBJEXT)
+am_tapeless_scalar_OBJECTS = tapeless_scalar.$(OBJEXT)
 tapeless_scalar_OBJECTS = $(am_tapeless_scalar_OBJECTS)
 tapeless_scalar_LDADD = $(LDADD)
-@SPARSE_TRUE@tapeless_scalar_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@tapeless_scalar_DEPENDENCIES =
 @SPARSE_FALSE@tapeless_scalar_DEPENDENCIES =
 tapeless_scalar_LDFLAGS =
-am__tapeless_vector_SOURCES_DIST = tapeless_vector.cpp
-@DOCEXA_TRUE@am_tapeless_vector_OBJECTS = tapeless_vector.$(OBJEXT)
+am_tapeless_vector_OBJECTS = tapeless_vector.$(OBJEXT)
 tapeless_vector_OBJECTS = $(am_tapeless_vector_OBJECTS)
 tapeless_vector_LDADD = $(LDADD)
-@SPARSE_TRUE@tapeless_vector_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@tapeless_vector_DEPENDENCIES =
 @SPARSE_FALSE@tapeless_vector_DEPENDENCIES =
 tapeless_vector_LDFLAGS =
 
@@ -252,16 +267,12 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/tapeless_vector.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(am__detexam_SOURCES_DIST) $(am__odexam_SOURCES_DIST) \
-	$(am__powexam_SOURCES_DIST) $(am__speelpenning_SOURCES_DIST) \
-	$(am__tapeless_scalar_SOURCES_DIST) \
-	$(am__tapeless_vector_SOURCES_DIST)
+DIST_SOURCES = $(detexam_SOURCES) $(odexam_SOURCES) $(powexam_SOURCES) \
+	$(speelpenning_SOURCES) $(tapeless_scalar_SOURCES) \
+	$(tapeless_vector_SOURCES)
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	ps-recursive install-info-recursive uninstall-info-recursive \

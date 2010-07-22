@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/odedrivers.h
- Revision: $Id: odedrivers.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: odedrivers.h 116 2010-07-20 12:29:32Z awalther $
  Contents: Easy to use drivers for ordinary differential equations (ODE)
            (with C and C++ callable interfaces including Fortran 
             callable versions).
@@ -17,8 +17,8 @@
 #if !defined(ADOLC_DRIVERS_ODEDRIVERS_H)
 #define ADOLC_DRIVERS_ODEDRIVERS_H 1
 
-#include <common.h>
-#include <interfaces.h>
+#include <adolc/common.h>
+#include <adolc/interfaces.h>
 
 BEGIN_C_DECLS
 

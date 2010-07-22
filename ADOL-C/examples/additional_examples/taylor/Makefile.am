@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -15,7 +15,7 @@ AM_CXXFLAGS          = @ac_adolc_cxxflags@
 AM_CPPFLAGS          = -I$(top_srcdir)/ADOL-C/src
 
 if SPARSE
-LDADD                = -ladolc $(libdir)/libColPack.a
+LDADD                = -ladolc @COLPACK_LIBS@
 AM_LDFLAGS           = -L../../../src
 else
 LDADD                = -ladolc 
@@ -26,10 +26,9 @@ INCLUDES             = -I$(top_builddir)
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig
 
-EXTRA_DIST           = Makefile.win
-
 if ADDEXA
 noinst_PROGRAMS      = taylorexam inversexam accessexam trigger coordinates
+endif
 
 taylorexam_SOURCES   = taylorexam.cpp
 
@@ -40,4 +39,3 @@ accessexam_SOURCES   = accessexam.cpp
 trigger_SOURCES      = trigger.cpp
 
 coordinates_SOURCES  = coordinates.cpp
-endif

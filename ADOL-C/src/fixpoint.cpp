@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fixpoint.c
- Revision: $Id: fixpoint.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: fixpoint.cpp 116 2010-07-20 12:29:32Z awalther $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
  
@@ -14,9 +14,9 @@
 
 ----------------------------------------------------------------------------*/
 
-#include <adolc.h>
-#include <fixpoint.h>
-#include <taping_p.h>
+#include <adolc/adolc.h>
+#include <adolc/fixpoint.h>
+#include "taping_p.h"
 
 #include <vector>
 

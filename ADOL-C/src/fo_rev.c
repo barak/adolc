@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fo_rev.c
- Revision: $Id: fo_rev.c 98 2010-03-05 12:17:17Z awalther $
+ Revision: $Id: fo_rev.c 116 2010-07-20 12:29:32Z awalther $
  Contents: Contains the routines :
            fos_reverse (first-order-scalar reverse mode)  : define _FOS_
            fov_reverse (first-order-vector reverse mode)  : define _FOV_
@@ -186,12 +186,12 @@ results   Taylor-Jacobians       ------------          Taylor Jacobians
 
 /****************************************************************************/
 /*                                                       NECESSARY INCLUDES */
-#include <interfaces.h>
-#include <adalloc.h>
-#include <oplate.h>
-#include <taping_p.h>
-#include <externfcts.h>
-#include <externfcts_p.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
+#include <adolc/oplate.h>
+#include "taping_p.h"
+#include <adolc/externfcts.h>
+#include "externfcts_p.h"
 
 #include <math.h>
 
