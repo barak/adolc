@@ -4,3 +4,18 @@ build clean install binary-arch binary-indep binary:
 	dh $@
 
 .PHONY: build clean install binary-arch binary-indep binary
+
+# Upstream now installs in .../lib64/ not .../lib/ on 64-bit
+# architectures.  Need to override this.
+
+# This *should* change it, but does not.
+override_dh_auto_configure:
+	dh_auto_configure -- --libdir=\$${exec_prefix}/lib
+
+# This puts the right libdir= line in libadolc*.la
+override_dh_auto_build:
+	dh_auto_build -- libdir=\$${exec_prefix}/lib
+
+# This installs the files in the right place
+override_dh_auto_install:
+	dh_auto_install -- libdir=\$${exec_prefix}/lib
