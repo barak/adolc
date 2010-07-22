@@ -1,3 +1,9 @@
+adolc (2.1.6-1) unstable; urgency=low
+
+  * New Upstream Version
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 22 Jul 2010 09:52:44 +0100
+
 adolc (2.1.5-2) unstable; urgency=low
 
   * move upstream SVN repo info from debian/control into debian/copyright
