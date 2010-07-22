@@ -45,6 +45,7 @@ ADDEXA_TRUE = @ADDEXA_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AM_MAKEFLAGS = @AM_MAKEFLAGS@
 AR = @AR@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
@@ -54,6 +55,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COLPACK_CFLAGS = @COLPACK_CFLAGS@
+COLPACK_LIBS = @COLPACK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -66,6 +69,7 @@ DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 DOCEXA_FALSE = @DOCEXA_FALSE@
 DOCEXA_TRUE = @DOCEXA_TRUE@
+DOLT_BASH = @DOLT_BASH@
 DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -74,8 +78,11 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FC = @FC@
 FFLAGS = @FFLAGS@
 GREP = @GREP@
+HAVE_LIBCOLPACK_FALSE = @HAVE_LIBCOLPACK_FALSE@
+HAVE_LIBCOLPACK_TRUE = @HAVE_LIBCOLPACK_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -85,9 +92,14 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTCOMPILE = @LTCOMPILE@
+LTCXXCOMPILE = @LTCXXCOMPILE@
 LTLIBOBJS = @LTLIBOBJS@
+MAKEFLAGS = @MAKEFLAGS@
 MAKEINFO = @MAKEINFO@
+MCS = @MCS@
 NMEDIT = @NMEDIT@
+OBJC = @OBJC@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -99,6 +111,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PAREXA_FALSE = @PAREXA_FALSE@
 PAREXA_TRUE = @PAREXA_TRUE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+Q = @Q@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -106,7 +119,9 @@ SHELL = @SHELL@
 SPARSE_FALSE = @SPARSE_FALSE@
 SPARSE_TRUE = @SPARSE_TRUE@
 STRIP = @STRIP@
+V = @V@
 VERSION = @VERSION@
+_lib = @_lib@
 ac_adolc_cflags = @ac_adolc_cflags@
 ac_adolc_cxxflags = @ac_adolc_cxxflags@
 ac_aux_dir = @ac_aux_dir@
@@ -152,6 +167,7 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+shavedir = @shavedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
@@ -159,14 +175,31 @@ AM_CFLAGS = @ac_adolc_cflags@
 AM_CXXFLAGS = @ac_adolc_cxxflags@
 AM_CPPFLAGS = -I$(top_srcdir)/ADOL-C/src
 
-@SPARSE_TRUE@LDADD = -ladolc $(libdir)/libColPack.a
+@SPARSE_TRUE@LDADD = -ladolc @COLPACK_LIBS@
 @SPARSE_FALSE@LDADD = -ladolc 
 @SPARSE_TRUE@AM_LDFLAGS = -L../../../src
 @SPARSE_FALSE@AM_LDFLAGS = -L../../../src
 
 INCLUDES = -I$(top_builddir) -I$(top_builddir)/examples/additional_examples
 
-EXTRA_DIST = rotations.h *.ctrl Makefile.win
+CTRLFILES = detexam.ctrl \
+                          eutrophexam.ctrl \
+                          experimental.ctrl \
+                          ficexam.ctrl \
+                          gearexam.ctrl \
+                          griewankexam.ctrl \
+                          helmholtzexam.ctrl \
+                          michalewitzexam.ctrl \
+                          pargearexam.ctrl \
+                          powexam.ctrl \
+                          robertsonexam.ctrl \
+                          rosenbrockexam.ctrl \
+                          shuttlexam.ctrl \
+                          simplevec.ctrl \
+                          speelpenning.ctrl
+
+
+EXTRA_DIST = rotations.h $(CTRLFILES)
 
 MAINTAINERCLEANFILES = Makefile.in in_tape.1 op_tape.1 vs_tape1 *~ *.orig
 
@@ -176,64 +209,64 @@ MAINTAINERCLEANFILES = Makefile.in in_tape.1 op_tape.1 vs_tape1 *~ *.orig
 @ADDEXA_TRUE@                          robertsonexam ficexam experimental
 
 
-@ADDEXA_TRUE@detexam_SOURCES = sfunc_determinant.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+detexam_SOURCES = sfunc_determinant.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@speelpenning_SOURCES = sfunc_speelpenning.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+speelpenning_SOURCES = sfunc_speelpenning.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@griewankexam_SOURCES = sfunc_griewank.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+griewankexam_SOURCES = sfunc_griewank.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@michalewitzexam_SOURCES = sfunc_michalewitz.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+michalewitzexam_SOURCES = sfunc_michalewitz.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@rosenbrockexam_SOURCES = sfunc_rosenbrock.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+rosenbrockexam_SOURCES = sfunc_rosenbrock.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@powexam_SOURCES = sfunc_power.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+powexam_SOURCES = sfunc_power.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@helmholtzexam_SOURCES = sfunc_helmholtz.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+helmholtzexam_SOURCES = sfunc_helmholtz.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@shuttlexam_SOURCES = vfunc_shuttle.cpp vgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+shuttlexam_SOURCES = vfunc_shuttle.cpp vgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@gearexam_SOURCES = vfunc_gear.cpp vgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+gearexam_SOURCES = vfunc_gear.cpp vgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@pargearexam_SOURCES = vfunc_pargear.cpp rotations.cpp vgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+pargearexam_SOURCES = vfunc_pargear.cpp rotations.cpp vgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@simplevec_SOURCES = vfunc_simplevec.cpp vgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+simplevec_SOURCES = vfunc_simplevec.cpp vgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@eutrophexam_SOURCES = ../ode/vfunc_eutroph.cpp vgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+eutrophexam_SOURCES = ../ode/vfunc_eutroph.cpp vgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@robertsonexam_SOURCES = ../ode/vfunc_robertson.cpp vgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+robertsonexam_SOURCES = ../ode/vfunc_robertson.cpp vgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@ficexam_SOURCES = ../ode/vfunc_fic.cpp vgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+ficexam_SOURCES = ../ode/vfunc_fic.cpp vgenmain.cpp \
+                          ../clock/myclock.cpp
 
 
-@ADDEXA_TRUE@experimental_SOURCES = sfunc_experimental.cpp sgenmain.cpp \
-@ADDEXA_TRUE@                          ../clock/myclock.cpp
+experimental_SOURCES = sfunc_experimental.cpp sgenmain.cpp \
+                          ../clock/myclock.cpp
 
 subdir = ADOL-C/examples/additional_examples/timing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -251,140 +284,109 @@ CONFIG_CLEAN_FILES =
 @ADDEXA_FALSE@noinst_PROGRAMS =
 PROGRAMS = $(noinst_PROGRAMS)
 
-am__detexam_SOURCES_DIST = sfunc_determinant.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_detexam_OBJECTS = sfunc_determinant.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_detexam_OBJECTS = sfunc_determinant.$(OBJEXT) sgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 detexam_OBJECTS = $(am_detexam_OBJECTS)
 detexam_LDADD = $(LDADD)
-@SPARSE_TRUE@detexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@detexam_DEPENDENCIES =
 @SPARSE_FALSE@detexam_DEPENDENCIES =
 detexam_LDFLAGS =
-am__eutrophexam_SOURCES_DIST = ../ode/vfunc_eutroph.cpp vgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_eutrophexam_OBJECTS = vfunc_eutroph.$(OBJEXT) \
-@ADDEXA_TRUE@	vgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_eutrophexam_OBJECTS = vfunc_eutroph.$(OBJEXT) vgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 eutrophexam_OBJECTS = $(am_eutrophexam_OBJECTS)
 eutrophexam_LDADD = $(LDADD)
-@SPARSE_TRUE@eutrophexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@eutrophexam_DEPENDENCIES =
 @SPARSE_FALSE@eutrophexam_DEPENDENCIES =
 eutrophexam_LDFLAGS =
-am__experimental_SOURCES_DIST = sfunc_experimental.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_experimental_OBJECTS = sfunc_experimental.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_experimental_OBJECTS = sfunc_experimental.$(OBJEXT) \
+	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
 experimental_OBJECTS = $(am_experimental_OBJECTS)
 experimental_LDADD = $(LDADD)
-@SPARSE_TRUE@experimental_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@experimental_DEPENDENCIES =
 @SPARSE_FALSE@experimental_DEPENDENCIES =
 experimental_LDFLAGS =
-am__ficexam_SOURCES_DIST = ../ode/vfunc_fic.cpp vgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_ficexam_OBJECTS = vfunc_fic.$(OBJEXT) vgenmain.$(OBJEXT) \
-@ADDEXA_TRUE@	myclock.$(OBJEXT)
+am_ficexam_OBJECTS = vfunc_fic.$(OBJEXT) vgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 ficexam_OBJECTS = $(am_ficexam_OBJECTS)
 ficexam_LDADD = $(LDADD)
-@SPARSE_TRUE@ficexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@ficexam_DEPENDENCIES =
 @SPARSE_FALSE@ficexam_DEPENDENCIES =
 ficexam_LDFLAGS =
-am__gearexam_SOURCES_DIST = vfunc_gear.cpp vgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_gearexam_OBJECTS = vfunc_gear.$(OBJEXT) \
-@ADDEXA_TRUE@	vgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_gearexam_OBJECTS = vfunc_gear.$(OBJEXT) vgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 gearexam_OBJECTS = $(am_gearexam_OBJECTS)
 gearexam_LDADD = $(LDADD)
-@SPARSE_TRUE@gearexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@gearexam_DEPENDENCIES =
 @SPARSE_FALSE@gearexam_DEPENDENCIES =
 gearexam_LDFLAGS =
-am__griewankexam_SOURCES_DIST = sfunc_griewank.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_griewankexam_OBJECTS = sfunc_griewank.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_griewankexam_OBJECTS = sfunc_griewank.$(OBJEXT) sgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 griewankexam_OBJECTS = $(am_griewankexam_OBJECTS)
 griewankexam_LDADD = $(LDADD)
-@SPARSE_TRUE@griewankexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@griewankexam_DEPENDENCIES =
 @SPARSE_FALSE@griewankexam_DEPENDENCIES =
 griewankexam_LDFLAGS =
-am__helmholtzexam_SOURCES_DIST = sfunc_helmholtz.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_helmholtzexam_OBJECTS = sfunc_helmholtz.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_helmholtzexam_OBJECTS = sfunc_helmholtz.$(OBJEXT) sgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 helmholtzexam_OBJECTS = $(am_helmholtzexam_OBJECTS)
 helmholtzexam_LDADD = $(LDADD)
-@SPARSE_TRUE@helmholtzexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@helmholtzexam_DEPENDENCIES =
 @SPARSE_FALSE@helmholtzexam_DEPENDENCIES =
 helmholtzexam_LDFLAGS =
-am__michalewitzexam_SOURCES_DIST = sfunc_michalewitz.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_michalewitzexam_OBJECTS = sfunc_michalewitz.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_michalewitzexam_OBJECTS = sfunc_michalewitz.$(OBJEXT) \
+	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
 michalewitzexam_OBJECTS = $(am_michalewitzexam_OBJECTS)
 michalewitzexam_LDADD = $(LDADD)
-@SPARSE_TRUE@michalewitzexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@michalewitzexam_DEPENDENCIES =
 @SPARSE_FALSE@michalewitzexam_DEPENDENCIES =
 michalewitzexam_LDFLAGS =
-am__pargearexam_SOURCES_DIST = vfunc_pargear.cpp rotations.cpp \
-	vgenmain.cpp ../clock/myclock.cpp
-@ADDEXA_TRUE@am_pargearexam_OBJECTS = vfunc_pargear.$(OBJEXT) \
-@ADDEXA_TRUE@	rotations.$(OBJEXT) vgenmain.$(OBJEXT) \
-@ADDEXA_TRUE@	myclock.$(OBJEXT)
+am_pargearexam_OBJECTS = vfunc_pargear.$(OBJEXT) rotations.$(OBJEXT) \
+	vgenmain.$(OBJEXT) myclock.$(OBJEXT)
 pargearexam_OBJECTS = $(am_pargearexam_OBJECTS)
 pargearexam_LDADD = $(LDADD)
-@SPARSE_TRUE@pargearexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@pargearexam_DEPENDENCIES =
 @SPARSE_FALSE@pargearexam_DEPENDENCIES =
 pargearexam_LDFLAGS =
-am__powexam_SOURCES_DIST = sfunc_power.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_powexam_OBJECTS = sfunc_power.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_powexam_OBJECTS = sfunc_power.$(OBJEXT) sgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 powexam_OBJECTS = $(am_powexam_OBJECTS)
 powexam_LDADD = $(LDADD)
-@SPARSE_TRUE@powexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@powexam_DEPENDENCIES =
 @SPARSE_FALSE@powexam_DEPENDENCIES =
 powexam_LDFLAGS =
-am__robertsonexam_SOURCES_DIST = ../ode/vfunc_robertson.cpp vgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_robertsonexam_OBJECTS = vfunc_robertson.$(OBJEXT) \
-@ADDEXA_TRUE@	vgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_robertsonexam_OBJECTS = vfunc_robertson.$(OBJEXT) vgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 robertsonexam_OBJECTS = $(am_robertsonexam_OBJECTS)
 robertsonexam_LDADD = $(LDADD)
-@SPARSE_TRUE@robertsonexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@robertsonexam_DEPENDENCIES =
 @SPARSE_FALSE@robertsonexam_DEPENDENCIES =
 robertsonexam_LDFLAGS =
-am__rosenbrockexam_SOURCES_DIST = sfunc_rosenbrock.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_rosenbrockexam_OBJECTS = sfunc_rosenbrock.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_rosenbrockexam_OBJECTS = sfunc_rosenbrock.$(OBJEXT) \
+	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
 rosenbrockexam_OBJECTS = $(am_rosenbrockexam_OBJECTS)
 rosenbrockexam_LDADD = $(LDADD)
-@SPARSE_TRUE@rosenbrockexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@rosenbrockexam_DEPENDENCIES =
 @SPARSE_FALSE@rosenbrockexam_DEPENDENCIES =
 rosenbrockexam_LDFLAGS =
-am__shuttlexam_SOURCES_DIST = vfunc_shuttle.cpp vgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_shuttlexam_OBJECTS = vfunc_shuttle.$(OBJEXT) \
-@ADDEXA_TRUE@	vgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_shuttlexam_OBJECTS = vfunc_shuttle.$(OBJEXT) vgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 shuttlexam_OBJECTS = $(am_shuttlexam_OBJECTS)
 shuttlexam_LDADD = $(LDADD)
-@SPARSE_TRUE@shuttlexam_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@shuttlexam_DEPENDENCIES =
 @SPARSE_FALSE@shuttlexam_DEPENDENCIES =
 shuttlexam_LDFLAGS =
-am__simplevec_SOURCES_DIST = vfunc_simplevec.cpp vgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_simplevec_OBJECTS = vfunc_simplevec.$(OBJEXT) \
-@ADDEXA_TRUE@	vgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_simplevec_OBJECTS = vfunc_simplevec.$(OBJEXT) vgenmain.$(OBJEXT) \
+	myclock.$(OBJEXT)
 simplevec_OBJECTS = $(am_simplevec_OBJECTS)
 simplevec_LDADD = $(LDADD)
-@SPARSE_TRUE@simplevec_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@simplevec_DEPENDENCIES =
 @SPARSE_FALSE@simplevec_DEPENDENCIES =
 simplevec_LDFLAGS =
-am__speelpenning_SOURCES_DIST = sfunc_speelpenning.cpp sgenmain.cpp \
-	../clock/myclock.cpp
-@ADDEXA_TRUE@am_speelpenning_OBJECTS = sfunc_speelpenning.$(OBJEXT) \
-@ADDEXA_TRUE@	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
+am_speelpenning_OBJECTS = sfunc_speelpenning.$(OBJEXT) \
+	sgenmain.$(OBJEXT) myclock.$(OBJEXT)
 speelpenning_OBJECTS = $(am_speelpenning_OBJECTS)
 speelpenning_LDADD = $(LDADD)
-@SPARSE_TRUE@speelpenning_DEPENDENCIES = $(libdir)/libColPack.a
+@SPARSE_TRUE@speelpenning_DEPENDENCIES =
 @SPARSE_FALSE@speelpenning_DEPENDENCIES =
 speelpenning_LDFLAGS =
 
@@ -410,23 +412,16 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/vgenmain.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(am__detexam_SOURCES_DIST) \
-	$(am__eutrophexam_SOURCES_DIST) \
-	$(am__experimental_SOURCES_DIST) $(am__ficexam_SOURCES_DIST) \
-	$(am__gearexam_SOURCES_DIST) $(am__griewankexam_SOURCES_DIST) \
-	$(am__helmholtzexam_SOURCES_DIST) \
-	$(am__michalewitzexam_SOURCES_DIST) \
-	$(am__pargearexam_SOURCES_DIST) $(am__powexam_SOURCES_DIST) \
-	$(am__robertsonexam_SOURCES_DIST) \
-	$(am__rosenbrockexam_SOURCES_DIST) \
-	$(am__shuttlexam_SOURCES_DIST) $(am__simplevec_SOURCES_DIST) \
-	$(am__speelpenning_SOURCES_DIST)
+DIST_SOURCES = $(detexam_SOURCES) $(eutrophexam_SOURCES) \
+	$(experimental_SOURCES) $(ficexam_SOURCES) $(gearexam_SOURCES) \
+	$(griewankexam_SOURCES) $(helmholtzexam_SOURCES) \
+	$(michalewitzexam_SOURCES) $(pargearexam_SOURCES) \
+	$(powexam_SOURCES) $(robertsonexam_SOURCES) \
+	$(rosenbrockexam_SOURCES) $(shuttlexam_SOURCES) \
+	$(simplevec_SOURCES) $(speelpenning_SOURCES)
 DIST_COMMON = README $(srcdir)/Makefile.in Makefile.am
 SOURCES = $(detexam_SOURCES) $(eutrophexam_SOURCES) $(experimental_SOURCES) $(ficexam_SOURCES) $(gearexam_SOURCES) $(griewankexam_SOURCES) $(helmholtzexam_SOURCES) $(michalewitzexam_SOURCES) $(pargearexam_SOURCES) $(powexam_SOURCES) $(robertsonexam_SOURCES) $(rosenbrockexam_SOURCES) $(shuttlexam_SOURCES) $(simplevec_SOURCES) $(speelpenning_SOURCES)
 

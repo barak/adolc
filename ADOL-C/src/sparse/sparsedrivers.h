@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.h
- Revision: $Id: sparsedrivers.h 62 2009-12-07 17:49:24Z awalther $
+ Revision: $Id: sparsedrivers.h 116 2010-07-20 12:29:32Z awalther $
  Contents: This file containts some "Easy To Use" interfaces of sparse package.
  
  Copyright (c) Andrea Walther
@@ -14,7 +14,7 @@
 #if !defined (ADOLC_SPARSE_SPARSE_H)
 #define ADOLC_SPARSE_SPARSE_H 1
 
-#include <common.h>
+#include <adolc/common.h>
 
 
 
@@ -77,7 +77,7 @@ ADOLC_DLL_EXPORT int sparse_hess
 (short, int , int, double*, int *,
  unsigned int **, unsigned int **, double **,int*);
 
-int set_HP(
+void set_HP(
     short          tag,        /* tape identification                     */
     int            indep,      /* number of independent variables         */
     unsigned int ** HP);
@@ -96,6 +96,14 @@ int set_HP(
 ADOLC_DLL_EXPORT int bit_vector_propagation
 (short, int, int, const double*, unsigned int**, int*);
 
+/****************************************************************************/
+/*          Cast the void pointers to their respective type and free memory */
+ADOLC_DLL_EXPORT void freeSparseJacInfos(double *y, double **Seed, double **B, unsigned int **JP,
+                                         void *g, void *jr1d, int seed_rows, int seed_clms, int depen);
+
+ADOLC_DLL_EXPORT void freeSparseHessInfos(double **Hcomp, double ***Xppp, double ***Yppp, double ***Zppp, 
+					  double **Upp, unsigned int **HP,
+					  void *g, void *hr, int p, int indep);
 
 END_C_DECLS
 

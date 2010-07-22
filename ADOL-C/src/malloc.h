@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     malloc.h
- Revision: $Id: malloc.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: malloc.h 116 2010-07-20 12:29:32Z awalther $
  Contents: malloc replacements for not gnu compatible malloc system functions
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -18,7 +18,7 @@
 
 #   if defined(ADOLC_INTERNAL)
 #       if defined(HAVE_CONFIG_H)
-#           include <config.h>
+#           include "config.h"
 
 #           undef ADOLC_NO_MALLOC
 #           undef ADOLC_NO_REALLOC

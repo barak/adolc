@@ -45,6 +45,7 @@ ADDEXA_TRUE = @ADDEXA_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+AM_MAKEFLAGS = @AM_MAKEFLAGS@
 AR = @AR@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
@@ -54,6 +55,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COLPACK_CFLAGS = @COLPACK_CFLAGS@
+COLPACK_LIBS = @COLPACK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -66,6 +69,7 @@ DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 DOCEXA_FALSE = @DOCEXA_FALSE@
 DOCEXA_TRUE = @DOCEXA_TRUE@
+DOLT_BASH = @DOLT_BASH@
 DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -74,8 +78,11 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FC = @FC@
 FFLAGS = @FFLAGS@
 GREP = @GREP@
+HAVE_LIBCOLPACK_FALSE = @HAVE_LIBCOLPACK_FALSE@
+HAVE_LIBCOLPACK_TRUE = @HAVE_LIBCOLPACK_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -85,9 +92,14 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTCOMPILE = @LTCOMPILE@
+LTCXXCOMPILE = @LTCXXCOMPILE@
 LTLIBOBJS = @LTLIBOBJS@
+MAKEFLAGS = @MAKEFLAGS@
 MAKEINFO = @MAKEINFO@
+MCS = @MCS@
 NMEDIT = @NMEDIT@
+OBJC = @OBJC@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -99,6 +111,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PAREXA_FALSE = @PAREXA_FALSE@
 PAREXA_TRUE = @PAREXA_TRUE@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+Q = @Q@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -106,7 +119,9 @@ SHELL = @SHELL@
 SPARSE_FALSE = @SPARSE_FALSE@
 SPARSE_TRUE = @SPARSE_TRUE@
 STRIP = @STRIP@
+V = @V@
 VERSION = @VERSION@
+_lib = @_lib@
 ac_adolc_cflags = @ac_adolc_cflags@
 ac_adolc_cxxflags = @ac_adolc_cxxflags@
 ac_aux_dir = @ac_aux_dir@
@@ -152,25 +167,38 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+shavedir = @shavedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 
 AUTOMAKE_OPTIONS = foreign
 
-EXTRA_DIST = TODO BUGS Makefile.win make_32 make_64 \
-                       comp_win.bat winflags_dll winflags_exa
+EXTRA_DIST = TODO BUGS  make_32 make_64 \
+                       autoconf/shave.in autoconf/shave-libtool.in \
+                       autoconf/dolt.m4 autoconf/shave.m4 \
+                       windows/adolc.sln windows/adolc.vcxproj \
+                       windows/sparse/config.h windows/nosparse/config.h \
+                       windows/x64/sparse/config.h windows/x64/nosparse/config.h \
+                       windows/Readme_VC++.txt \
+                       windows/vcredist_x86.exe windows/x64/vcredist_x64.exe \
+                       windows/installer.sh \
+                       ThirdParty/ColPack/ColPack.vcxproj \
+                       ThirdParty/ColPack/colpack_vcxcompile.patch \
+                       ThirdParty/ColPack/Readme_VC++.txt
 
 
 SUBDIRS = ADOL-C
 
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure ADOL-C/src/config.h.in \
-                       ADOL-C/src/stamp-h.in *~ *.orig
+                       ADOL-C/src/stamp-h.in *~ *.orig 
 
+
+DISTCLEANFILES = doltcompile doltlibtool
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/autoconf/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/ADOL-C/src/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = autoconf/shave-libtool autoconf/shave
 DIST_SOURCES =
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
@@ -179,7 +207,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive pdf-recursive \
 	installdirs-recursive install-recursive uninstall-recursive \
 	check-recursive installcheck-recursive
 DIST_COMMON = README $(srcdir)/Makefile.in $(srcdir)/configure AUTHORS \
-	ChangeLog INSTALL Makefile.am NEWS TODO aclocal.m4 \
+	ChangeLog INSTALL Makefile.am NEWS TODO acinclude.m4 aclocal.m4 \
 	autoconf/config.guess autoconf/config.sub autoconf/depcomp \
 	autoconf/install-sh autoconf/ltmain.sh autoconf/missing \
 	autoconf/mkinstalldirs configure configure.ac
@@ -201,8 +229,12 @@ $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 $(srcdir)/configure:  $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4):  configure.ac 
+$(ACLOCAL_M4):  configure.ac acinclude.m4
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
+autoconf/shave-libtool: $(top_builddir)/config.status $(top_srcdir)/autoconf/shave-libtool.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+autoconf/shave: $(top_builddir)/config.status $(top_srcdir)/autoconf/shave.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -354,7 +386,7 @@ distcleancheck_listfiles = find . -type f -print
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/autoconf
+	$(mkinstalldirs) $(distdir)/ThirdParty/ColPack $(distdir)/autoconf $(distdir)/windows $(distdir)/windows/nosparse $(distdir)/windows/sparse $(distdir)/windows/x64 $(distdir)/windows/x64/nosparse $(distdir)/windows/x64/sparse
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -489,6 +521,7 @@ clean-generic:
 
 distclean-generic:
 	-rm -f $(CONFIG_CLEAN_FILES)
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"

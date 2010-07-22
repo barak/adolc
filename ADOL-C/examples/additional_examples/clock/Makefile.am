@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -10,6 +10,6 @@
 ## 
 ##############################################################################
 
-EXTRA_DIST           = myclock.h Makefile.win
+EXTRA_DIST           = myclock.h
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig

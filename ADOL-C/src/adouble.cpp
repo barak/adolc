@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.cpp
- Revision: $Id: adouble.cpp 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: adouble.cpp 116 2010-07-20 12:29:32Z awalther $
  Contents: adouble.C contains that definitions of procedures used to 
            define various badouble, adub, and adouble operations. 
            These operations actually have two purposes.
@@ -20,9 +20,9 @@
    
 ----------------------------------------------------------------------------*/
 
-#include <adouble.h>
-#include <oplate.h>
-#include <taping_p.h>
+#include <adolc/adouble.h>
+#include <adolc/oplate.h>
+#include "taping_p.h"
 
 using namespace std;
 
@@ -32,13 +32,13 @@ using namespace std;
 /*--------------------------------------------------------------------------*/
 void condassign( double &res, const double &cond,
                  const double &arg1, const double &arg2 ) {
-    res = cond ? arg1 : arg2;
+    res = cond > 0 ? arg1 : arg2;
 }
 
 /*--------------------------------------------------------------------------*/
 void condassign( double &res, const double &cond,
                  const double &arg) {
-    res = cond ? arg : res;
+    res = cond > 0 ? arg : res;
 }
 
 /*--------------------------------------------------------------------------*/

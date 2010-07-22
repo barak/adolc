@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adutils.h
- Revision: $Id: adutils.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: adutils.h 116 2010-07-20 12:29:32Z awalther $
  Contents: Provides all C/C++ interfaces of ADOL-C.
            NOTICE: This file is kept for compatibility reasons only. 
                    The new header adolc.h is included.
@@ -17,7 +17,7 @@
 #if !defined(ADOLC_ADUTILS_H)
 #define ADOLC_ADUTILS_H 1
 
-#include <adolc.h>
+#include <adolc/adolc.h>
 
 #endif
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adolc_sparse.h
- Revision: $Id: adolc_sparse.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: adolc_sparse.h 116 2010-07-20 12:29:32Z awalther $
  Contents: Provides  C/C++ interfaces of ADOL-C sprase drivers.
  
  Copyright (c) Andrea Walther
@@ -12,5 +12,5 @@
  
 ----------------------------------------------------------------------------*/
 
-#include <sparse/sparsedrivers.h>
-#include <sparse/sparse_fo_rev.h>
+#include <adolc/sparse/sparsedrivers.h>
+#include <adolc/sparse/sparse_fo_rev.h>

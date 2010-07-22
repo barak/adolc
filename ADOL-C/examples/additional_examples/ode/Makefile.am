@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
 ##               Hristo Mitev, Sebastian Schlenkrich, Jean Utke, Olaf Vogel
@@ -16,7 +16,7 @@ AM_CXXFLAGS             = @ac_adolc_cxxflags@
 AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C/src
 
 if SPARSE
-LDADD                = -ladolc $(libdir)/libColPack.a
+LDADD                = -ladolc @COLPACK_LIBS@
 AM_LDFLAGS           = -L../../../src
 else
 LDADD                = -ladolc 
@@ -27,14 +27,12 @@ INCLUDES             = -I$(top_builddir) -I$(top_builddir)/examples/additional_e
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig
 
-EXTRA_DIST           = Makefile.win
-
 if ADDEXA
 noinst_PROGRAMS      = odexam od2exam od3exam
+endif
 
 odexam_SOURCES       = vfunc_robertson.cpp vgenodemain.cpp ../clock/myclock.cpp
 
 od2exam_SOURCES      = vfunc_eutroph.cpp vgenodemain.cpp ../clock/myclock.cpp
 
 od3exam_SOURCES      = vfunc_fic.cpp vgenodemain.cpp ../clock/myclock.cpp
-endif

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     externfcts_p.h
- Revision: $Id: externfcts_p.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: externfcts_p.h 116 2010-07-20 12:29:32Z awalther $
  Contents: private functions and data types for extern (differentiated)
            functions.
  
@@ -16,8 +16,8 @@
 #if !defined(ADOLC_EXTERNFCTS_P_H)
 #define ADOLC_EXTERNFCTS_P_H 1
 
-#include <common.h>
-#include <externfcts.h>
+#include <adolc/common.h>
+#include <adolc/externfcts.h>
 
 BEGIN_C_DECLS
 /****************************************************************************/

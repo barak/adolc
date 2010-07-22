@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     revolve.c
- Revision: $Id: revolve.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: revolve.c 116 2010-07-20 12:29:32Z awalther $
  Contents: optimal binomial checkpointing adapted for ADOL-C
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz
@@ -183,8 +183,8 @@
 *                                                                    *
 *--------------------------------------------------------------------*/
 
-#include <revolve.h>
-#include <taping_p.h>
+#include <adolc/revolve.h>
+#include "taping_p.h"
 
 #define MAXINT 2147483647
 

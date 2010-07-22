@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     oplate.h
- Revision: $Id: oplate.h 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: oplate.h 116 2010-07-20 12:29:32Z awalther $
  Contents: Numeric values for the various opcodes used by ADOL-C.
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -16,7 +16,7 @@
 #if !defined(ADOLC_OPLATE_P_H)
 #define ADOLC_OPLATE_P_H 1
 
-#include <common.h>
+#include <adolc/common.h>
 
 /****************************************************************************/
 /* opcodes */

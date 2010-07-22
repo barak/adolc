@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 42 2009-07-15 18:37:17Z awalther $
+## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -15,8 +15,9 @@ AM_CXXFLAGS             = @ac_adolc_cxxflags@
 AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C/src
 
 if SPARSE
-LDADD                   = -ladolc $(libdir)/libColPack.a
-AM_LDFLAGS              = -L../src
+LDADD                   = -ladolc 
+AM_LDFLAGS              = -L../src @COLPACK_LIBS@
+AM_CPPFLAGS             += @COLPACK_CFLAGS@
 else
 LDADD                   = -ladolc 
 AM_LDFLAGS              = -L../src
@@ -26,7 +27,10 @@ INCLUDES                = -I$(top_builddir)
 
 MAINTAINERCLEANFILES    = Makefile.in *~ *.orig ADOLC-*.tap
 
-EXTRA_DIST              = Makefile.win
+EXTRA_DIST              = adolc_examples.sln \
+                          detexam.vcxproj speelpenning.vcxproj odexam.vcxproj \
+                          tapeless_scalar.vcxproj tapeless_vector.vcxproj \
+                          Readme_VC++.txt
 
 if ADDEXA
 SUBDIRS                 = additional_examples
@@ -39,6 +43,7 @@ endif
 if DOCEXA
 noinst_PROGRAMS         = detexam speelpenning powexam odexam \
                           tapeless_scalar tapeless_vector
+endif
 
 detexam_SOURCES         = detexam.cpp
 
@@ -51,4 +56,3 @@ odexam_SOURCES          = odexam.cpp
 tapeless_scalar_SOURCES = tapeless_scalar.cpp
 
 tapeless_vector_SOURCES = tapeless_vector.cpp
-endif
