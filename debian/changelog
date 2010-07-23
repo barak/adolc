@@ -1,8 +1,9 @@
-adolc (2.1.7-2) unstable; urgency=low
+adolc (2.1.8-1) unstable; urgency=low
 
   * force lib dir to usr/lib not usr/lib64 even on 64-bit arch (debian/rules)
+  * New Upstream Version
 
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 22 Jul 2010 21:32:30 +0100
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 23 Jul 2010 10:10:48 +0100
 
 adolc (2.1.7-1) unstable; urgency=low
 
