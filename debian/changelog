@@ -1,6 +1,6 @@
 adolc (2.1.8-1) unstable; urgency=low
 
-  * force lib dir to usr/lib not usr/lib64 even on 64-bit arch (debian/rules)
+  * use usr/lib never usr/lib64, via debian/rules (closes: #590015)
   * New Upstream Version
 
  -- Barak A. Pearlmutter <bap@debian.org>  Fri, 23 Jul 2010 10:10:48 +0100
