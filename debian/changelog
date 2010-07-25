@@ -1,3 +1,9 @@
+adolc (2.1.8-2) UNRELEASED; urgency=low
+
+  * revert: upstream build mods allow rm autoconf/mkinstalldirs
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 25 Jul 2010 16:34:55 +0100
+
 adolc (2.1.8-1) unstable; urgency=low
 
   * use usr/lib never usr/lib64, via debian/rules (closes: #590015)
