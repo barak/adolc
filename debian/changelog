@@ -2,8 +2,9 @@ adolc (2.1.8-2) unstable; urgency=low
 
   * revert: upstream build mods allow rm autoconf/mkinstalldirs
   * add some quotes (configure.ac), autoreconf
+  * versioned debhelper build dependency for overrides in debian/control
 
- -- Barak A. Pearlmutter <bap@debian.org>  Mon, 26 Jul 2010 10:37:00 +0100
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 26 Jul 2010 10:44:52 +0100
 
 adolc (2.1.8-1) unstable; urgency=low
 
