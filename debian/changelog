@@ -1,8 +1,9 @@
-adolc (2.1.8-2) UNRELEASED; urgency=low
+adolc (2.1.8-2) unstable; urgency=low
 
   * revert: upstream build mods allow rm autoconf/mkinstalldirs
+  * add some quotes (configure.ac), autoreconf
 
- -- Barak A. Pearlmutter <bap@debian.org>  Sun, 25 Jul 2010 16:34:55 +0100
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 26 Jul 2010 10:37:00 +0100
 
 adolc (2.1.8-1) unstable; urgency=low
 
