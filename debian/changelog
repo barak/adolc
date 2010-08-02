@@ -1,3 +1,9 @@
+adolc (2.1.8-3) UNRELEASED; urgency=low
+
+  * bump standards version (debian/control)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 02 Aug 2010 14:40:27 +0200
+
 adolc (2.1.8-2) unstable; urgency=low
 
   * revert: upstream build mods allow rm autoconf/mkinstalldirs
