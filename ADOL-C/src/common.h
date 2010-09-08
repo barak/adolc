@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     common.h
- Revision: $Id: common.h 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: common.h 157 2010-09-02 12:14:24Z kulshres $
  Contents: Common (global) ADOL-C header  
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -97,8 +97,10 @@
 #  define END_C_DECLS
 #endif
 
-#define MAXDEC(a,b) if ((a) < (b)) (a) = (b)
-#define MINDEC(a,b) if ((a) > (b)) (a) = (b)
+#define MAXDEC(a,b) do { register revreal __r = (b); if ( __r > (a) ) (a) = __r; } while (0)
+#define MAXDECI(a,b) do { register int __r = (b); if ( __r > (a) ) (a) = __r; } while (0)
+#define MINDECR(a,b) do { register revreal __r = (b); if ( __r < (a) ) (a) = __r; } while (0)
+#define MINDEC(a,b) do { register int __r = (b); if ( __r < (a) ) (a) = __r; } while (0)
 
 #define MAX_ADOLC(a,b) ( (a)<(b)? (b):(a) )
 #define MIN_ADOLC(a,b) ( (a)>(b)? (b):(a) )
