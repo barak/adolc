@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse_hessian.cpp
- Revision: $Id: sparse_hessian.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: sparse_hessian.cpp 157 2010-09-02 12:14:24Z kulshres $
  Contents: example for computation of sparse hessians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -194,6 +194,17 @@ int main() {
 
     printmat("compressed H:",n,p,Hcomp);
     printf("\n");
+
+    for(i=0;i<n;i++)
+       free(HP[i]);
+    free(HP);
+
+    myfree2(H);
+    myfree2(Hcomp);
+
+    for (i = 0; i < n; i++)
+        delete[] Seed[i];
+    delete[] Seed;
 
 }
 

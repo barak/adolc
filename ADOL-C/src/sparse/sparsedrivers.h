@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.h
- Revision: $Id: sparsedrivers.h 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: sparsedrivers.h 157 2010-09-02 12:14:24Z kulshres $
  Contents: This file containts some "Easy To Use" interfaces of sparse package.
  
  Copyright (c) Andrea Walther
@@ -97,16 +97,6 @@ ADOLC_DLL_EXPORT int bit_vector_propagation
 (short, int, int, const double*, unsigned int**, int*);
 
 /****************************************************************************/
-/*          Cast the void pointers to their respective type and free memory */
-ADOLC_DLL_EXPORT void freeSparseJacInfos(double *y, double **Seed, double **B, unsigned int **JP,
-                                         void *g, void *jr1d, int seed_rows, int seed_clms, int depen);
-
-ADOLC_DLL_EXPORT void freeSparseHessInfos(double **Hcomp, double ***Xppp, double ***Yppp, double ***Zppp, 
-					  double **Upp, unsigned int **HP,
-					  void *g, void *hr, int p, int indep);
-
 END_C_DECLS
-
-/****************************************************************************/
 
 #endif
