@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
+## Revision: $Id: Makefile.am 162 2010-09-23 16:23:37Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -15,7 +15,7 @@ AM_CXXFLAGS          = @ac_adolc_cxxflags@
 AM_CPPFLAGS          = -I$(top_srcdir)/ADOL-C/src
 
 if SPARSE
-LDADD                = -ladolc @COLPACK_LIBS@
+LDADD                = -ladolc 
 AM_LDFLAGS           = -L../../../src
 else
 LDADD                = -ladolc 
