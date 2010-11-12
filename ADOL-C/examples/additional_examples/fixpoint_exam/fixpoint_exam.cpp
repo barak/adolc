@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fixpoint_exam.cpp
- Revision: $Id: fixpoint_exam.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: fixpoint_exam.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: example for differentiation of fixpoint iterations
 
  Copyright (c) Andrea Walther
@@ -12,7 +12,7 @@
  
 ---------------------------------------------------------------------------*/
 #include <math.h>
-#include <adolc.h>
+#include <adolc/adolc.h>
 
 #define imax 100
 #define imax_deriv 100

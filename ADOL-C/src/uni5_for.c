@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: uni5_for.c 180 2010-11-09 14:49:53Z kulshres $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_   
@@ -485,7 +485,7 @@ int  fos_forward_nk(
 #if defined(_KEEP_)
     int    keep,        /* flag for reverse sweep */
 #endif
-    double *basepoint,  /* independent variable values */
+    const double *basepoint,  /* independent variable values */
     double *argument,   /* Taylor coefficients (input) */
     double *valuepoint, /* Taylor coefficients (output) */
     double *taylors)    /* matrix of coefficient vectors */

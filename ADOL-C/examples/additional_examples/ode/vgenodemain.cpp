@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vgenodemain.cpp
- Revision: $Id: vgenodemain.cpp 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: vgenodemain.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: example for ODE Generic Main File: 
        for use with function modules containing vector examples 
        (e.g. vgen_eutroph.C)
@@ -28,8 +28,8 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
-#include <../examples/additional_examples/clock/myclock.h>
+#include <adolc/adolc.h>
+#include "../clock/myclock.h"
 
 #include <math.h>
 

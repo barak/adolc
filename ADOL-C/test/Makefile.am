@@ -10,16 +10,19 @@
 ## 
 ##############################################################################
 
-noinst_PROGRAMS         = powexam speelpenning
+noinst_PROGRAMS         = powexam speelpenning fminmax
 
 speelpenning_SOURCES    = speelpenning.cpp
 
 powexam_SOURCES         = powexam.cpp
 
-INCLUDES                = -I$(top_builddir)/ADOL-C/src
+fminmax_SOURCES		= fminmax.cpp
+
+INCLUDES                = -I$(top_builddir)/ADOL-C
 
 powexam_LDADD           = ../src/libadolc.la 
 speelpenning_LDADD = ../src/libadolc.la 
+fminmax_LDADD		= ../src/libadolc.la
 
 
 # Here list all include flags, relative to this "srcdir" directory.  This

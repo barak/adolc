@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     hessmat.cpp
- Revision: $Id: hessmat.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: hessmat.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: example for testing the routines: 
            hov_wk_forward    ( = Higher Order Vector forward With Keep )
            hos_ov_reverse    ( = Higher Order Scalar reverse over vectors)
@@ -16,7 +16,7 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
+#include <adolc/adolc.h>
 
 #include <stdlib.h>
 #include <iostream>

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tape_handling.cpp
- Revision: $Id: tape_handling.cpp 157 2010-09-02 12:14:24Z kulshres $
+ Revision: $Id: tape_handling.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: management of tape infos
 
  Copyright (c) Andreas Kowarz, Andrea Walther
@@ -609,6 +609,7 @@ void cleanUp() {
 #endif
 
     ADOLC_OPENMP_RESTORE_THREAD_NUMBER;
+    clearTapeBaseNames();
 }
 
 int removeTape(short tapeID, short type) {

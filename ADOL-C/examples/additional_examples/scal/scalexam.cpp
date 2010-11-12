@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     scalexam.cpp
- Revision: $Id: scalexam.cpp 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: scalexam.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents:
           This program can be used to verify the consistency and 
           correctness of derivatives computed by ADOL-C in its forward 
@@ -27,7 +27,7 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
+#include <adolc/adolc.h>
 
 #include <math.h>
 #include <iostream>

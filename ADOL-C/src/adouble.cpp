@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.cpp
- Revision: $Id: adouble.cpp 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: adouble.cpp 170 2010-10-04 11:44:10Z kulshres $
  Contents: adouble.C contains that definitions of procedures used to 
            define various badouble, adub, and adouble operations. 
            These operations actually have two purposes.
@@ -41,6 +41,7 @@ void condassign( double &res, const double &cond,
     res = cond > 0 ? arg : res;
 }
 
+#if !defined(_ISOC99_SOURCE) && !defined(__USE_ISOC99)
 /*--------------------------------------------------------------------------*/
 double fmax( const double &x, const double &y ) {
     if (y > x)
@@ -56,6 +57,7 @@ double fmin( const double &x, const double &y ) {
     else
         return x;
 }
+#endif
 
 /*--------------------------------------------------------------------------*/
 /* The remaining routines define the badouble, adub and adouble routines.   */

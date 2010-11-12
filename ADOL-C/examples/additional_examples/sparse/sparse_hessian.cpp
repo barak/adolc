@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse_hessian.cpp
- Revision: $Id: sparse_hessian.cpp 162 2010-09-23 16:23:37Z kulshres $
+ Revision: $Id: sparse_hessian.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: example for computation of sparse hessians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -17,8 +17,8 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <adolc.h>
-#include <adolc_sparse.h>
+#include <adolc/adolc.h>
+#include <adolc/adolc_sparse.h>
 
 #define tag 1
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vfunc_simplevec.cpp
- Revision: $Id: vfunc_simplevec.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: vfunc_simplevec.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: Example of function module containing a simple vector example
 
    Each << function module >> contains:
@@ -27,7 +27,7 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
+#include <adolc/adolc.h>
 
 #include <time.h>
 #include <cstdlib>
