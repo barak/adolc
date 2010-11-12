@@ -1,9 +1,9 @@
-# spec file for package adolc (Version 2.1.11)
+# spec file for package adolc (Version 2.1.12)
 
 # norootforbuild
 
-%define ver %(echo 2.1.11 | sed s,-,_, ) 
-%define packver 2.1.11
+%define ver %(echo 2.1.12 | sed s,-,_, ) 
+%define packver 2.1.12
 
 Name:           adolc
 Version:        %ver
