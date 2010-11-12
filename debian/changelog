@@ -1,3 +1,10 @@
+adolc (2.1.12-1) experimental; urgency=low
+
+  * New Upstream Version
+  * bump to debhelper 8
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 12 Nov 2010 17:05:21 +0000
+
 adolc (2.1.10-1) experimental; urgency=low
 
   * New Upstream Version
