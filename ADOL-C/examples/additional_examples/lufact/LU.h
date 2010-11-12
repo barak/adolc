@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     LU.h
- Revision: $Id: LU.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: LU.h 180 2010-11-09 14:49:53Z kulshres $
  Contents: example for 'active' LU-decomposition and according solver
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -17,7 +17,7 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>           // use of ALL ADOL-C interfaces
+#include <adolc/adolc.h>           // use of ALL ADOL-C interfaces
 
 
 /****************************************************************************/

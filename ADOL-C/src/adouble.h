@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: adouble.h 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: adouble.h 180 2010-11-09 14:49:53Z kulshres $
  Contents: adouble.h contains the basis for the class of adouble
            included here are all the possible functions defined on
            the adouble class.  Notice that, as opposed to ealier versions,
@@ -68,8 +68,10 @@ void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
 void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
                                   const double &arg );
 
+#if !defined(_ISOC99_SOURCE) && !defined(__USE_ISOC99)
 double ADOLC_DLL_EXPORT fmin( const double &x, const double &y );
 double ADOLC_DLL_EXPORT fmax( const double &x, const double &y );
+#endif
 
 
 /****************************************************************************/
@@ -466,6 +468,8 @@ inline adub operator / (const badouble& x, double coval) {
 /****************************************************************************/
 #else
 
+#include <limits>
+
 namespace adtl {
 
 #if defined(NUMBER_DIRECTIONS)
@@ -490,6 +494,7 @@ extern int ADOLC_numDir;
 #  define V_I                  v
 #endif
 
+#if !defined(_ISOC99_SOURCE) && !defined(__USE_ISOC99)
 inline double fmin( const double &x, const double &y ) {
     if (x<y) return x;
     else return y;
@@ -499,16 +504,14 @@ inline double fmax( const double &x, const double &y ) {
     if (x>y) return x;
     else return y;
 }
+#endif
 
 inline double makeNaN() {
-#if defined(non_num)
-    double a,b;
-    a=non_num;
-    b=non_den;
-    return a/b;
-#else
-#  error Error: non_num undefined!
-#endif
+    return ADOLC_MATH_NSP::numeric_limits<double>::quiet_NaN();
+}
+
+inline double makeInf() {
+    return ADOLC_MATH_NSP::numeric_limits<double>::infinity();
 }
 
 class adouble {
@@ -861,8 +864,11 @@ adouble log(const adouble &a) {
     adouble tmp;
     tmp.val=ADOLC_MATH_NSP::log(a.val);
     FOR_I_EQ_0_LT_NUMDIR
-      if ((a.val>0 || a.val==0) && a.ADVAL_I>=0) tmp.ADVAL_I=a.ADVAL_I/a.val;
-    else tmp.ADVAL_I=makeNaN();
+	if (a.val>0) tmp.ADVAL_I=a.ADVAL_I/a.val;
+	else if (a.val==0 && a.ADVAL_I != 0.0) {
+	    int sign = (a.ADVAL_I < 0)  ? -1 : 1;
+	    tmp.ADVAL_I=sign*makeInf();
+	} else tmp.ADVAL_I=makeNaN();
     return tmp;
 }
 
@@ -870,8 +876,11 @@ adouble sqrt(const adouble &a) {
     adouble tmp;
     tmp.val=ADOLC_MATH_NSP::sqrt(a.val);
     FOR_I_EQ_0_LT_NUMDIR
-      if ((a.val>0 || a.val==0) && a.ADVAL_I>=0) tmp.ADVAL_I=a.ADVAL_I/tmp.val/2;
-    else tmp.ADVAL_I=makeNaN();
+	if (a.val>0) tmp.ADVAL_I=a.ADVAL_I/(tmp.val*2);
+        else if (a.val==0.0 && a.ADVAL_I != 0.0) {
+	    int sign = (a.ADVAL_I < 0) ? -1 : 1;
+	    tmp.ADVAL_I=sign * makeInf();
+	} else tmp.ADVAL_I=makeNaN();
     return tmp;
 }
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     detexam.cpp
- Revision: $Id: detexam.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: detexam.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: computation of determinants, described in the manual
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -15,10 +15,10 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adouble.h>          // use of active doubles
-#include <interfaces.h>       // use of basic forward/reverse
+#include <adolc/adouble.h>          // use of active doubles
+#include <adolc/interfaces.h>       // use of basic forward/reverse
 // interfaces of ADOL-C
-#include <taping.h>           // use of taping
+#include <adolc/taping.h>           // use of taping
 
 #include <iostream>
 using namespace std;

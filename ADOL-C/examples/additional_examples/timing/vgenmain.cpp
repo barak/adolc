@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vgenmain.cpp
- Revision: $Id: vgenmain.cpp 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: vgenmain.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: Vector Generic Main File: 
        for use with function modules containing several vector
        function examples 
@@ -30,8 +30,8 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
-#include <../examples/additional_examples/clock/myclock.h>
+#include <adolc/adolc.h>
+#include "../clock/myclock.h"
 
 #include <cstdlib>
 #include <time.h>

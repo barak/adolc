@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     checkpointing.cpp
- Revision: $Id: checkpointing.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: checkpointing.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: example for checkpointing
 
  Copyright (c) Andrea Walther
@@ -12,7 +12,7 @@
  
 ---------------------------------------------------------------------------*/
 #include <math.h>
-#include <adolc.h>
+#include <adolc/adolc.h>
 
 #define h 0.01
 #define steps 100

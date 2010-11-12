@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     interfaces.h
- Revision: $Id: interfaces.h 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: interfaces.h 180 2010-11-09 14:49:53Z kulshres $
  Contents: Declaration of the standard interfaces to ADOL-C forward and
            reverse calls (C++, C and Fortran callable C functions).
  
@@ -199,7 +199,7 @@ ADOLC_DLL_EXPORT int zos_forward_partx(short,int,int,int*,double**,double*);
 /* fos_forward(tag, m, n, keep, x[n], X[n], y[m], Y[m])                     */
 /* (defined in uni5_for.mc)                                                 */
 ADOLC_DLL_EXPORT int fos_forward(
-    short,int,int,int,double*,double*,double*,double*);
+    short,int,int,int,const double*,double*,double*,double*);
 
 /* fos_forward_nk(tag,m,n,x[n],X[n],y[m],Y[m])                              */
 /* (no keep, defined in uni5_for.c, but not supported in ADOL-C 1.8)        */

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     LUsolve.cpp
- Revision: $Id: LUsolve.cpp 91 2010-02-24 07:56:58Z awalther $
+ Revision: $Id: LUsolve.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: example for
              * Computation of the determinant of a matrix
                by LU-decomposition of the system matrix without pivoting 
@@ -22,7 +22,7 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <../examples/additional_examples/lufact/LU.h>
+#include "LU.h"
 
 /****************************************************************************/
 /*                                                             MAIN PROGRAM */

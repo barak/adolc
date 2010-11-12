@@ -1,7 +1,7 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
 ## subdirectory tapedoc
-## Revision: $Id: Makefile.am 116 2010-07-20 12:29:32Z awalther $
+## Revision: $Id: Makefile.am 180 2010-11-09 14:49:53Z kulshres $
 ##
 ## Copyright (C)  Andrea Walther, Andreas Kowarz
 ##
@@ -14,11 +14,11 @@
 AM_CFLAGS                 = @ac_adolc_cflags@ -DADOLC_INTERNAL=1
 AM_CXXFLAGS               = @ac_adolc_cxxflags@ -DADOLC_INTERNAL=1
 AM_LDFLAGS                = -no-undefined
-AM_CPPFLAGS               = -I$(top_srcdir)/ADOL-C/src 
+AM_CPPFLAGS               = -I$(top_srcdir)/ADOL-C -I$(top_srcdir)/ADOL-C/src
 
 MAINTAINERCLEANFILES      = Makefile.in *~ *.orig
 
-INCLUDES                  = -I$(top_builddir)
+INCLUDES                  = -I$(top_builddir)/ADOL-C
 
 noinst_LTLIBRARIES        = libtapedoc.la
 

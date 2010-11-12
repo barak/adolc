@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     speelpenning.cpp
- Revision: $Id: speelpenning.cpp 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: speelpenning.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: speelpennings example, described in the manual
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -15,10 +15,10 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adouble.h>            // use of active doubles
-#include <drivers/drivers.h>    // use of "Easy to Use" drivers
+#include <adolc/adouble.h>            // use of active doubles
+#include <adolc/drivers/drivers.h>    // use of "Easy to Use" drivers
 // gradient(.) and hessian(.)
-#include <taping.h>             // use of taping
+#include <adolc/taping.h>             // use of taping
 
 #include <iostream>
 using namespace std;

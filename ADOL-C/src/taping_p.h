@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping_p.h
- Revision: $Id: taping_p.h 157 2010-09-02 12:14:24Z kulshres $
+ Revision: $Id: taping_p.h 180 2010-11-09 14:49:53Z kulshres $
  Contents: declarations for used by taping routines
  
  Copyright (c) Andreas Kowarz
@@ -611,6 +611,9 @@ double get_val_r();
 
 /* tries to read a local config file containing, e.g., buffer sizes */
 void readConfigFile();
+
+/* clear the tapeBaseNames that were alocated above in readConfigFile() */
+void clearTapeBaseNames();
 
 /****************************************************************************/
 /* This function sets the flag "newTape" if either a taylor buffer has been */

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tapeless_vector.cpp
- Revision: $Id: tapeless_vector.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: tapeless_vector.cpp 180 2010-11-09 14:49:53Z kulshres $
  Contents: computation of coordinate transform, 
            vector tapeless forward mode
            described in the manual
@@ -22,7 +22,7 @@ using namespace std;
 
 #define ADOLC_TAPELESS
 #define NUMBER_DIRECTIONS 3
-#include <adouble.h>
+#include <adolc/adouble.h>
 typedef adtl::adouble adouble;
 
 ADOLC_TAPELESS_UNIQUE_INTERNALS
