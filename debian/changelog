@@ -1,4 +1,4 @@
-adolc (2.1.12-2) UNRELEASED; urgency=low
+adolc (2.1.12-2) unstable; urgency=low
 
   * dh --parallel (debian/rules)
   * priority optional, per override (debian/control)
