@@ -4,7 +4,9 @@
 *~
 .deps/
 .libs/
+/.pc/
 /ADOL-C/Makefile
+/ADOL-C/adolc
 /ADOL-C/examples/Makefile
 /ADOL-C/examples/additional_examples/Makefile
 /ADOL-C/examples/additional_examples/checkpointing/Makefile
@@ -26,10 +28,16 @@
 /ADOL-C/examples/additional_examples/taylor/Makefile
 /ADOL-C/examples/additional_examples/timing/Makefile
 /ADOL-C/test/Makefile
+/ADOL-C/test/fminmax
 /ADOL-C/test/powexam
 /ADOL-C/test/speelpenning
 /Makefile
+/autoconf/*.dh-orig
+/autoconf/shave
+/autoconf/shave-libtool
 /autom4te.cache
 /config.log
 /config.status
+/doltcompile
+/doltlibtool
 /libtool
