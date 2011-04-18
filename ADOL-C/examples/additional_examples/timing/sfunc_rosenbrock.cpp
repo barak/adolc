@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sfunc_rosenbrock.cpp
- Revision: $Id: sfunc_rosenbrock.cpp 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: sfunc_rosenbrock.cpp 171 2010-10-04 13:57:19Z kulshres $
  Contents: function module containing  Rosenbrock's function
 
    Each << function module >> contains:

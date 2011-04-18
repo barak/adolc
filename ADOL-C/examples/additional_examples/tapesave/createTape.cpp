@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     createTape.cpp
- Revision: $Id: createTape.cpp 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: createTape.cpp 171 2010-10-04 13:57:19Z kulshres $
  Contents:
 
    How to create a tape with ADOL-C

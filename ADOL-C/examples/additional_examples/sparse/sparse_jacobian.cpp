@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse_jacobian.cpp
- Revision: $Id: sparse_jacobian.cpp 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: sparse_jacobian.cpp 203 2011-02-23 11:33:40Z kulshres $
  Contents: example for computation of sparse jacobians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -93,9 +93,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
-    delete[] rind;
-    delete[] cind;
-    delete[] values;
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /*--------------------------------------------------------------------------*/
 /*  same approach but using row compression                                 */
 /*--------------------------------------------------------------------------*/
@@ -110,9 +110,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
-    delete[] rind;
-    delete[] cind;
-    delete[] values;
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /*--------------------------------------------------------------------------*/
 /*  change value of x, but not the sparsity pattern                         */
 /*--------------------------------------------------------------------------*/
@@ -135,9 +135,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
-    delete[] rind;
-    delete[] cind;
-    delete[] values;
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /*--------------------------------------------------------------------------*/
 /*  same approach but using row compression                                 */
 /*--------------------------------------------------------------------------*/
@@ -152,9 +152,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
-    delete[] rind;
-    delete[] cind;
-    delete[] values;
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /****************************************************************************/
 /*******       sparse Jacobians, separate drivers             ***************/
 /****************************************************************************/

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     externfcts.h
- Revision: $Id: externfcts.h 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: externfcts.h 106 2010-06-29 17:19:50Z kulshres $
  Contents: public functions and data types for extern (differentiated)
            functions.
  

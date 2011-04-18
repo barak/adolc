@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.cpp
- Revision: $Id: sparsedrivers.cpp 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: sparsedrivers.cpp 204 2011-03-22 14:11:28Z awalther $
  Contents: "Easy To Use" C++ interfaces of SPARSE package
  
  Copyright (c) Andrea Walther
@@ -209,6 +209,18 @@ void generate_seed_hess
 }
 #endif
 
+static void deepcopy_HP(unsigned int ***HPnew, unsigned int **HP, int indep)
+{
+    int i,j,s;
+    *HPnew = (unsigned int **)malloc(indep*sizeof(unsigned int *));
+    for (i=0; i<indep; i++) {
+       s=HP[i][0];
+       (*HPnew)[i] = (unsigned int *)malloc((s+1)*(sizeof(unsigned int)));
+       for (j=0; j<=s; j++)
+           (*HPnew)[i][j] = HP[i][j];
+    }
+}
+
 /****************************************************************************/
 /*******       sparse Jacobians, complete driver              ***************/
 /****************************************************************************/
@@ -365,10 +377,27 @@ int sparse_jac(
 
     /* recover compressed Jacobian => ColPack library */
  
+    if (*values != NULL && *rind != NULL && *cind != NULL) {
+      // everything is preallocated, we assume correctly
+      // call usermem versions
+      if (options[3] == 1)
+       jr1d->RecoverD2Row_CoordinateFormat_usermem(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+     else
+       jr1d->RecoverD2Cln_CoordinateFormat_usermem(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+    } else {
+      // at least one of rind cind values is not allocated, deallocate others
+      // and call unmanaged versions
+      if (*values != NULL)
+	  free(*values);
+      if (*rind != NULL)
+	  free(*rind);
+      if (*cind != NULL)
+	  free(*cind);
       if (options[3] == 1)
        jr1d->RecoverD2Row_CoordinateFormat_unmanaged(g, sJinfos.B, sJinfos.JP, rind, cind, values);
      else
        jr1d->RecoverD2Cln_CoordinateFormat_unmanaged(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+    }
 
     return ret_val;
 
@@ -442,7 +471,11 @@ int sparse_hess(
 	  {
 	    tapeInfos=getTapeInfos(tag);
 	    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
-	    sHinfos.HP     = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP;
+            if (indep != ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.indep) {
+                fprintf(DIAG_OUT,"ADOL-C Error: wrong number of independents stored in hessian pattern.\n");
+                exit(-1);
+            }
+	    deepcopy_HP(&sHinfos.HP,ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP,indep);	    
 	  }
 
 	sHinfos.indep = indep;
@@ -470,8 +503,7 @@ int sparse_hess(
 	  g->GenerateSeedHessian(&Seed, &dummy, &sHinfos.p, 
 		  	         "SMALLEST_LAST","STAR"); 
 
-	
-	sHinfos.Hcomp = myalloc2(indep,sHinfos.p);
+       	sHinfos.Hcomp = myalloc2(indep,sHinfos.p);
         sHinfos.Xppp = myalloc3(indep,sHinfos.p,1);
 
 	for (i=0; i<indep; i++)
@@ -491,9 +523,12 @@ int sparse_hess(
 
 	sHinfos.g = (void *) g;
 	sHinfos.hr = (void *) hr;
+
 	setTapeInfoHessSparse(tag, sHinfos);
+
 	tapeInfos=getTapeInfos(tag);
 	memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+
     }
     else
       {
@@ -510,7 +545,6 @@ int sparse_hess(
 	g = (GraphColoringInterface *)ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.g;
 	hr = (HessianRecovery *)ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.hr;
       }
-
 
     if (sHinfos.Upp == NULL) {
         printf(" ADOL-C error in sparse_hess():"
@@ -570,11 +604,27 @@ int sparse_hess(
 //      else
 //        HessianRecovery::DirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
  
+    if (*values != NULL && *rind != NULL && *cind != NULL) {
+     // everything is preallocated, we assume correctly
+     // call usermem versions
+     if (options[1] == 0)
+       hr->IndirectRecover_CoordinateFormat_usermem(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+     else
+       hr->DirectRecover_CoordinateFormat_usermem(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+    } else {
+      // at least one of rind cind values is not allocated, deallocate others
+      // and call unmanaged versions
+      if (*values != NULL)
+	  free(*values);
+      if (*rind != NULL)
+	  free(*rind);
+      if (*cind != NULL)
+	  free(*cind);
      if (options[1] == 0)
        hr->IndirectRecover_CoordinateFormat_unmanaged(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
      else
        hr->DirectRecover_CoordinateFormat_unmanaged(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
- 
+    }
     return ret_val;
 
 }
@@ -601,14 +651,17 @@ void set_HP(
 
     tapeInfos=getTapeInfos(tag);
     memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
-    sHinfos.nnz_in = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.nnz_in;
-    sHinfos.HP     = HP;
-    sHinfos.Hcomp  = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.Hcomp;
-    sHinfos.Xppp   = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.Xppp;
-    sHinfos.Yppp   = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.Yppp;
-    sHinfos.Zppp   = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.Zppp;
-    sHinfos.Upp    = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.Upp;
-    sHinfos.p      = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.p;
+    sHinfos.nnz_in = 0;
+    deepcopy_HP(&sHinfos.HP,HP,indep);
+    sHinfos.Hcomp  = NULL;
+    sHinfos.Xppp   = NULL;
+    sHinfos.Yppp   = NULL;
+    sHinfos.Zppp   = NULL;
+    sHinfos.Upp    = NULL;
+    sHinfos.p      = 0;
+    sHinfos.g      = NULL;
+    sHinfos.hr     = NULL;
+    sHinfos.indep  = indep;
     setTapeInfoHessSparse(tag, sHinfos);
 }
 #else
@@ -629,7 +682,7 @@ void get_HP(
 
     tapeInfos=getTapeInfos(tag);
     memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
-    *HP = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP;
+    deepcopy_HP(HP,ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP,indep);
 }
 #else
 {
@@ -1027,18 +1080,20 @@ void freeSparseHessInfos(double **Hcomp, double ***Xppp, double ***Yppp, double 
 
    if(Zppp)
       myfree3(Zppp);
+
    if(Upp)
       myfree2(Upp);
-    for (int i=0;i<indep;i++) {
-      free(HP[i]);
-    }
 
-    free(HP);
+   if(HP)
+     {
+       for (int i=0;i<indep;i++) 
+   	 free(HP[i]);
+       free(HP);
+     }
 
 #ifdef HAVE_LIBCOLPACK
      if (g) 
        delete (GraphColoringInterface *) g;
-
     if (hr)
 	delete (HessianRecovery*) hr;
 #endif

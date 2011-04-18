@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     speelpenning.cpp
- Revision: $Id: speelpenning.cpp 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: speelpenning.cpp 171 2010-10-04 13:57:19Z kulshres $
  Contents: speelpennings example, described in the manual
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

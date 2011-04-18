@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     usrparms.h
- Revision: $Id: usrparms.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: usrparms.h 175 2010-10-11 11:57:42Z kulshres $
  Contents: User parameters:
            These parameters might affect the performance of the ADOL-C
            system; they are intended to be tweeked by users and local

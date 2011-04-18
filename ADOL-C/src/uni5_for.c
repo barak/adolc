@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: uni5_for.c 191 2011-01-14 08:07:26Z awalther $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_   
@@ -935,7 +935,7 @@ int  hov_forward(
 #endif
 #if defined(_KEEP_)
     if (keep) {
-        taylbuf = ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE];
+      taylbuf = ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE];
 
         taylor_begin(taylbuf,&dp_T0,keep-1);
     }
