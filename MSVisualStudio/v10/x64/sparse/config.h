@@ -11,19 +11,19 @@
 /* #undef ADOLC_HARDDEBUG */
 
 /* ADOL-C Patchlevel */
-#define ADOLC_PATCHLEVEL @ADOLC_PATCHLEVEL@
+#define ADOLC_PATCHLEVEL 0
 
 /* ADOL-C safe extern mode */
 /* #undef ADOLC_SAFE_EXTERN */
 
 /* ADOL-C Subversion */
-#define ADOLC_SUBVERSION @ADOLC_SUBVERSION@
+#define ADOLC_SUBVERSION 2
 
 /* ADOL-C thread save errno mode */
 /* #undef ADOLC_THREADSAVE_ERRNO */
 
 /* ADOL-C Version */
-#define ADOLC_VERSION @ADOLC_VERSION@
+#define ADOLC_VERSION 2
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -38,7 +38,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define 1 if ColPack is available */
-/* #undef HAVE_LIBCOLPACK */
+#define HAVE_LIBCOLPACK 1
 
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
@@ -107,22 +107,25 @@
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
-#define PACKAGE "@PACKAGE@"
+#define PACKAGE "adolc"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"
+#define PACKAGE_BUGREPORT "adol-c@list.coin-or.org"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "@PACKAGE_NAME@"
+#define PACKAGE_NAME "adolc"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "@PACKAGE_STRING@"
+#define PACKAGE_STRING "adolc 2.2.0"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "@PACKAGE_TARNAME@"
+#define PACKAGE_TARNAME "adolc"
+
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "@PACKAGE_VERSION@"
+#define PACKAGE_VERSION "2.2.0"
 
 /* The size of `void *', as computed by sizeof. */
 #define SIZEOF_VOID_P 8
@@ -137,7 +140,7 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "@VERSION@"
+#define VERSION "2.2.0"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */

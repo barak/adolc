@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: adouble.h 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: adouble.h 207 2011-04-08 10:47:18Z kulshres $
  Contents: adouble.h contains the basis for the class of adouble
            included here are all the possible functions defined on
            the adouble class.  Notice that, as opposed to ealier versions,
@@ -68,7 +68,7 @@ void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
 void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
                                   const double &arg );
 
-#if !defined(_ISOC99_SOURCE) && !defined(__USE_ISOC99)
+#if !defined(_ISOC99_SOURCE) && !defined(__USE_ISOC99) && !defined(__APPLE_CC__)
 double ADOLC_DLL_EXPORT fmin( const double &x, const double &y );
 double ADOLC_DLL_EXPORT fmax( const double &x, const double &y );
 #endif
@@ -255,6 +255,9 @@ public:
 
 class ADOLC_DLL_EXPORT adub:public badouble {
     friend ADOLC_DLL_EXPORT class adouble;
+#if GCC_VERSION >= 4003
+    adub( adub const &) {}
+#endif
 protected:
     adub( locint lo ):badouble(lo) {};
     adub( void ):badouble(0) {

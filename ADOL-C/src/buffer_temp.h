@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     struct_buf.h
- Revision: $Id: buffer_temp.h 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: buffer_temp.h 106 2010-06-29 17:19:50Z kulshres $
  Contents: - template class for linked list of Type buffers with constant length
              per buffer
            - intended to be used with structs

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     cubic-2.cpp
- Revision: $Id: cubic-2.cpp 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: cubic-2.cpp 171 2010-10-04 13:57:19Z kulshres $
  Contents: example for cubic lighthouse example of Griewank's Book
             using Cardan's formula with conditionals
 

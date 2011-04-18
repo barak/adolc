@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/drivers.h
- Revision: $Id: drivers.h 116 2010-07-20 12:29:32Z awalther $
+ Revision: $Id: drivers.h 106 2010-06-29 17:19:50Z kulshres $
  Contents: Easy to use drivers for optimization and nonlinear equations
            (with C and C++ callable interfaces including Fortran 
             callable versions).

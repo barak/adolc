@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tape_handling.cpp
- Revision: $Id: tape_handling.cpp 180 2010-11-09 14:49:53Z kulshres $
+ Revision: $Id: tape_handling.cpp 206 2011-03-29 15:43:41Z kulshres $
  Contents: management of tape infos
 
  Copyright (c) Andreas Kowarz, Andrea Walther
@@ -15,6 +15,8 @@
 #include "checkpointing_p.h"
 #include <adolc/revolve.h>
 
+#include <cassert>
+#include <limits>
 #include <iostream>
 #include <string.h>
 #ifdef HAVE_UNISTD_H
@@ -35,6 +37,159 @@ extern void freeSparseHessInfos(double **Hcomp, double ***Xppp, double ***Yppp, 
 				void *g, void *hr, int p, int indep);
 END_C_DECLS
 #endif
+
+GlobalTapeVarsCL::GlobalTapeVarsCL() {
+  store = 0;
+  storeSize = 0;
+  numLives = 0;
+  storeManagerPtr = new StoreManagerLocint(store, storeSize, numLives);
+}
+
+GlobalTapeVarsCL::~GlobalTapeVarsCL() {
+  if (storeManagerPtr) {
+    delete storeManagerPtr;
+    storeManagerPtr = 0;
+  }
+}
+
+StoreManagerLocint::StoreManagerLocint(double * &storePtr, size_t &size, size_t &numlives) : 
+    storePtr(storePtr),
+    indexFeld(0),
+    head(0),
+    groesse(size), anzahl(numlives)
+{
+#ifdef ADOLC_DEBUG
+    std::cerr << "StoreManagerInteger::StoreManagerInteger()\n";
+#endif
+}
+
+StoreManagerLocint::~StoreManagerLocint() 
+{
+#ifdef ADOLC_DEBUG
+    std::cerr << "StoreManagerInteger::~StoreManagerInteger()\n";
+#endif
+    if (storePtr) {
+	delete[] storePtr;
+	storePtr = 0;
+    }
+    if (indexFeld) {
+	delete[] indexFeld;
+	indexFeld = 0;
+    }
+    groesse = 0;
+    anzahl = 0;
+    head = 0;
+}
+
+locint StoreManagerLocint::next_loc() {
+    if (head == 0) {
+      grow();
+    }
+    assert(head);
+    locint const result = head;
+    head = indexFeld[head];
+    ++anzahl;
+#ifdef ADOLC_DEBUG
+    std::cerr << "next_loc: " << result << " fill: " << size() << "max: " << maxSize() << endl;
+#endif
+    return result;
+}
+
+void StoreManagerLocint::free_loc(locint loc) {
+    assert(0 < loc && loc < groesse);
+    indexFeld[loc] = head;
+    head = loc;
+    --anzahl;
+    storePtr[loc] = 0.0;
+#ifdef ADOLC_DEBUG
+    std::cerr << "free_loc: " << loc << " fill: " << size() << "max: " << maxSize() << endl;
+#endif
+}
+
+void StoreManagerLocint::grow() {
+    if (groesse == 0) groesse += initialeGroesse;
+    size_t const alteGroesse = groesse;
+    groesse *= 2;
+
+    if (groesse > std::numeric_limits<locint>::max()) {
+      // encapsulate this error message
+      fprintf(DIAG_OUT,"\nADOL-C error:\n");
+      fprintf(DIAG_OUT,"maximal number (%d) of live active variables exceeded\n\n", 
+	      std::numeric_limits<locint>::max());
+      exit(-3);
+    }
+
+#ifdef ADOLC_DEBUG
+    // index 0 is not used, means one slot less
+    std::cerr << "StoreManagerInteger::grow(): increase size from " << alteGroesse 
+	 << " to " << groesse << " entries (currently " << size() << " entries used)\n";
+    assert(alteGroesse == initialeGroesse or size() == (alteGroesse-1));
+#endif
+
+    double *const oldStore = storePtr;
+    locint *const oldIndex = indexFeld;
+
+#if defined(ADOLC_DEBUG)
+    std::cerr << "StoreManagerInteger::grow(): allocate " << groesse * sizeof(double) << " B doubles " 
+	 << "and " << groesse * sizeof(locint) << " B locints\n";
+#endif
+    storePtr = new double[groesse];
+    indexFeld = new locint[groesse];
+    memset(storePtr, 0, groesse*sizeof(double));
+    // we use index 0 as end-of-list marker
+    size_t i = 1;
+    storePtr[0] =  std::numeric_limits<double>::quiet_NaN();
+
+    if (alteGroesse != initialeGroesse) { // not the first time
+#if defined(ADOLC_DEBUG)
+      std::cerr << "StoreManagerInteger::grow(): copy values\n";
+#endif
+      for (size_t j = i; j < alteGroesse; ++j) {
+	indexFeld[j] = oldIndex[j];
+      }
+      for (size_t j = i; j < alteGroesse; ++j) {
+	storePtr[j] = oldStore[j];
+      }
+
+      // reset i to start of new slots (upper half)
+      i = alteGroesse;
+
+#if defined(ADOLC_DEBUG)
+      std::cerr << "StoreManagerInteger::grow(): free " << alteGroesse * sizeof(double)
+		<< " + " << alteGroesse * sizeof(locint) << " B\n";
+#endif
+      delete [] oldStore;
+      delete [] oldIndex;
+    }
+
+    head = i;
+    // create initial linked list for new slots
+    for ( ; i < groesse-1; ++i) {
+      indexFeld[i] = i + 1;
+    }
+    indexFeld[i] = 0; // end marker
+    assert(i == groesse-1);
+}
+
+
+/****************************************************************************/
+/* Returns the next free location in "adouble" memory.                      */
+/****************************************************************************/
+locint next_loc() {
+  ADOLC_OPENMP_THREAD_NUMBER;
+  ADOLC_OPENMP_GET_THREAD_NUMBER;
+  return ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->next_loc();
+}
+
+/****************************************************************************/
+/* frees the specified location in "adouble" memory                         */
+/****************************************************************************/
+void free_loc(locint loc) {
+  ADOLC_OPENMP_THREAD_NUMBER;
+  ADOLC_OPENMP_GET_THREAD_NUMBER;
+  ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->free_loc(loc);
+}
+
 /* vector of tape infos for all tapes in use */
 vector<TapeInfos *> ADOLC_TAPE_INFOS_BUFFER_DECL;
 
@@ -144,6 +299,49 @@ int initNewTape(short tapeID) {
                     rewind((*tiIter)->tay_file);
                 initTapeInfos_keep(*tiIter);
                 (*tiIter)->tapeID = tapeID;
+#ifdef SPARSE
+		freeSparseJacInfos(newTapeInfos->pTapeInfos.sJinfos.y,
+				   newTapeInfos->pTapeInfos.sJinfos.B,
+				   newTapeInfos->pTapeInfos.sJinfos.JP,
+				   newTapeInfos->pTapeInfos.sJinfos.g,
+				   newTapeInfos->pTapeInfos.sJinfos.jr1d,
+				   newTapeInfos->pTapeInfos.sJinfos.seed_rows,
+				   newTapeInfos->pTapeInfos.sJinfos.seed_clms,
+				   newTapeInfos->pTapeInfos.sJinfos.depen);
+		freeSparseHessInfos(newTapeInfos->pTapeInfos.sHinfos.Hcomp, 
+				    newTapeInfos->pTapeInfos.sHinfos.Xppp, 
+				    newTapeInfos->pTapeInfos.sHinfos.Yppp, 
+				    newTapeInfos->pTapeInfos.sHinfos.Zppp, 
+				    newTapeInfos->pTapeInfos.sHinfos.Upp, 
+				    newTapeInfos->pTapeInfos.sHinfos.HP,
+				    newTapeInfos->pTapeInfos.sHinfos.g, 
+				    newTapeInfos->pTapeInfos.sHinfos.hr, 
+				    newTapeInfos->pTapeInfos.sHinfos.p, 
+				    newTapeInfos->pTapeInfos.sHinfos.indep);	
+		newTapeInfos->pTapeInfos.inJacSparseUse=0;
+		newTapeInfos->pTapeInfos.inHessSparseUse=0;
+		newTapeInfos->pTapeInfos.sJinfos.B=NULL;
+		newTapeInfos->pTapeInfos.sJinfos.y=NULL;
+		newTapeInfos->pTapeInfos.sJinfos.g=NULL;
+		newTapeInfos->pTapeInfos.sJinfos.jr1d=NULL;
+		newTapeInfos->pTapeInfos.sJinfos.Seed=NULL;
+		newTapeInfos->pTapeInfos.sJinfos.JP=NULL;
+		newTapeInfos->pTapeInfos.sJinfos.depen=0;
+		newTapeInfos->pTapeInfos.sJinfos.nnz_in=0;
+		newTapeInfos->pTapeInfos.sJinfos.seed_rows=0;
+		newTapeInfos->pTapeInfos.sJinfos.seed_clms=0;
+		newTapeInfos->pTapeInfos.sHinfos.Zppp=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.Yppp=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.Xppp=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.Upp=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.Hcomp=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.HP=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.g=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.hr=NULL;
+		newTapeInfos->pTapeInfos.sHinfos.nnz_in=0;
+		newTapeInfos->pTapeInfos.sHinfos.indep=0;
+		newTapeInfos->pTapeInfos.sHinfos.p=0;
+#endif
                 break;
             }
         }
@@ -448,17 +646,11 @@ void init() {
     ADOLC_CURRENT_TAPE_INFOS.traceFlag = 0;
     ADOLC_CURRENT_TAPE_INFOS.keepTaylors = 0;
 
-    ADOLC_GLOBAL_TAPE_VARS.store=NULL;
     ADOLC_GLOBAL_TAPE_VARS.maxLoc=1;
     for (uint i=0; i<sizeof(locint)*8-1; ++i) {
         ADOLC_GLOBAL_TAPE_VARS.maxLoc<<=1;
         ++ADOLC_GLOBAL_TAPE_VARS.maxLoc;
     }
-    ADOLC_GLOBAL_TAPE_VARS.locMinUnused = 0;
-    ADOLC_GLOBAL_TAPE_VARS.numMaxAlive = 0;
-    ADOLC_GLOBAL_TAPE_VARS.storeSize = 0;
-    ADOLC_GLOBAL_TAPE_VARS.numToFree = 0;
-    ADOLC_GLOBAL_TAPE_VARS.minLocToFree = 0;
     ADOLC_GLOBAL_TAPE_VARS.inParallelRegion = 0;
     ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr = NULL;
     ADOLC_GLOBAL_TAPE_VARS.branchSwitchWarning = 1;
@@ -590,7 +782,7 @@ void cleanUp() {
     cp_clearStack();
 
     if (ADOLC_GLOBAL_TAPE_VARS.store != NULL) {
-        free(ADOLC_GLOBAL_TAPE_VARS.store);
+        delete[] ADOLC_GLOBAL_TAPE_VARS.store;
         ADOLC_GLOBAL_TAPE_VARS.store = NULL;
     }
 
