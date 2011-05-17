@@ -1,3 +1,9 @@
+adolc (2.2.0-3) unstable; urgency=low
+
+  * enable sparse drivers (addresses Ubuntu issue 694447)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 17 May 2011 19:17:04 +0100
+
 adolc (2.2.0-2) unstable; urgency=low
 
   * do not include .la files per new policy (closes: #621139)
