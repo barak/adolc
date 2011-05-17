@@ -10,7 +10,7 @@ build clean install binary-arch binary-indep binary:
 
 # This *should* change it, but does not.
 override_dh_auto_configure:
-	dh_auto_configure -- --libdir=\$${exec_prefix}/lib
+	dh_auto_configure -- --libdir=\$${exec_prefix}/lib --enable-sparse
 
 # This puts the right libdir= line in libadolc*.la
 override_dh_auto_build:
