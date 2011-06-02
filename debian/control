@@ -1,5 +1,5 @@
 Source: adolc
-Priority: optional
+Priority: extra
 Maintainer: Barak A. Pearlmutter <bap@debian.org>
 Build-Depends: debhelper (>= 8), autotools-dev (>= 20100122.1~)
 Standards-Version: 3.9.1
