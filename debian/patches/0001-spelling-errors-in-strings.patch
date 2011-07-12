@@ -1,0 +1,64 @@
+From: Barak A. Pearlmutter <bap@debian.org>
+Date: Tue, 12 Jul 2011 15:28:03 +0200
+Subject: [PATCH] spelling errors in strings
+
+---
+ ADOL-C/src/fo_rev.c          |    2 +-
+ ADOL-C/src/ho_rev.c          |    2 +-
+ ADOL-C/src/tapedoc/tapedoc.c |    2 +-
+ ADOL-C/src/taping.c          |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/ADOL-C/src/fo_rev.c b/ADOL-C/src/fo_rev.c
+index cf8eb5b..ef02a2c 100644
+--- a/ADOL-C/src/fo_rev.c
++++ b/ADOL-C/src/fo_rev.c
+@@ -457,7 +457,7 @@ int int_reverse_safe(
+ 
+     if (taycheck < 0) {
+         fprintf(DIAG_OUT,"\n ADOL-C error: reverse fails because it was not"
+-                " preceeded\nby a forward sweep with degree>0, keep=1!\n");
++                " preceded\nby a forward sweep with degree>0, keep=1!\n");
+         exit(-2);
+     };
+ 
+diff --git a/ADOL-C/src/ho_rev.c b/ADOL-C/src/ho_rev.c
+index 3d30ba5..126e8c5 100644
+--- a/ADOL-C/src/ho_rev.c
++++ b/ADOL-C/src/ho_rev.c
+@@ -552,7 +552,7 @@ int hov_ti_reverse(
+ 
+     if(taycheck != degre) {
+         fprintf(DIAG_OUT,"\n ADOL-C error: reverse fails because it was not"
+-                " preceeded\nby a forward sweep with degree>%i,"
++                " preceded\nby a forward sweep with degree>%i,"
+                 " keep=%i!\n",degre,degre+1);
+         exit(-2);
+     };
+diff --git a/ADOL-C/src/tapedoc/tapedoc.c b/ADOL-C/src/tapedoc/tapedoc.c
+index 41c1c00..c35d015 100644
+--- a/ADOL-C/src/tapedoc/tapedoc.c
++++ b/ADOL-C/src/tapedoc/tapedoc.c
+@@ -295,7 +295,7 @@ void tape_doc(short tnum,         /* tape id */
+             (indcheck != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]) ) {
+         fprintf(DIAG_OUT,"ADOL-C error: Tape_doc on tape %d  aborted!\n",tag);
+         fprintf(DIAG_OUT,"Number of dependent (%d) and/or independent (%d) "
+-                "variables passed to Tape_doc is\ninconsistant with "
++                "variables passed to Tape_doc is\ninconsistent with "
+                 "number recorded on tape %d (%d:%d)\n", depcheck,
+                 indcheck, tag, ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS],
+                 ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]);
+diff --git a/ADOL-C/src/taping.c b/ADOL-C/src/taping.c
+index ce601a2..932d846 100644
+--- a/ADOL-C/src/taping.c
++++ b/ADOL-C/src/taping.c
+@@ -212,7 +212,7 @@ void fail( int error ) {
+         case ADOLC_EXT_DIFF_WRONG_TAPESTATS:
+             fprintf(DIAG_OUT,
+                     "ADOL-C error: Number of independents/dependents recorded on"
+-                    " tape differ from number suplied by user!\n");
++                    " tape differ from number supplied by user!\n");
+             break;
+         case ADOLC_EXT_DIFF_NULLPOINTER_FUNCTION:
+             fprintf(DIAG_OUT,
+-- 
