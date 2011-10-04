@@ -1,6 +1,6 @@
-From: Barak A. Pearlmutter <bap@debian.org>
+From: "Barak A. Pearlmutter" <bap@debian.org>
 Date: Tue, 12 Jul 2011 15:28:03 +0200
-Subject: [PATCH] spelling errors in strings
+Subject: spelling errors in strings
 
 ---
  ADOL-C/src/fo_rev.c          |    2 +-
