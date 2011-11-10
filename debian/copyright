@@ -6,9 +6,22 @@ It was downloaded from:
 
     http://www.coin-or.org/projects/ADOL-C.xml
     http://www.coin-or.org/download/source/ADOL-C/
-    http://www.coin-or.org/download/source/ADOL-C/ADOL-C-2.1.0.tgz
+    http://www.coin-or.org/download/source/ADOL-C/ADOL-C-2.1.8.tgz
 
     SVN repository: https://projects.coin-or.org/svn/ADOL-C
+
+The files vcredist_x86.exe and vcredist_x64.exe were removed because they
+do not come with a license permitting redistribution:
+
+    tar -xf ADOL-C-2.1.8.tgz
+    cabextract -F ./././1033/eula.rtf ADOL-C-2.1.8/windows/vcredist_x86.exe
+    lowriter --headless --convert-to txt 1033/eula.rtf
+    sed -ne '/^2\./, /\.$/ p' eula.txt | fold -s -w72
+    rm ADOL-C-2.1.8/windows/vcredist_x86.exe
+    rm ADOL-C-2.1.8/windows/x64/vcredist_x64.exe
+    mv ADOL-C-2.1.8 ADOL-C-2.1.8+nomsvcrt
+    tar --owner=root --group=root -cf - ADOL-C-2.1.8+nomsvcrt |
+      gzip -n --rsyncable -9 >adolc_2.1.8+nomsvcrt.orig.tar.gz
 
 Upstream Authors:
 
