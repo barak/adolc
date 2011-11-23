@@ -1,9 +1,10 @@
-adolc (2.1.8+nomsvcrt-1) UNRELEASED; urgency=low
+adolc (2.1.8+nomsvcrt-1) stable; urgency=low
 
+  [ Jonathan Nieder ]
   * remove Visual C++ runtime from windows/ directory (closes: #641489)
   * document in debian/copyright how and why the source was repacked
 
- -- Jonathan Nieder <jrnieder@gmail.com>  Thu, 10 Nov 2011 02:06:51 -0600
+ -- Barak A. Pearlmutter <bap@debian.org>  Wed, 23 Nov 2011 14:02:29 +0000
 
 adolc (2.1.8-2) unstable; urgency=low
 
