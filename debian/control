@@ -1,7 +1,7 @@
 Source: adolc
 Priority: optional
 Maintainer: Barak A. Pearlmutter <bap@debian.org>
-Build-Depends: debhelper (>= 8), autotools-dev (>= 20100122.1~)
+Build-Depends: debhelper (>= 8), dh-autoreconf
 Standards-Version: 3.9.2
 Section: libs
 Homepage: http://www.coin-or.org/projects/ADOL-C.xml
