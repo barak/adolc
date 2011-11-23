@@ -1,3 +1,12 @@
+adolc (2.2.1-3) unstable; urgency=low
+
+  * silence lintian with trivial debian/rules tweak
+  * refresh quilt patches
+  * accept priority override
+  * dh --with autoreconf
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 28 Nov 2011 15:51:33 +0000
+
 adolc (2.2.1-2) unstable; urgency=low
 
   * correct upstream spelling errors
