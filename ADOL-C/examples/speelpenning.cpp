@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     speelpenning.cpp
- Revision: $Id: speelpenning.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: speelpenning.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents: speelpennings example, described in the manual
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -30,7 +30,7 @@ using namespace std;
 /*                                                             MAIN PROGRAM */
 int main() {
     int n,i,j;
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
 
     cout << "SPEELPENNINGS PRODUCT (ADOL-C Documented Example)\n\n";
     cout << "number of independent variables = ?  \n";

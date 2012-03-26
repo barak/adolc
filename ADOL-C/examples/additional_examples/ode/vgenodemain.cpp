@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vgenodemain.cpp
- Revision: $Id: vgenodemain.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: vgenodemain.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents: example for ODE Generic Main File: 
        for use with function modules containing vector examples 
        (e.g. vgen_eutroph.C)
@@ -154,7 +154,7 @@ int main() {
     tapingVectorFunction(tag,indeps,deps);
     t01 = myclock();
 
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
     tapestats(tag,tape_stats);
 
     fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);

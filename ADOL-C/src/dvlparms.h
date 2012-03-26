@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     dvlparms.h
- Revision: $Id: dvlparms.h 177 2010-10-12 11:11:11Z kulshres $
+ Revision: $Id: dvlparms.h 294 2012-02-29 07:53:03Z kulshres $
  Contents: Developer parameters:
            These parameters are intended for use by the developers and 
            maintainers of ADOL-C to specify library wide definitions.
@@ -40,7 +40,7 @@
 
 /*--------------------------------------------------------------------------*/
 /* TAPE IDENTIFICATION (ADOLC & version check) */
-#define statSpace   22
+#define statSpace   35
 #define adolcIDSize  5
 /* NOTE: adolcIDSize + statSize <= statSpace required! */
 

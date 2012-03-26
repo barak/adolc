@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/taylor.c
- Revision: $Id: taylor.c 191 2011-01-14 08:07:26Z awalther $
+ Revision: $Id: taylor.c 270 2011-08-24 09:51:54Z kulshres $
  Contents: Easy to use drivers for the evaluation of higher order derivative
            tensors and inverse/impicit function differentiation
  
@@ -396,7 +396,7 @@ void GauszSolve( double** J, int n, int* RI, int* CI, double* b ) {
 
 
 /****************************************************************************/
-int jac_solv( unsigned short tag, int n, double* x, double* b, unsigned short mode ) {
+int jac_solv( unsigned short tag, int n, const double* x, double* b, unsigned short mode ) {
     double *y;
     int i, newX = 0;
     int rc = 3;

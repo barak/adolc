@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 230 2011-06-08 12:12:19Z kulshres $
+ Revision: $Id: uni5_for.c 290 2012-01-16 11:45:01Z kulshres $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_
@@ -852,7 +852,7 @@ int  hov_forward(
 #   define _EXTERN_ 1
 #   define ADOLC_EXT_FCT_POINTER fov_forward
 #   define ADOLC_EXT_FCT_COMPLETE \
-    fov_forward(n, edfct->dp_x, edfct->dpp_X, m, edfct->dp_y, edfct->dpp_Y)
+    fov_forward(n, edfct->dp_x, p, edfct->dpp_X, m, edfct->dp_y, edfct->dpp_Y)
 #   define ADOLC_EXT_POINTER_X edfct->dpp_X
 #   define ADOLC_EXT_POINTER_Y edfct->dpp_Y
 #   define ADOLC_EXT_LOOP for (loop2 = 0; loop2 < p; ++loop2)
@@ -3730,10 +3730,10 @@ void copy_index_domain(int res, int arg, locint **ind_dom) {
 
    int i;
 
-   if (ind_dom[arg][0] > ind_dom[res][1]-2)
+   if (ind_dom[arg][0] > ind_dom[res][1])
      {
        free(ind_dom[res]);
-       ind_dom[res] = (locint *)  malloc(sizeof(locint) * 2*(ind_dom[arg][0])+1);
+       ind_dom[res] = (locint *)  malloc(sizeof(locint) * 2*(ind_dom[arg][0]+1));
        ind_dom[res][1] = 2*ind_dom[arg][0];
      }
 

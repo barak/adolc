@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/taylor.h
- Revision: $Id: taylor.h 106 2010-06-29 17:19:50Z kulshres $
+ Revision: $Id: taylor.h 270 2011-08-24 09:51:54Z kulshres $
  Contents: Easy to use drivers for the evaluation of higher order derivative
            tensors and inverse/impicit function differentiation
  
@@ -71,7 +71,7 @@ ADOLC_DLL_EXPORT long binomi(int a, int b);
 /*--------------------------------------------------------------------------*/
 /* jac_solv(tag,n,x,b,mode) */
 ADOLC_DLL_EXPORT int jac_solv
-(unsigned short tag, int n, double* x, double* b,
+(unsigned short tag, int n, const double* x, double* b,
  unsigned short mode);
 
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     scalexam.cpp
- Revision: $Id: scalexam.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: scalexam.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents:
           This program can be used to verify the consistency and 
           correctness of derivatives computed by ADOL-C in its forward 
@@ -139,7 +139,7 @@ int main() {
         fprintf(stdout,"Round-off error: %14.6E\n",(y-x).value());
 
     /*--------------------------------------------------------------------------*/
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
     tapestats(tag,tape_stats);
 
     fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);

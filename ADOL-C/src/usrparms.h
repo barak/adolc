@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     usrparms.h
- Revision: $Id: usrparms.h 175 2010-10-11 11:57:42Z kulshres $
+ Revision: $Id: usrparms.h 276 2011-10-21 13:31:12Z awalther $
  Contents: User parameters:
            These parameters might affect the performance of the ADOL-C
            system; they are intended to be tweeked by users and local
@@ -21,13 +21,13 @@
 
 /*--------------------------------------------------------------------------*/
 /* Buffer sizes */
-#define OBUFSIZE  65536 /* 16384 or  524288  */
-#define LBUFSIZE  65536 /* 16384 or  524288  */
-#define VBUFSIZE  65536 /* 16384 or  524288  */
+#define OBUFSIZE 524288 /* 16384 or  65536  */
+#define LBUFSIZE 524288 /* 16384 or  65536  */
+#define VBUFSIZE 524288 /* 16384 or  65536  */
 
 /*--------------------------------------------------------------------------*/
 /* Buffer size for temporary Taylor store */
-#define TBUFSIZE  65536 /* 16384 or  524288  */
+#define TBUFSIZE  524288 /* 16384 or  65536  */
 
 /*--------------------------------------------------------------------------*/
 /* Number of temporary Taylor stores*/

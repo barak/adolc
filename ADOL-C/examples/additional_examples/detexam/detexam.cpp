@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     detexam.cpp
- Revision: $Id: detexam.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: detexam.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents: modified computation of determinants
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -148,7 +148,7 @@ int main() {
     fprintf(stdout,"\n %f =? %f should be the same \n",detout,diag);
 
     /*--------------------------------------------------------------------------*/
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
     tapestats(tag,tape_stats);
 
     fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);

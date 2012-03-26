@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sgenmain.cpp
- Revision: $Id: sgenmain.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: sgenmain.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents: Scalar Generic Main File: 
        for use with function modules containing several scalar
        examples 
@@ -267,7 +267,7 @@ int main() {
     depTape = tapingScalarFunction(tag,indeps);
     t01 = myclock();
 
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
     tapestats(tag,tape_stats);
 
     fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);
