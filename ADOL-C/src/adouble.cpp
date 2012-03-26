@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.cpp
- Revision: $Id: adouble.cpp 198 2011-02-09 16:27:25Z kulshres $
+ Revision: $Id: adouble.cpp 275 2011-10-21 13:29:59Z awalther $
  Contents: adouble.C contains that definitions of procedures used to 
            define various badouble, adub, and adouble operations. 
            These operations actually have two purposes.
@@ -570,7 +570,10 @@ badouble& badouble::operator += ( const adub& a ) {
     ADOLC_OPENMP_GET_THREAD_NUMBER;
     int upd = 0;
     if (ADOLC_CURRENT_TAPE_INFOS.traceFlag)
+      {
         upd = upd_resloc_inc_prod(a_loc,location,eq_plus_prod);
+	++ADOLC_CURRENT_TAPE_INFOS.num_eq_prod; 
+      }
     if (upd) {
         ADOLC_GLOBAL_TAPE_VARS.store[location] += ADOLC_GLOBAL_TAPE_VARS.store[a_loc];
         if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
@@ -620,7 +623,10 @@ badouble& badouble::operator -= ( const adub& a ) {
     locint a_loc = a.loc();
     int upd = 0;
     if (ADOLC_CURRENT_TAPE_INFOS.traceFlag)
+      {
         upd = upd_resloc_inc_prod(a_loc,location,eq_min_prod);
+        ++ADOLC_CURRENT_TAPE_INFOS.num_eq_prod;
+      }
     if (upd) {
         ADOLC_GLOBAL_TAPE_VARS.store[location] -= ADOLC_GLOBAL_TAPE_VARS.store[a_loc];
         if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)

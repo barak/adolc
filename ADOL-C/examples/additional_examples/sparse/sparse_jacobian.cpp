@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse_jacobian.cpp
- Revision: $Id: sparse_jacobian.cpp 203 2011-02-23 11:33:40Z kulshres $
+ Revision: $Id: sparse_jacobian.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents: example for computation of sparse jacobians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -25,7 +25,7 @@
 void   ceval_ad(adouble *x, adouble *c);
 void   ceval(double *x, double *c);
 
-void printmat(char* name, int n, int m, double** M);
+void printmat(const char* name, int n, int m, double** M);
 
 int main() {
     int n=6, m=3;
@@ -264,7 +264,7 @@ void ceval_ad(adouble *x, adouble *c) {
 
 /***************************************************************************/
 
-void printmat(char* name, int m, int n, double** M) {
+void printmat(const char* name, int m, int n, double** M) {
     int i,j;
 
     printf("%s \n",name);

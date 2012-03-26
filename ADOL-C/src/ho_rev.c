@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ho_rev.c
- Revision: $Id: ho_rev.c 106 2010-06-29 17:19:50Z kulshres $
+ Revision: $Id: ho_rev.c 249 2011-06-13 18:57:34Z awalther $
  Contents: Contains the routines :
            hos_reverse (higher-order-scalar reverse mode): 
               define _HOS_
@@ -552,7 +552,7 @@ int hov_ti_reverse(
 
     if(taycheck != degre) {
         fprintf(DIAG_OUT,"\n ADOL-C error: reverse fails because it was not"
-                " preceeded\nby a forward sweep with degree>%i,"
+                " preceded\nby a forward sweep with degree>%i,"
                 " keep=%i!\n",degre,degre+1);
         exit(-2);
     };

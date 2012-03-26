@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     cubic.cpp
- Revision: $Id: cubic.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: cubic.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents: example for cubic lighthouse example of Griewank's Book
            using Cardan's formula with two tapes
   
@@ -108,7 +108,7 @@ int main() {
     trace_off();
 
     /*--------------------------------------------------------------------------*/
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
 
     tapestats(tag1,tape_stats);
 

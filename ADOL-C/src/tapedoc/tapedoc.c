@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tapedoc/tapedoc.c
- Revision: $Id: tapedoc.c 106 2010-06-29 17:19:50Z kulshres $
+ Revision: $Id: tapedoc.c 249 2011-06-13 18:57:34Z awalther $
  Contents: Routine tape_doc(..) writes the taped operations in LaTeX-code 
            to the file tape_doc.tex
  
@@ -295,7 +295,7 @@ void tape_doc(short tnum,         /* tape id */
             (indcheck != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]) ) {
         fprintf(DIAG_OUT,"ADOL-C error: Tape_doc on tape %d  aborted!\n",tag);
         fprintf(DIAG_OUT,"Number of dependent (%d) and/or independent (%d) "
-                "variables passed to Tape_doc is\ninconsistant with "
+                "variables passed to Tape_doc is\ninconsistent with "
                 "number recorded on tape %d (%d:%d)\n", depcheck,
                 indcheck, tag, ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS],
                 ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]);

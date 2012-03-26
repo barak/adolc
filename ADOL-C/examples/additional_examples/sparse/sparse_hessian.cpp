@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse_hessian.cpp
- Revision: $Id: sparse_hessian.cpp 203 2011-02-23 11:33:40Z kulshres $
+ Revision: $Id: sparse_hessian.cpp 299 2012-03-21 16:08:40Z kulshres $
  Contents: example for computation of sparse hessians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -25,7 +25,7 @@
 double  feval(double *x);
 adouble feval_ad(adouble *x);
 
-void printmat(char* kette, int n, int m, double** M);
+void printmat(const char* kette, int n, int m, double** M);
 
 int main() {
     int n=6;
@@ -252,7 +252,7 @@ adouble feval_ad(adouble *x) {
 
 /***************************************************************************/
 
-void printmat(char* name, int m, int n, double** M) {
+void printmat(const char* name, int m, int n, double** M) {
     int i,j;
 
     printf("%s \n",name);
