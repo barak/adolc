@@ -1,0 +1,49 @@
+From: "Barak A. Pearlmutter" <barak+git@cs.nuim.ie>
+Date: Mon, 26 Mar 2012 11:20:32 +0100
+Subject: libdir okay
+
+Remove the code that fiddles with ${libdir} from configure.ac, thus
+allowing the autotools system in general, and the multiarch code in
+particular, to do the right thing, as is its want.
+---
+ configure.ac |   15 ++++++---------
+ 1 files changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 84417bf..a76094c 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -50,9 +50,6 @@ if test "x$ac_cv_sizeof_void_p" = "x8" ; then
+ else
+    _lib=lib
+ fi
+-libdir='${prefix}/${_lib}'
+-AC_SUBST(_lib)
+-AC_SUBST(libdir)
+ 
+ # checks for header files
+ AC_HEADER_STDC
+@@ -475,17 +472,17 @@ echo \
+      compiling:
+         * add \"-I${prefix}/include\" to your compiler call
+      linking:
+-        * add \"-L${prefix}/${_lib} -ladolc\" to your linker call
+-        * extend your linker call by \"-Wl,--rpath -Wl,${prefix}/${_lib}\"
++        * add \"-L${libdir} -ladolc\" to your linker call
++        * extend your linker call by \"-Wl,--rpath -Wl,${libdir}\"
+           (if you wish to skip the point \"executing\")
+      executing (do one of the following things):
+-        * add ${prefix}/${_lib} to your LD_LIBRARY_PATH variable
+-        * ask your system administrator for adding ${prefix}/${_lib} to
++        * add ${libdir} to your LD_LIBRARY_PATH variable
++        * ask your system administrator to add ${libdir} to
+           the global file containing library search paths (/etc/ld.so.conf)
+ 
+      (or use the static library by replacing
+-        \"-L${prefix}/${_lib} -ladolc\" with
+-        \"${prefix}/${_lib}/libadolc.a\" when linking)
++        \"-L${libdir} -ladolc\" with
++        \"${libdir}/libadolc.a\" when linking)
+ 
+   See README for instructions on how to change to a nonlocal installation!
+ 
