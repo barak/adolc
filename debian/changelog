@@ -1,11 +1,17 @@
-adolc (2.2.1-3) unstable; urgency=low
+adolc (2.3.0-1) unstable; urgency=low
 
   * silence lintian with trivial debian/rules tweak
   * refresh quilt patches
   * accept priority override
   * dh --with autoreconf
+  * bump to dh9
+  * bump debian standards version (no changes)
+  * new upstream version
+  * remove spelling fix quilt patch, fixed upstream
+  * replace libdir fiddling in debian/rules with quilt patch to configure.ac
+  * update lib paths in debian/*.install for multiarch
 
- -- Barak A. Pearlmutter <bap@debian.org>  Mon, 28 Nov 2011 15:51:33 +0000
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 26 Mar 2012 11:36:06 +0100
 
 adolc (2.2.1-2) unstable; urgency=low
 
