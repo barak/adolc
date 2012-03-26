@@ -1,4 +1,7 @@
-usr/lib/lib*.a
-# usr/lib/lib*.la
-usr/lib/lib*.so
+#! /bin/sh
+cat <<EOF
+usr/lib/${DEB_HOST_MULTIARCH}/lib*.a
+usr/lib/${DEB_HOST_MULTIARCH}/lib*.so
 usr/include/adolc
+EOF
+# usr/lib/${DEB_HOST_MULTIARCH}/lib*.la

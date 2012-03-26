@@ -23,6 +23,7 @@ Description: ADOLC development libs and headers
 
 Package: libadolc2
 Architecture: any
+Pre-Depends: multiarch-support
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: ADOLC automatic differentiation system, runtime libs
  The ADOLC system automatically calculates exact derivatives of a
