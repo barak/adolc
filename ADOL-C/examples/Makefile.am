@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 171 2010-10-04 13:57:19Z kulshres $
+## Revision: $Id: Makefile.am 354 2012-10-01 11:32:26Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -12,9 +12,7 @@
 
 AM_CFLAGS               = @ac_adolc_cflags@
 AM_CXXFLAGS             = @ac_adolc_cxxflags@
-AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C
-
-INCLUDES		= -I$(top_builddir)/ADOL-C
+AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C/include
 
 LDADD                   = -ladolc 
 AM_LDFLAGS              = -L$(top_builddir)/ADOL-C/src
@@ -35,7 +33,7 @@ SUBDIRS                 = additional_examples
 endif
 
 if DOCEXA
-noinst_PROGRAMS         = detexam speelpenning powexam odexam \
+noinst_PROGRAMS         = detexam speelpenning powexam odexam luexam \
                           tapeless_scalar tapeless_vector
 endif
 
@@ -46,6 +44,8 @@ speelpenning_SOURCES    = speelpenning.cpp
 powexam_SOURCES         = powexam.cpp
 
 odexam_SOURCES          = odexam.cpp 
+
+luexam_SOURCES          = luexam.cpp
 
 tapeless_scalar_SOURCES = tapeless_scalar.cpp
 

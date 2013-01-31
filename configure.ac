@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac 310 2012-03-21 17:59:40Z kulshres $
+# Revision: $Id: configure.ac 399 2013-01-29 10:36:48Z kulshres $
 #
 # Copyright (C) Andrea Walther, Andreas Kowarz
 #               
@@ -8,15 +8,16 @@
 #
 ##############################################################################
 define([ADOLC_VER], [2])
-define([ADOLC_SUB], [3])
+define([ADOLC_SUB], [4])
 define([ADOLC_LVL], [0])
 
 AC_PREREQ(2.67)
 AC_INIT(adolc,
         ADOLC_VER.ADOLC_SUB.ADOLC_LVL,
         [adol-c@list.coin-or.org])
-AC_REVISION($Revision: 310 $)
-AC_CONFIG_SRCDIR([ADOL-C/src/adolc.h])
+config_flags="$*"
+AC_REVISION($Revision: 399 $)
+AC_CONFIG_SRCDIR([ADOL-C/src/adouble.cpp])
 AC_CONFIG_AUX_DIR(autoconf)
 AC_CONFIG_HEADERS([ADOL-C/src/config.h])
 AC_PREFIX_DEFAULT(${HOME}/adolc_base)
@@ -33,6 +34,15 @@ if test "x$CXXFLAGS" == x ; then
 else
     ac_shell_cxxflags="$CXXFLAGS"
 fi
+libdir_set_on_cmd="no"
+for i in $config_flags ; do
+    case $i in
+    -libdir | --libdir | --libdi | --libd | -libdir=* | --libdir=* | --libdi=* | --libd=*)
+            libdir_set_on_cmd="yes"
+            break
+            ;;
+    esac
+done
 
 # checks for programs
 AC_PROG_CXX
@@ -50,9 +60,11 @@ if test "x$ac_cv_sizeof_void_p" = "x8" ; then
 else
    _lib=lib
 fi
-libdir='${prefix}/${_lib}'
-AC_SUBST(_lib)
-AC_SUBST(libdir)
+if test "x$libdir_set_on_cmd" = "xno" ; then
+   libdir='${exec_prefix}/${_lib}'
+   AC_SUBST(_lib)
+   AC_SUBST(libdir)
+fi
 
 # checks for header files
 AC_HEADER_STDC
@@ -69,13 +81,13 @@ AC_STRUCT_TM
 # Checks for library functions
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([floor ftime pow sqrt strchr strtol])
+
+# Checks for libraries and fuctions
+AC_SEARCH_LIBS([pow], [m])
+AC_CHECK_FUNCS([floor fmax fmin ftime pow sqrt strchr strtol trunc])
 
 # substitutions
 AC_SUBST(ac_aux_dir)
-
-# Checks for libraries
-AC_CHECK_LIB([m], [pow])
 
 # ADOL-C configuration
 AC_DEFINE(ADOLC_VERSION,ADOLC_VER,[ADOL-C Version])
@@ -88,69 +100,161 @@ AC_SUBST(ADOLC_VERSION)
 AC_SUBST(ADOLC_SUBVERSION)
 AC_SUBST(ADOLC_PATCHLEVEL)
 
+AC_MSG_CHECKING(whether to use calloc or malloc for memory allocation)
+AC_ARG_ENABLE(use-calloc,[AS_HELP_STRING([--disable-use-calloc],
+  [disable use of calloc and use malloc instead for memory allocation [default=calloc is used]])],
+  [use_calloc=$enableval],[use_calloc=yes])
+
+if test x$use_calloc = xyes ; then
+AC_MSG_RESULT(calloc)
+AC_DEFINE(ADOLC_USE_CALLOC,1,[Use calloc instead of malloc for memory allocation])
+else
+AC_MSG_RESULT(malloc)
+fi
+
+AC_MSG_CHECKING(whether to enable atrig/erf functions)
+AC_ARG_ENABLE(atrig-erf,[AS_HELP_STRING([--enable-atrig-erf],
+  [enable atrig and erf functions in ADOL-C [default=no]])],
+  [use_atrig_erf=$enableval],[use_atrig_erf=no])
+AC_MSG_RESULT($use_atrig_erf)
+
+if test x$use_atrig_erf = xyes ; then
+  ATRIG_ERF_FALSE="// "
+  ATRIG_ERF_TRUE=""
+else
+  ATRIG_ERF_FALSE=""
+  ATRIG_ERF_TRUE="// "
+fi
+AC_SUBST(ATRIG_ERF_FALSE)
+AC_SUBST(ATRIG_ERF_TRUE)
+
+AC_MSG_CHECKING(whether to use 32-bit or 64-bit locations)
+AC_ARG_ENABLE(ulong,[AS_HELP_STRING([--enable-ulong],
+  [enable 64-bit locations (only available on 64-bit systems) [default=32-bit]])],
+  [use_ulong=$enableval],[use_ulong=no])
+
+if test x$use_ulong = xyes -a 0$ac_cv_sizeof_void_p -ge 8 ; then
+  UINT_TYPE=uint64_t
+  AC_MSG_RESULT(64-bit)
+else
+  UINT_TYPE=uint32_t
+  AC_MSG_RESULT(32-bit)
+fi
+AC_SUBST(UINT_TYPE)
+
+AC_MSG_CHECKING(whether to use single or double precision)
+AC_ARG_ENABLE(double,[AS_HELP_STRING([--disable-double],
+  [disable double precision arithmetic [untested, default=double is enabled]])],
+  [use_double=$enableval],[use_double=yes])
+
+if test x$use_double = xno ; then
+  REAL_TYPE=float
+  echo
+  echo -n "using ${REAL_TYPE} is not well tested, please report bugs if you find any..."
+else
+  REAL_TYPE=double
+fi
+AC_MSG_RESULT($REAL_TYPE)
+AC_SUBST(REAL_TYPE)
+
+AC_MSG_CHECKING(whether to enable advanced branching operations)
+AC_ARG_ENABLE(advanced-branching, [AS_HELP_STRING([--enable-advanced-branching],
+  [enable advanced branching operations to reduce retaping [default=no].
+The boolean valued comparison operators with two adouble arguments will 
+not return boolean results but the active results may be used to automatically 
+switch branches in conjunction with condassign or advector (see manual).])],
+  [use_advbranch=$enableval],[use_advbranch=no])
+AC_MSG_RESULT($use_advbranch)
+
+if test x$use_advbranch = xyes ; then
+  ADVBRANCH_TRUE=""
+  ADVBRANCH_FALSE="// "
+else
+  ADVBRANCH_TRUE="// "
+  ADVBRANCH_FALSE=""
+fi
+AC_SUBST(ADVBRANCH_TRUE)
+AC_SUBST(ADVBRANCH_FALSE)
+
 AC_MSG_CHECKING(whether to use ADOL-C debug mode)
 AC_ARG_ENABLE(debug,
               [
 AS_HELP_STRING([--enable-debug],[enable ADOL-C debug mode [default=no]])],
-  [AC_DEFINE(ADOLC_DEBUG,1,[ADOL-C debug mode])
-   AC_MSG_RESULT(yes)
-   adolc_debug="yes"],
-  [AC_MSG_RESULT(no)
-   adolc_debug="no"])
+  [
+  adolc_debug=$enableval
+   AC_MSG_RESULT($adolc_debug)
+   ],
+  [
+   adolc_debug=no
+   AC_MSG_RESULT(no)
+   ])
 
 AC_MSG_CHECKING(whether to use ADOL-C hard debug mode)
 AC_ARG_ENABLE(harddebug,
               [
 AS_HELP_STRING([--enable-harddebug],[enable ADOL-C hard debug mode
  [default=no]])],
-  [AC_DEFINE(ADOLC_HARDDEBUG,1,[ADOL-C hard debug mode])
-   AC_DEFINE(ADOLC_DEBUG,1,[ADOL-C debug mode])
-   AC_MSG_RESULT(yes)
-   adolc_harddebug="yes"],
-  [AC_MSG_RESULT(no)
-   adolc_harddebug="no"])
+  [
+   adolc_harddebug=$enableval
+   AC_MSG_RESULT($adolc_harddebug)
+   ],
+  [
+   adolc_harddebug=no
+   AC_MSG_RESULT(no)
+   ])
 
-AC_MSG_CHECKING(whether standard adouble constructor shall zero value)
+if test x$adolc_harddebug == xyes ; then
+adolc_debug=yes
+AC_DEFINE(ADOLC_HARDDEBUG,1,[ADOL-C hard debug mode])
+fi
+
+if test x$adolc_debug == xyes ; then
+AC_DEFINE(ADOLC_DEBUG,1,[ADOL-C debug mode])
+fi
+
+AC_MSG_CHECKING(whether the default adouble constructor should initialize the value to 0)
 AC_ARG_ENABLE(stdczero,
               [
-AS_HELP_STRING([--enable-stdczero],[adouble standard constructor zeros value 
-(at the cost of performance) [default=no]])],
-  [AC_DEFINE(ADOLC_ADOUBLE_STDCZERO,1,[ADOL-C adouble zeroing mode])
-   AC_MSG_RESULT(yes)
-   adolc_stdczero="yes"],
-  [AC_MSG_RESULT(no)
-   adolc_stdczero="no"])
+AS_HELP_STRING([--disable-stdczero],[adouble default constructor does not initialze the value to zero
+(improves performance but yields incorrect results for implicit array initializations, see manual) [default=enabled]])],
+  [
+  adolc_stdczero=no
+  AC_MSG_RESULT(no)
+  ],
+  [
+  adolc_stdczero=yes
+  AC_MSG_RESULT(yes)
+  ])
+
+if test x$adolc_stdczero == xyes; then
+AC_DEFINE(ADOLC_ADOUBLE_STDCZERO,1,[ADOL-C adouble zeroing mode])
+fi
 
 AC_MSG_CHECKING(whether errno is thread save)
 AC_ARG_ENABLE(tserrno,
               [
 AS_HELP_STRING([--enable-tserrno],[use errno as thread number cache [default=no]])],
-  [AC_DEFINE(ADOLC_THREADSAVE_ERRNO,1,[ADOL-C thread save errno mode])
-   AC_MSG_RESULT(yes)
-   adolc_tserrno="yes"],
-  [AC_MSG_RESULT(no)
-   adolc_tserrno="no"])
+  [
+  adolc_tserrno=$enableval
+  AC_MSG_RESULT($adolc_tserrno)
+   ],
+  [
+  adolc_tserrno=no
+  AC_MSG_RESULT(no)
+  ])
 
-AC_MSG_CHECKING(whether external function call forces backup of all adoubles)
-AC_ARG_ENABLE(safe_extern,
-              [
-AS_HELP_STRING([--enable-safe-extern],[backup all adoubles before calling an external function [default=no]])],
-  [AC_DEFINE(ADOLC_SAFE_EXTERN,1,[ADOL-C safe extern mode])
-   AC_MSG_RESULT(yes)
-   adolc_safe_extern="yes"],
-  [AC_MSG_RESULT(no)
-   adolc_safe_extern="no"])
+if test x$adolc_tserrno == xyes ; then
+AC_DEFINE(ADOLC_THREADSAVE_ERRNO,1,[ADOL-C thread save errno mode])
+fi
 
 AC_MSG_CHECKING(which flag to use to enable OpenMP)
 AC_ARG_WITH(openmp-flag,
             [AS_HELP_STRING([--with-openmp-flag=FLAG],
                             [use FLAG to enable OpenMP at compile time [default=none]])],
             [ac_adolc_openmpflag=$withval
-             msg_result=$withval
              AC_MSG_RESULT($ac_adolc_openmpflag)],
             [ac_adolc_openmpflag=""
-             msg_result="none"
-             AC_MSG_RESULT($ac_adolc_openmpflag)])
+             AC_MSG_RESULT(none)])
 
 
 # ADOL-C Sparse facility
@@ -159,16 +263,14 @@ AC_ARG_ENABLE(sparse,
             [
 AS_HELP_STRING([--enable-sparse],[build sparse drivers [default=disabled]])],
             [sparse=$enableval
-             AC_MSG_RESULT(yes)],
+             AC_MSG_RESULT($sparse)],
             [sparse="no"
              AC_MSG_RESULT(no)])
 
-test "x${ac_pwd}" = x && ac_pwd=`pwd`
-abs_srcdir=`readlink -f ${ac_pwd}/${srcdir}`
 AC_ARG_WITH(colpack,
 	[
-AS_HELP_STRING([--with-colpack=DIR],[path to the colpack library and headers [default=${srcdir}/ThirdParty/ColPack]])],
-		[
+AS_HELP_STRING([--with-colpack=DIR],[path to the colpack library and headers [default=system libraries]])],
+[
 colpack=$withval
 COLPACK_CFLAGS="$ac_adolc_openmpflag -I$colpack/include"
 COLPACK_LIBDIR="$colpack/${_lib}"
@@ -185,15 +287,14 @@ save_CPPFLAGS="$CPPFLAGS"
 save_LIBS="$LIBS"
 CPPFLAGS="$CPPFLAGS $COLPACK_CFLAGS"
 LIBS="$COLPACK_LIBS $LIBS"
-AC_MSG_CHECKING(for ColPack in $COLPACK_LIBDIR)
 AC_CHECK_HEADER([ColPack/ColPackHeaders.h],[have_colpackheaders=yes],[have_colpackheaders=no])
 if test x$have_colpackheaders = xyes ; then
+   AC_MSG_CHECKING(for libColPack in $COLPACK_LIBDIR)
    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <ColPack/ColPackHeaders.h>],
 			[ColPack::GraphColoring g])],
-                       [have_colpack=yes
-                        AC_MSG_RESULT(linking with -lColPack succeeded)],
-                       [have_colpack=no,
-                        AC_MSG_RESULT(linking with -lColPack failed)])
+                       [have_colpack=yes],
+                       [have_colpack=no])
+   AC_MSG_RESULT($have_colpack)
 else
     have_colpack=no
 fi
@@ -350,6 +451,12 @@ AC_DEFUN([AC_COIN_PATCH_LIBTOOL_CYGWIN],
 # output
 AC_CONFIG_FILES(Makefile
                 ADOL-C/Makefile
+                ADOL-C/include/Makefile
+                ADOL-C/include/adolc/Makefile
+		ADOL-C/include/adolc/adolc_settings.h
+                ADOL-C/include/adolc/drivers/Makefile 
+                ADOL-C/include/adolc/sparse/Makefile
+                ADOL-C/include/adolc/tapedoc/Makefile
                 ADOL-C/src/Makefile
                 ADOL-C/src/drivers/Makefile 
                 ADOL-C/src/sparse/Makefile
@@ -394,29 +501,29 @@ echo \
 -----------------------------------------------------------------------------
 Configuration:
 
-  C compiler:                       ${CC}
-  C++ compiler:                     ${CXX}
-  Linker:                           ${LD}
-  Source code location:             `pwd`
-  Install path:                     ${prefix}
+  C compiler:                         ${CC}
+  C++ compiler:                       ${CXX}
+  Linker:                             ${LD}
+  Source code location:               `pwd`
+  Install path:                       ${prefix}
   
-  CFLAGS:                           ${ac_adolc_cflags}
-  CXXFLAGS:                         ${ac_adolc_cxxflags}
+  CFLAGS:                             ${ac_adolc_cflags}
+  CXXFLAGS:                           ${ac_adolc_cxxflags}
 
-  Use ADOL-C debug mode:            ${adolc_debug}
-  Use ADOL-C hard debug mode:       ${adolc_harddebug}
-  Use ADOL-C adouble zeroing mode:  ${adolc_stdczero}"
+  Use ADOL-C debug mode:              ${adolc_debug}
+  Use ADOL-C hard debug mode:         ${adolc_harddebug}
+  Zero value in adouble default ctor: ${adolc_stdczero}"
 
 if [[ "x${ac_adolc_openmpflag}" != "x" ]] ; then
     echo \
-"  Access thread number via errno:   ${adolc_tserrno}"
+"  Access thread number via errno:     ${adolc_tserrno}"
 fi
 
 echo \
-"  Use ADOL-C safe extern mode:      ${adolc_safe_extern}
+"  Use ADOL-C safe extern mode:        ${adolc_safe_extern}
 
-  Build sparse drivers:             ${sparse}
-  Build with ColPack:		    ${have_colpack}"
+  Build sparse drivers:               ${sparse}
+  Build with ColPack:		      ${have_colpack}"
 if test x$sparse = xyes && test x$have_colpack = xno; then
     echo -e \
 "  \033@<:@1;31mCompressed sparse structures will not be available
@@ -426,8 +533,8 @@ fi
 echo
 
 echo \
-"  Build documented examples:        ${docexa}
-  Build additional examples:        ${addexa}
+"  Build documented examples:          ${docexa}
+  Build additional examples:          ${addexa}
 
   See ADOL-C/src/config.h for further configuration information.
 -----------------------------------------------------------------------------"

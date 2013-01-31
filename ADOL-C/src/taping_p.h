@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping_p.h
- Revision: $Id: taping_p.h 295 2012-03-19 10:05:14Z kulshres $
+ Revision: $Id: taping_p.h 370 2012-11-22 13:18:52Z kulshres $
  Contents: declarations for used by taping routines
  
  Copyright (c) Andreas Kowarz
@@ -105,6 +105,7 @@ enum ADOLC_ERRORS {
     ADOLC_EXT_DIFF_NULLPOINTER_DIFFFUNC,
     ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT,
     ADOLC_EXT_DIFF_WRONG_FUNCTION_INDEX,
+    ADOLC_EXT_DIFF_LOCATIONGAP,
 
     ADOLC_CHECKPOINTING_CPINFOS_NULLPOINTER,
     ADOLC_CHECKPOINTING_NULLPOINTER_ARGUMENT,

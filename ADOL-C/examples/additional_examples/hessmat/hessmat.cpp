@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     hessmat.cpp
- Revision: $Id: hessmat.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: hessmat.cpp 387 2013-01-25 15:47:43Z kulshres $
  Contents: example for testing the routines: 
            hov_wk_forward    ( = Higher Order Vector forward With Keep )
            hos_ov_reverse    ( = Higher Order Scalar reverse over vectors)
@@ -130,7 +130,11 @@ int main() {
                     y[i] *= x[0];
                     break;
                 case 2 :
-                    condassign(y[i],y[0]>y[1],y[1],y[0]);
+#ifndef ADOLC_ADVANCED_BRANCHING
+                    condassign(y[i],adouble(y[0]>y[1]),y[1],y[0]);
+#else 
+                    condassign(y[i],(y[0]>y[1]),y[1],y[0]);
+#endif 
                     break;
                 case 3 :
                     y[i] -= sin(x[j]);
