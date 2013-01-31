@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fixpoint.c
- Revision: $Id: fixpoint.cpp 106 2010-06-29 17:19:50Z kulshres $
+ Revision: $Id: fixpoint.cpp 370 2012-11-22 13:18:52Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
  
@@ -125,7 +125,7 @@ static int fp_fos_forward ( int dim_xu, double *xu, double *xu_dot,
     return -1;
 }
 
-static int fp_fos_reverse ( int dim_x, double *x_fix_bar, int dim_xu, double *xu_bar) {
+static int fp_fos_reverse ( int dim_x, double *x_fix_bar, int dim_xu, double *xu_bar, double* /*unused*/, double* /*unused*/) {
     // (d x_fix) / (d x_0) = 0 (!)
     int i, k;
     double err;

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tapedoc/tapedoc.c
- Revision: $Id: tapedoc.c 249 2011-06-13 18:57:34Z awalther $
+ Revision: $Id: tapedoc.c 337 2012-08-06 15:03:16Z kulshres $
  Contents: Routine tape_doc(..) writes the taped operations in LaTeX-code 
            to the file tape_doc.tex
  
@@ -15,7 +15,7 @@
 ----------------------------------------------------------------------------*/
 
 #include <adolc/tapedoc/tapedoc.h>
-#include <adolc/oplate.h>
+#include "oplate.h"
 #include "taping_p.h"
 #include <adolc/adalloc.h>
 
@@ -138,11 +138,11 @@ void filewrite_start( int opcode ) {
 #ifdef computenumbers
     fprintf(fp,"\\begin{tabular}{|r|r|r|l|r|r|r|r||r|r||r|r|r|r|} \\hline \n");
     fprintf(fp," & & code & op & loc & loc & loc & loc & double & double & value & value & value & value \\\\ \\hline \n");
-    fprintf(fp," %i & start of tape & & & & & & & & & &  \\\\ \\hline \n",opcode);
+    fprintf(fp," & & %i & start of tape & & & & & & & & & &  \\\\ \\hline \n",opcode);
 #else
     fprintf(fp,"\\begin{tabular}{|r|r|r|l|r|r|r|r||r|r|} \\hline \n");
     fprintf(fp," & & code & op & loc & loc & loc & loc & double & double \\\\ \\hline \n");
-    fprintf(fp," %i & start of tape & & & & & & & \\\\ \\hline \n",opcode);
+    fprintf(fp," & & %i & start of tape & & & & & & & \\\\ \\hline \n",opcode);
 #endif
     pagelength = 0;
 }

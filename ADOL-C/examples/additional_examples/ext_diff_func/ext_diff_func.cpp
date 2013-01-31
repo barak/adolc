@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ext_diff_func.cpp
- Revision: $Id: ext_diff_func.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id: ext_diff_func.cpp 370 2012-11-22 13:18:52Z kulshres $
  Contents: example for external differentiated functions
 
  Copyright (c) Andrea Walther
@@ -26,8 +26,8 @@ void euler_step_act(int n, adouble *yin, int m, adouble *yout);
 
 
 // versions for usage as external differentiated function
-int zos_for_euler_step(int n, double *yin, int m, double *yout);
-int fos_rev_euler_step(int n, double *u, int m, double *z);
+ADOLC_ext_fct zos_for_euler_step;
+ADOLC_ext_fct_fos_reverse fos_rev_euler_step;
 
 ext_diff_fct *edf;
 int tag_full, tag_part, tag_ext_fct;
@@ -172,7 +172,7 @@ int zos_for_euler_step(int n, double *yin, int m, double *yout)
   return rc;
 }
 
-int fos_rev_euler_step(int n, double *u, int m, double *z)
+int fos_rev_euler_step(int n, double *u, int m, double *z, double */* unused */, double */*unused*/)
 {
   int rc;
 
