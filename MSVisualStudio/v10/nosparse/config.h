@@ -11,7 +11,7 @@
 /* #undef ADOLC_HARDDEBUG */
 
 /* ADOL-C Patchlevel */
-#define ADOLC_PATCHLEVEL 0
+#define ADOLC_PATCHLEVEL 1
 
 /* ADOL-C Subversion */
 #define ADOLC_SUBVERSION 4
@@ -122,7 +122,7 @@
 #define PACKAGE_NAME "adolc"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "adolc 2.4.0"
+#define PACKAGE_STRING "adolc 2.4.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "adolc"
@@ -131,10 +131,13 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.4.0"
+#define PACKAGE_VERSION "2.4.1"
 
 /* The size of `void *', as computed by sizeof. */
 #define SIZEOF_VOID_P 4
+
+/* Define 1 if sparse derivative propagation is to be enabled */
+/* #undef SPARSE */
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
@@ -146,7 +149,7 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "2.4.0"
+#define VERSION "2.4.1"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
