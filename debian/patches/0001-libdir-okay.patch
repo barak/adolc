@@ -6,11 +6,11 @@ Remove the code that fiddles with ${libdir} from configure.ac, thus
 allowing the autotools system in general, and the multiarch code in
 particular, to do the right thing, as is its want.
 ---
- configure.ac |   14 +++++++-------
+ configure.ac | 14 +++++++-------
  1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
-index c732215..d643315 100644
+index 8946c0e..6bfad98 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -60,7 +60,7 @@ if test "x$ac_cv_sizeof_void_p" = "x8" ; then
@@ -22,7 +22,7 @@ index c732215..d643315 100644
     libdir='${exec_prefix}/${_lib}'
     AC_SUBST(_lib)
     AC_SUBST(libdir)
-@@ -582,17 +582,17 @@ echo \
+@@ -585,17 +585,17 @@ echo \
       compiling:
          * add \"-I${prefix}/include\" to your compiler call
       linking:
