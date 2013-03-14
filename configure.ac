@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac 399 2013-01-29 10:36:48Z kulshres $
+# Revision: $Id: configure.ac 415 2013-03-13 16:15:36Z kulshres $
 #
 # Copyright (C) Andrea Walther, Andreas Kowarz
 #               
@@ -9,14 +9,14 @@
 ##############################################################################
 define([ADOLC_VER], [2])
 define([ADOLC_SUB], [4])
-define([ADOLC_LVL], [0])
+define([ADOLC_LVL], [1])
 
 AC_PREREQ(2.67)
 AC_INIT(adolc,
         ADOLC_VER.ADOLC_SUB.ADOLC_LVL,
         [adol-c@list.coin-or.org])
 config_flags="$*"
-AC_REVISION($Revision: 399 $)
+AC_REVISION($Revision: 415 $)
 AC_CONFIG_SRCDIR([ADOL-C/src/adouble.cpp])
 AC_CONFIG_AUX_DIR(autoconf)
 AC_CONFIG_HEADERS([ADOL-C/src/config.h])
@@ -308,6 +308,9 @@ if test x$have_colpack = xyes; then
    echo "will build sparse drivers as linking with -lColPack succeeded"
 fi
 AM_CONDITIONAL(SPARSE,[test x${sparse} = xyes])
+if test x$sparse = xyes ; then
+   AC_DEFINE(SPARSE,[1],[Define 1 if sparse derivative propagation is to be enabled])
+fi
 
 if test x$sparse = xyes && test x$have_colpack = xyes; then
 	AC_DEFINE(HAVE_LIBCOLPACK,[1],[Define 1 if ColPack is available])
