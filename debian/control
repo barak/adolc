@@ -23,6 +23,7 @@ Description: ADOLC development libs and headers
 
 Package: libadolc2
 Architecture: any
+Multi-Arch: same
 Pre-Depends: multiarch-support
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: ADOLC automatic differentiation system, runtime libs
