@@ -1,3 +1,9 @@
+adolc (2.4.1-2) unstable; urgency=medium
+
+  * multiarch support
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 13 Feb 2014 10:11:02 +0000
+
 adolc (2.4.1-1) unstable; urgency=low
 
   * New Upstream Version (closes: #700937) 
