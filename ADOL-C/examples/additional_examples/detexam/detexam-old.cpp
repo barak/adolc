@@ -15,8 +15,8 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
-#include <../examples/additional_examples/clock/myclock.h>
+#include <adolc/adolc.h>
+#include "../clock/myclock.h"
 
 
 /****************************************************************************/
@@ -130,7 +130,7 @@ int main() {
     fprintf(stdout,"\n %f =? %f should be the same \n",detout,diag);
 
     /*--------------------------------------------------------------------------*/
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
     tapestats(tag,tape_stats);
 
     fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);
@@ -190,17 +190,17 @@ int main() {
         pt = A[i];
         for (j=0; j<n; j++)
             sum += (*pt++)*B[j];
-        fprintf(stdout,"%le ",sum.value());
+        fprintf(stdout,"%E ",sum.value());
     }
     fprintf(stdout,"\n\n times for ");
-    fprintf(stdout,"\n tracing          : \t%le",(t01-t00)*rtu);
-    fprintf(stdout," units \t%le    seconds",(t01-t00));
-    fprintf(stdout,"\n forward (no keep): \t%le",(t41-t40)*rtu/itu);
-    fprintf(stdout," units \t%le    seconds",(t41-t40)/itu);
-    fprintf(stdout,"\n forward + keep   : \t%le",(t21-t20)*rtu/itu);
-    fprintf(stdout," units \t%le    seconds",(t21-t20)/itu);
-    fprintf(stdout,"\n reverse          : \t%le",(t31-t30)*rtu/itu);
-    fprintf(stdout," units \t%le    seconds\n",(t31-t30)/itu);
+    fprintf(stdout,"\n tracing          : \t%E",(t01-t00)*rtu);
+    fprintf(stdout," units \t%E    seconds",(t01-t00));
+    fprintf(stdout,"\n forward (no keep): \t%E",(t41-t40)*rtu/itu);
+    fprintf(stdout," units \t%E    seconds",(t41-t40)/itu);
+    fprintf(stdout,"\n forward + keep   : \t%E",(t21-t20)*rtu/itu);
+    fprintf(stdout," units \t%E    seconds",(t21-t20)/itu);
+    fprintf(stdout,"\n reverse          : \t%E",(t31-t30)*rtu/itu);
+    fprintf(stdout," units \t%E    seconds\n",(t31-t30)/itu);
 
     return 1;
 }

@@ -6,7 +6,7 @@
              per buffer
            - intended to be used with structs
  
- Copyright (c) Andreas Kowarz
+ Copyright (c) Andreas Kowarz, Kshitij Kulshreshtha, Jean Utke
   
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
@@ -17,8 +17,8 @@
 #if !defined(ADOLC_STRUCT_BUF_H)
 #define ADOLC_STRUCT_BUF_H 1
 
-#include <common.h>
-#include <taping_p.h>
+#include <adolc/common.h>
+#include "taping_p.h"
 
 #if defined(__cplusplus)
 /****************************************************************************/
@@ -26,15 +26,16 @@
 
 #include <cstdlib>
 
-#define BUFFER Buffer<SubBufferElement, FunctionPointer, _subBufferSize>
-#define BUFFER_TEMPLATE template<class SubBufferElement,\
-   class FunctionPointer, IndexType _subBufferSize>
+#define BUFFER Buffer<SubBufferElement, _subBufferSize>
+#define BUFFER_TEMPLATE template<class SubBufferElement, IndexType _subBufferSize>
 
 typedef locint IndexType;
 
 BUFFER_TEMPLATE class Buffer {
 
     typedef void (*InitFunctionPointer) (SubBufferElement *subBufferElement);
+
+    static void zeroAll(SubBufferElement* subBufferElement);
 
     typedef struct SubBuffer {
         SubBufferElement elements[_subBufferSize];
@@ -47,7 +48,7 @@ public:
         firstSubBuffer = NULL;
         numEntries = 0;
         subBufferSize = _subBufferSize;
-        initFunction = NULL;
+        initFunction = zeroAll;
     }
     inline Buffer(InitFunctionPointer _initFunction) {
         firstSubBuffer = NULL;
@@ -60,7 +61,7 @@ public:
     inline void init(InitFunctionPointer _initFunction) {
         initFunction = _initFunction;
     }
-    SubBufferElement *append(FunctionPointer functionPointer);
+    SubBufferElement *append();
     SubBufferElement *getElement(IndexType index);
 
 private:
@@ -69,6 +70,11 @@ private:
     IndexType subBufferSize;
     IndexType numEntries;
 };
+
+BUFFER_TEMPLATE
+void BUFFER::zeroAll(SubBufferElement* subBufferElement) {
+    memset(subBufferElement,0,sizeof(*subBufferElement));
+}
 
 BUFFER_TEMPLATE
 BUFFER::~Buffer() {
@@ -82,11 +88,9 @@ BUFFER::~Buffer() {
 }
 
 BUFFER_TEMPLATE
-SubBufferElement *BUFFER::append(FunctionPointer functionPointer) {
+SubBufferElement *BUFFER::append() {
     SubBuffer *currentSubBuffer=firstSubBuffer, *previousSubBuffer=NULL;
     IndexType index, tmp=numEntries;
-
-    if (functionPointer==NULL) fail(ADOLC_BUFFER_NULLPOINTER_FUNCTION);
 
     while (tmp>=subBufferSize) {
         previousSubBuffer=currentSubBuffer;
@@ -105,7 +109,6 @@ SubBufferElement *BUFFER::append(FunctionPointer functionPointer) {
         initFunction(&(currentSubBuffer->elements[index]));
 
     currentSubBuffer->elements[index].index=numEntries;
-    currentSubBuffer->elements[index].function=functionPointer;
     ++numEntries;
 
     return &currentSubBuffer->elements[index];

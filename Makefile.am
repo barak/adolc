@@ -10,12 +10,34 @@
 ## 
 ##############################################################################
 
+ACLOCAL_AMFLAGS = -I autoconf
+
 AUTOMAKE_OPTIONS     = foreign
 
-EXTRA_DIST           = TODO BUGS Makefile.win make_32 make_64 \
-                       comp_win.bat winflags_dll winflags_exa
+EXTRA_DIST           = TODO BUGS LICENSE update_versions.sh \
+                       ADOL-C/doc/version.tex.in ADOL-C/doc/version.tex \
+                       ADOL-C/doc/adolc-manual.pdf ADOL-C/doc/adolc-manual.ps \
+                       ADOL-C/doc/adolc-manual.tex ADOL-C/doc/short_ref.pdf \
+                       ADOL-C/doc/short_ref.ps ADOL-C/doc/short_ref.tex \
+                       ADOL-C/doc/multiplexed.pdf ADOL-C/doc/multiplexed.eps \
+                       ADOL-C/doc/tapeadv.pdf ADOL-C/doc/tapeadv.eps \
+                       ADOL-C/doc/tapebasic.pdf ADOL-C/doc/tapebasic.eps \
+                       ADOL-C/doc/tap_point.pdf ADOL-C/doc/tap_point.eps \
+                       MSVisualStudio/v10/adolc.sln MSVisualStudio/v10/adolc.vcxproj \
+                       MSVisualStudio/v10/ColPack_Readme_VC++.txt \
+                       MSVisualStudio/v10/ColPack.vcxproj \
+                       MSVisualStudio/v10/sparse/config.h.in MSVisualStudio/v10/nosparse/config.h.in \
+                       MSVisualStudio/v10/x64/sparse/config.h.in MSVisualStudio/v10/x64/nosparse/config.h.in \
+                       MSVisualStudio/v10/sparse/config.h MSVisualStudio/v10/nosparse/config.h \
+                       MSVisualStudio/v10/x64/sparse/config.h MSVisualStudio/v10/x64/nosparse/config.h \
+                       MSVisualStudio/v10/Readme_VC++.txt \
+                       MSVisualStudio/v10/installer.sh \
+                       adolc.spec.in adolc.spec \
+                       update_versions.sh
 
 SUBDIRS              = ADOL-C
 
-MAINTAINERCLEANFILES = Makefile.in aclocal.m4 configure ADOL-C/src/config.h.in \
-                       ADOL-C/src/stamp-h.in *~ *.orig
+test: all
+	cd ADOL-C; $(MAKE) test
+
+.PHONY: test

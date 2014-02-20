@@ -10,21 +10,12 @@
 ## 
 ##############################################################################
 
-AM_CFLAGS                = @ac_adolc_cflags@ -DADOLC_INTERNAL=1
-AM_CXXFLAGS              = @ac_adolc_cxxflags@ -DADOLC_INTERNAL=1
-AM_LDFLAGS               = -no-undefined
-AM_CPPFLAGS               = -I$(top_srcdir)/ADOL-C/src 
-
-INCLUDES                 = -I$(top_builddir)
+AM_CFLAGS                = @ac_adolc_cflags@ -DADOLC_INTERNAL=1 -DSPARSE=1
+AM_CXXFLAGS              = @ac_adolc_cxxflags@ -DADOLC_INTERNAL=1 -DSPARSE=1
+AM_CPPFLAGS               = -I$(top_srcdir)/ADOL-C/include -I$(top_srcdir)/ADOL-C/src
 
 MAINTAINERCLEANFILES     = Makefile.in *~ *.orig
 
-EXTRA_DIST               = Makefile.win
-
 noinst_LTLIBRARIES       = libsparse.la
-
-libsparseincludedir      = $(pkgincludedir)/sparse
-
-libsparseinclude_HEADERS = sparsedrivers.h sparse_fo_rev.h 
 
 libsparse_la_SOURCES     = sparse_fo_rev.cpp sparsedrivers.cpp

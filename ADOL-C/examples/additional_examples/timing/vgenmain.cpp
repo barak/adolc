@@ -30,8 +30,8 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
-#include <../examples/additional_examples/clock/myclock.h>
+#include <adolc/adolc.h>
+#include "../clock/myclock.h"
 
 #include <cstdlib>
 #include <time.h>
@@ -39,7 +39,7 @@
 
 /****************************************************************************/
 /*                                                                   MACROS */
-#define TIMEFORMAT " %12.6le units,   %12.6le seconds\n"
+#define TIMEFORMAT " %12.6E units,   %12.6E seconds\n"
 
 
 /****************************************************************************/
@@ -264,7 +264,7 @@ int main() {
     tapingVectorFunction(tag,indeps,deps);
     t01 = myclock();
 
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
     tapestats(tag,tape_stats);
 
     fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);

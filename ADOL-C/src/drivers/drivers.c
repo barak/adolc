@@ -13,9 +13,9 @@
  recipient's acceptance of the terms of the accompanying license file.
  
 ----------------------------------------------------------------------------*/
-#include <drivers/drivers.h>
-#include <interfaces.h>
-#include <adalloc.h>
+#include <adolc/drivers/drivers.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
 
 #include <math.h>
 
@@ -44,7 +44,7 @@ int function(short tag,
 /* gradient(tag, n, x[n], g[n])                                             */
 int gradient(short tag,
              int n,
-             double* argument,
+             const double* argument,
              double* result) {
     int rc= -1;
     double one = 1.0;
@@ -86,7 +86,7 @@ int vec_jac(short tag,
 int jacobian(short tag,
              int depen,
              int indep,
-             double *argument,
+             const double *argument,
              double **jacobian) {
     int rc;
     double *result, **I;
@@ -104,6 +104,9 @@ int jacobian(short tag,
         MINDEC(rc,fov_reverse(tag,depen,indep,depen,I,jacobian));
         myfreeI2(depen, I);
     }
+
+    myfree1(result);
+
     return rc;
 }
 

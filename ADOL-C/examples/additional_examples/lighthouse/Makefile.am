@@ -12,24 +12,16 @@
 
 AM_CFLAGS            = @ac_adolc_cflags@
 AM_CXXFLAGS          = @ac_adolc_cxxflags@
-AM_CPPFLAGS          = -I$(top_srcdir)/ADOL-C/src
+AM_CPPFLAGS          = -I$(top_builddir)/ADOL-C/include -I$(top_srcdir)/ADOL-C/include
 
-if SPARSE
-LDADD                = -ladolc $(libdir)/libColPack.a
-AM_LDFLAGS           = -L../../../src
-else
-LDADD                = -ladolc 
-AM_LDFLAGS           = -L../../../src
-endif
-
-INCLUDES             = -I$(top_builddir)
+LDADD                = -l${adolclib}
+AM_LDFLAGS           = -L$(top_builddir)/ADOL-C
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig
 
-EXTRA_DIST           = Makefile.win
-
 if ADDEXA
 noinst_PROGRAMS      = cubic cubic-2 cubic-iter cubic-iter-2
+endif
 
 cubic_SOURCES        = cubic.cpp
 
@@ -38,4 +30,3 @@ cubic_2_SOURCES      = cubic-2.cpp
 cubic_iter_SOURCES   = cubic-iter.cpp
 
 cubic_iter_2_SOURCES = cubic-iter-2.cpp
-endif

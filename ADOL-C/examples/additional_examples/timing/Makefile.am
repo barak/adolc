@@ -13,19 +13,29 @@
 
 AM_CFLAGS               = @ac_adolc_cflags@
 AM_CXXFLAGS             = @ac_adolc_cxxflags@
-AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C/src
+AM_CPPFLAGS             = -I$(top_builddir)/ADOL-C/include -I$(top_srcdir)/ADOL-C/include
 
-if SPARSE
-LDADD                   = -ladolc $(libdir)/libColPack.a
-AM_LDFLAGS              = -L../../../src
-else
-LDADD                   = -ladolc 
-AM_LDFLAGS              = -L../../../src
-endif
+LDADD                   = -l${adolclib}
+AM_LDFLAGS              = -L$(top_builddir)/ADOL-C
 
-INCLUDES                = -I$(top_builddir) -I$(top_builddir)/examples/additional_examples
+CTRLFILES               = detexam.ctrl \
+                          eutrophexam.ctrl \
+                          experimental.ctrl \
+                          ficexam.ctrl \
+                          gearexam.ctrl \
+                          griewankexam.ctrl \
+                          helmholtzexam.ctrl \
+                          michalewitzexam.ctrl \
+                          pargearexam.ctrl \
+                          powexam.ctrl \
+                          robertsonexam.ctrl \
+                          rosenbrockexam.ctrl \
+                          shuttlexam.ctrl \
+                          simplevec.ctrl \
+                          speelpenning.ctrl
 
-EXTRA_DIST              = rotations.h *.ctrl Makefile.win
+
+EXTRA_DIST              = rotations.h $(CTRLFILES)
 
 MAINTAINERCLEANFILES    = Makefile.in in_tape.1 op_tape.1 vs_tape1 *~ *.orig
 
@@ -34,49 +44,49 @@ noinst_PROGRAMS         = detexam speelpenning griewankexam michalewitzexam \
                           rosenbrockexam powexam helmholtzexam shuttlexam \
                           gearexam pargearexam simplevec eutrophexam \
                           robertsonexam ficexam experimental
+endif
 
 detexam_SOURCES         = sfunc_determinant.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 speelpenning_SOURCES    = sfunc_speelpenning.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 griewankexam_SOURCES    = sfunc_griewank.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 michalewitzexam_SOURCES = sfunc_michalewitz.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 rosenbrockexam_SOURCES  = sfunc_rosenbrock.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 powexam_SOURCES         = sfunc_power.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 helmholtzexam_SOURCES   = sfunc_helmholtz.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 shuttlexam_SOURCES      = vfunc_shuttle.cpp vgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 gearexam_SOURCES        = vfunc_gear.cpp vgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 pargearexam_SOURCES     = vfunc_pargear.cpp rotations.cpp vgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
 simplevec_SOURCES       = vfunc_simplevec.cpp vgenmain.cpp \
-                          ../clock/myclock.cpp
+                          $(srcdir)/../clock/myclock.cpp
 
-eutrophexam_SOURCES     = ../ode/vfunc_eutroph.cpp vgenmain.cpp \
-                          ../clock/myclock.cpp
+eutrophexam_SOURCES     = $(srcdir)/../ode/vfunc_eutroph.cpp vgenmain.cpp \
+                          $(srcdir)/../clock/myclock.cpp
 
-robertsonexam_SOURCES   = ../ode/vfunc_robertson.cpp vgenmain.cpp \
-                          ../clock/myclock.cpp
+robertsonexam_SOURCES   = $(srcdir)/../ode/vfunc_robertson.cpp vgenmain.cpp \
+                          $(srcdir)/../clock/myclock.cpp
 
-ficexam_SOURCES         = ../ode/vfunc_fic.cpp vgenmain.cpp \
-                          ../clock/myclock.cpp
+ficexam_SOURCES         = $(srcdir)/../ode/vfunc_fic.cpp vgenmain.cpp \
+                          $(srcdir)/../clock/myclock.cpp
 
 experimental_SOURCES    = sfunc_experimental.cpp sgenmain.cpp \
-                          ../clock/myclock.cpp
-endif
+                          $(srcdir)/../clock/myclock.cpp

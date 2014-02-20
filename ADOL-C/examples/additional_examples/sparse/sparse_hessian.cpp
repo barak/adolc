@@ -17,15 +17,15 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <adolc.h>
-#include <adolc_sparse.h>
+#include <adolc/adolc.h>
+#include <adolc/adolc_sparse.h>
 
 #define tag 1
 
 double  feval(double *x);
 adouble feval_ad(adouble *x);
 
-void printmat(char* kette, int n, int m, double** M);
+void printmat(const char* kette, int n, int m, double** M);
 
 int main() {
     int n=6;
@@ -88,6 +88,10 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
+    free(rind); rind = NULL;
+    free(cind); cind = NULL;
+    free(values); values = NULL;
+
     options[0] = 0;          /*                               safe mode (default) */ 
     options[1] = 1;          /*                                   direct recovery */ 
 
@@ -96,6 +100,10 @@ int main() {
     printf("In sparse format:\n");
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
+
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 
 /*--------------------------------------------------------------------------*/
 /*  change value of x, but not the sparsity pattern                         */
@@ -119,6 +127,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 
 /****************************************************************************/
 /*******        sparse Hessians, separate drivers             ***************/
@@ -195,6 +206,17 @@ int main() {
     printmat("compressed H:",n,p,Hcomp);
     printf("\n");
 
+    for(i=0;i<n;i++)
+       free(HP[i]);
+    free(HP);
+
+    myfree2(H);
+    myfree2(Hcomp);
+
+    for (i = 0; i < n; i++)
+        delete[] Seed[i];
+    delete[] Seed;
+
 }
 
 
@@ -230,7 +252,7 @@ adouble feval_ad(adouble *x) {
 
 /***************************************************************************/
 
-void printmat(char* name, int m, int n, double** M) {
+void printmat(const char* name, int m, int n, double** M) {
     int i,j;
 
     printf("%s \n",name);

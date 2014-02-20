@@ -13,28 +13,19 @@
 
 AM_CFLAGS               = @ac_adolc_cflags@
 AM_CXXFLAGS             = @ac_adolc_cxxflags@
-AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C/src
+AM_CPPFLAGS             = -I$(top_builddir)/ADOL-C/include -I$(top_srcdir)/ADOL-C/include
 
-if SPARSE
-LDADD                = -ladolc $(libdir)/libColPack.a
-AM_LDFLAGS           = -L../../../src
-else
-LDADD                = -ladolc 
-AM_LDFLAGS           = -L../../../src
-endif
-
-INCLUDES             = -I$(top_builddir) -I$(top_builddir)/examples/additional_examples
+LDADD                = -l${adolclib}
+AM_LDFLAGS           = -L$(top_builddir)/ADOL-C
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig
 
-EXTRA_DIST           = Makefile.win
-
 if ADDEXA
 noinst_PROGRAMS      = odexam od2exam od3exam
-
-odexam_SOURCES       = vfunc_robertson.cpp vgenodemain.cpp ../clock/myclock.cpp
-
-od2exam_SOURCES      = vfunc_eutroph.cpp vgenodemain.cpp ../clock/myclock.cpp
-
-od3exam_SOURCES      = vfunc_fic.cpp vgenodemain.cpp ../clock/myclock.cpp
 endif
+
+odexam_SOURCES       = vfunc_robertson.cpp vgenodemain.cpp $(srcdir)/../clock/myclock.cpp
+
+od2exam_SOURCES      = vfunc_eutroph.cpp vgenodemain.cpp $(srcdir)/../clock/myclock.cpp
+
+od3exam_SOURCES      = vfunc_fic.cpp vgenodemain.cpp $(srcdir)/../clock/myclock.cpp

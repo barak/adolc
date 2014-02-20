@@ -4,7 +4,7 @@
  Revision: $Id$
  Contents: declarations for used by taping routines
  
- Copyright (c) Andreas Kowarz
+ Copyright (c) Andreas Kowarz, Jean Utke
 
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
@@ -14,9 +14,12 @@
 #if !defined(ADOLC_TAPING_P_H)
 #define ADOLC_TAPING_P_H 1
 
-#include <common.h>
-#include <taping.h>
+#include <adolc/common.h>
+#include <adolc/taping.h>
 #include <errno.h>
+#ifdef __cplusplus
+#include "storemanager.h"
+#endif
 
 BEGIN_C_DECLS
 
@@ -34,7 +37,7 @@ enum WORKMODES {
     ADOLC_FOS_REVERSE,
     ADOLC_FOV_REVERSE,
     ADOLC_HOS_REVERSE,
-    ADOLC_HOV_REVERSE,
+    ADOLC_HOV_REVERSE
 };
 
 /****************************************************************************/
@@ -46,6 +49,7 @@ typedef struct {
     short adolc_lvl;
     short locint_size;
     short revreal_size;
+    short address_size;
 }
 ADOLC_ID;
 
@@ -101,13 +105,16 @@ enum ADOLC_ERRORS {
     ADOLC_EXT_DIFF_NULLPOINTER_DIFFFUNC,
     ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT,
     ADOLC_EXT_DIFF_WRONG_FUNCTION_INDEX,
+    ADOLC_EXT_DIFF_LOCATIONGAP,
 
     ADOLC_CHECKPOINTING_CPINFOS_NULLPOINTER,
     ADOLC_CHECKPOINTING_NULLPOINTER_ARGUMENT,
     ADOLC_CHECKPOINTING_NULLPOINTER_FUNCTION,
     ADOLC_CHECKPOINTING_NULLPOINTER_FUNCTION_DOUBLE,
     ADOLC_CHECKPOINTING_REVOLVE_IRREGULAR_TERMINATED,
-    ADOLC_CHECKPOINTING_UNEXPECTED_REVOLVE_ACTION
+    ADOLC_CHECKPOINTING_UNEXPECTED_REVOLVE_ACTION,
+    ADOLC_WRONG_PLATFORM_32,
+    ADOLC_WRONG_PLATFORM_64
 };
 /* additional infos fail can work with */
 extern int failAdditionalInfo1;
@@ -121,20 +128,23 @@ extern void *failAdditionalInfo6;
 /* tape information                                                         */
 /****************************************************************************/
 
+#ifdef SPARSE
 typedef struct SparseJacInfos {
-    void *g;
+  void *g;
+  void *jr1d;
 
-    double *y;
-    double **Seed;
-    double **B;
+  double *y;
+  double **Seed;
+  double **B;
 
-    unsigned int **JP;
+  unsigned int **JP;
 
-    int nnz_in, p;
+  int depen, nnz_in, seed_clms, seed_rows;
 } SparseJacInfos;
 
 typedef struct SparseHessInfos {
     void *g;
+    void *hr;
 
     double **Hcomp;
     double*** Xppp;
@@ -144,8 +154,9 @@ typedef struct SparseHessInfos {
   
     unsigned int **HP;
 
-    int nnz_in, p;
+  int nnz_in, indep, p;
 } SparseHessInfos;
+#endif
 
 typedef struct PersistantTapeInfos { /* survive tape re-usage */
     int forodec_nax, forodec_dax;
@@ -157,6 +168,7 @@ typedef struct PersistantTapeInfos { /* survive tape re-usage */
     int *jacSolv_ci;
     int jacSolv_nax, jacSolv_modeold, jacSolv_cgd;
 
+#ifdef SPARSE
     /* sparse derivative matrices */
 
     int inJacSparseUse;
@@ -169,6 +181,7 @@ typedef struct PersistantTapeInfos { /* survive tape re-usage */
     /* sparse Hessian matrices */
 
     SparseHessInfos sHinfos;
+#endif
 
     /* file names */
 
@@ -180,7 +193,22 @@ typedef struct PersistantTapeInfos { /* survive tape re-usage */
     int keepTape; /* - remember if tapes shall be written out to disk
                      - this information can only be given at taping time and
                        must survive all other actions on the tape */
+
+    /**
+     * defaults to 0, if 1 skips file removal (when file operations are costly)
+     */
+    int skipFileCleanup;
+
 } PersistantTapeInfos;
+
+/**
+ * maximal number of locations writen per op code 
+ */
+#if defined(__USE_ISOC99)
+extern const int maxLocsPerOp;
+#else
+#define maxLocsPerOp 10
+#endif
 
 typedef struct TapeInfos {
     short tapeID;
@@ -188,7 +216,7 @@ typedef struct TapeInfos {
     uint numInds;
     uint numDeps;
     int keepTaylors;             /* == 1 - write taylor stack in taping mode */
-    uint stats[STAT_SIZE];
+    size_t stats[STAT_SIZE];
     int traceFlag;
     char tapingComplete;
 
@@ -197,28 +225,29 @@ typedef struct TapeInfos {
     unsigned char *opBuffer;    /* pointer to the current tape buffer */
     unsigned char *currOp;      /* pointer to the current opcode */
     unsigned char *lastOpP1;    /* pointer to element following the buffer */
-    uint numOps_Tape;           /* overall number of opcodes */
+    size_t numOps_Tape;           /* overall number of opcodes */
+    size_t num_eq_prod;           /* overall number of eq_*_prod for nlf */
 
     /* values (real) tape */
     FILE *val_file;
     double *valBuffer;
     double *currVal;
     double *lastValP1;
-    uint numVals_Tape;
+    size_t numVals_Tape;
 
     /* locations tape */
     FILE *loc_file;
     locint *locBuffer;
     locint *currLoc;
     locint *lastLocP1;
-    uint numLocs_Tape;
+    size_t numLocs_Tape;
 
     /* taylor stack tape */
     FILE *tay_file;
     revreal *tayBuffer;
     revreal *currTay;
     revreal *lastTayP1;
-    uint numTays_Tape;
+    size_t numTays_Tape;
     int nextBufferNumber;                   /* the next Buffer to read back */
     char lastTayBlockInCore;      /* == 1 if last taylor buffer is still in
                                             in core (first call of reverse) */
@@ -237,17 +266,27 @@ typedef struct TapeInfos {
 
     /* evaluation forward */
     double *dp_T0;
+    int gDegree, numTay;
+    enum WORKMODES workMode;
+    /*
+     * Taylor coefficient array  allocated like this:
+     * dpp_T[ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES][numTay*gDegree]
+     */
     double **dpp_T;
 
     /* evaluation reverse */
     revreal *rp_T;
     revreal **rpp_T;
-    double *dp_A;
-    double **dpp_A;
+    revreal *rp_A;
+    revreal **rpp_A;
     unsigned long int **upp_A;
 
     /* extern diff. fcts */
     locint ext_diff_fct_index;    /* set by forward and reverse (from tape) */
+
+    size_t numSwitches;
+    locint* switchlocs;
+    double* signature;
 
     PersistantTapeInfos pTapeInfos;
 
@@ -258,14 +297,11 @@ typedef struct TapeInfos {
 }
 TapeInfos;
 
-typedef struct {
+typedef struct GlobalTapeVarsCL {
     double* store;              /* double store for calc. while taping */
+    size_t storeSize;
+    size_t numLives;
     locint maxLoc;
-    locint locMinUnused;        /* largest live location + 1 */
-    locint numMaxAlive;         /* maximal # of lives so far */
-    locint storeSize;           /* current size of store */
-    locint numToFree;           /* # of locations to be freed */
-    locint minLocToFree;        /* lowest loc to be freed */
 
     locint operationBufferSize; /* Defaults to the value specified in */
     locint locationBufferSize;  /* usrparms.h. May be overwritten by values */
@@ -277,6 +313,15 @@ typedef struct {
     char newTape;               /* signals: at least one tape created (0/1) */
     char branchSwitchWarning;
     TapeInfos *currentTapeInfosPtr;
+    uint nominmaxFlag;
+#ifdef __cplusplus
+    StoreManager *storeManagerPtr;
+    GlobalTapeVarsCL();
+    ~GlobalTapeVarsCL();
+    const GlobalTapeVarsCL& operator=(const GlobalTapeVarsCL&);
+#else
+    void *storeManagerPtr;
+#endif
 }
 GlobalTapeVars;
 
@@ -360,11 +405,13 @@ TapeInfos *getTapeInfos(short tapeID);
 /* updates the tape infos for the given ID - a tapeInfos struct is created
  * and registered if non is found but its state will remain "not in use" */
 
+#ifdef SPARSE
 void setTapeInfoJacSparse(short tapeID, SparseJacInfos sJinfos);
 /* updates the tape infos on sparse Jac for the given ID */
 
 void setTapeInfoHessSparse(short tapeID, SparseHessInfos sHinfos);
 /* updates the tape infos n sparse Hess for the given ID */
+#endif
 
 void take_stock();
 /* record all existing adoubles on the tape
@@ -380,10 +427,10 @@ void updateLocs();
 locint next_loc();
 /* returns the next free location in "adouble" memory */
 
-locint next_loc_v(int size);
-/* returns the next #size free locations in "adouble" memory */
+void free_loc(locint loc);
+/* frees the specified location in "adouble" memory */
 
-void taylor_begin(uint bufferSize, double **Tg, int degreeSave);
+void taylor_begin(uint bufferSize, int degreeSave);
 /* set up statics for writing taylor data */
 
 void taylor_close(uint buffer);
@@ -496,9 +543,10 @@ char *createFileName(short tapeID, int tapeType);
 
 
 
-void put_op(unsigned char op);
 /* puts an operation into the operation buffer, ensures that location buffer
  * and constants buffer are prepared to take the belonging stuff */
+void put_op_reserve(unsigned char op, unsigned int reserveExtraLocations);
+#define put_op(i) put_op_reserve((i),0)
 
 void put_op_block(unsigned char *lastOpP1);
 /* writes a block of operations onto hard disk and handles file creation,
@@ -603,6 +651,9 @@ double get_val_r();
 
 /* tries to read a local config file containing, e.g., buffer sizes */
 void readConfigFile();
+
+/* clear the tapeBaseNames that were alocated above in readConfigFile() */
+void clearTapeBaseNames();
 
 /****************************************************************************/
 /* This function sets the flag "newTape" if either a taylor buffer has been */

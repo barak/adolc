@@ -17,7 +17,7 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
+#include <adolc/adolc.h>
 
 #include <math.h>
 #define PI 3.1415926536
@@ -108,7 +108,7 @@ int main() {
     trace_off();
 
     /*--------------------------------------------------------------------------*/
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
 
     tapestats(tag1,tape_stats);
 

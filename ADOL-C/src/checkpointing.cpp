@@ -4,7 +4,7 @@
  Revision: $Id$
  Contents: checkpointing algorithms
  
- Copyright (c) Andreas Kowarz
+ Copyright (c) Andreas Kowarz, Jean Utke
   
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
@@ -12,14 +12,14 @@
  
 ---------------------------------------------------------------------------*/
 
-#include <oplate.h>
-#include <adalloc.h>
-#include <taping_p.h>
-#include <externfcts.h>
-#include <interfaces.h>
-#include <checkpointing.h>
-#include <checkpointing_p.h>
-#include <revolve.h>
+#include "oplate.h"
+#include <adolc/adalloc.h>
+#include "taping_p.h"
+#include <adolc/externfcts.h>
+#include <adolc/interfaces.h>
+#include <adolc/checkpointing.h>
+#include "checkpointing_p.h"
+#include <adolc/revolve.h>
 
 #include <cstring>
 
@@ -33,20 +33,15 @@ stack<StackElement> ADOLC_CHECKPOINTS_STACK_DECL;
 
 /* forward function declarations */
 void init_edf(ext_diff_fct *edf);
-int cp_zos_forward (int n, double *dp_x, int m, double *dp_y);
-int cp_fos_forward (int n, double *dp_x, double *dp_X,
-                    int m, double *dp_y, double *dp_Y);
-int cp_fov_forward (int n, double *dp_x, double **dpp_X,
-                    int m, double *dp_y, double **dpp_Y);
-int cp_hos_forward (int n, double *dp_x, double **dpp_X,
-                    int m, double *dp_y, double **dpp_Y);
-int cp_hov_forward (int n, double *dp_x, double ***dppp_X,
-                    int m, double *dp_y, double ***dppp_Y);
-int cp_fos_reverse (int m, double *dp_U, int n, double *dp_Z);
-int cp_fov_reverse (int m, double **dpp_U, int n, double **dpp_Z);
-int cp_hos_reverse (int m, double *dp_U, int n, double **dpp_Z);
-int cp_hov_reverse (int m, double **dpp_U, int n, double ***dppp_Z,
-                    short **spp_nz);
+ADOLC_ext_fct cp_zos_forward;
+ADOLC_ext_fct_fos_forward cp_fos_forward;
+ADOLC_ext_fct_fov_forward cp_fov_forward;
+ADOLC_ext_fct_hos_forward cp_hos_forward;
+ADOLC_ext_fct_hov_forward cp_hov_forward;
+ADOLC_ext_fct_fos_reverse cp_fos_reverse;
+ADOLC_ext_fct_fov_reverse cp_fov_reverse;
+ADOLC_ext_fct_hos_reverse cp_hos_reverse;
+ADOLC_ext_fct_hov_reverse cp_hov_reverse;
 void cp_takeshot(CpInfos *cpInfos);
 void cp_restore(CpInfos *cpInfos);
 void cp_release(CpInfos *cpInfos);
@@ -63,8 +58,9 @@ int dummy(int n, double *x, int m, double *y) {
 CpInfos *reg_timestep_fct(ADOLC_TimeStepFuncion timeStepFunction) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
-
-    return ADOLC_EXT_DIFF_FCTS_BUFFER.append(timeStepFunction);
+    CpInfos* theCpInfos=ADOLC_EXT_DIFF_FCTS_BUFFER.append();
+    theCpInfos->function=timeStepFunction;
+    return theCpInfos;
 }
 
 /* This is the main checkpointing function the user calls within the taping
@@ -75,7 +71,7 @@ int checkpointing (CpInfos *cpInfos) {
     int i;
     ext_diff_fct *edf;
     int oldTraceFlag;
-    locint firstVal, numVals;
+    locint numVals;
     double *vals;
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
@@ -111,15 +107,9 @@ int checkpointing (CpInfos *cpInfos) {
         ADOLC_CURRENT_TAPE_INFOS.traceFlag=0;
     } else oldTraceFlag=0;
 
-#if defined(ADOLC_SAFE_EXTERN)
-    firstVal = 0;
-#else
-    updateLocs();
-    firstVal = ADOLC_GLOBAL_TAPE_VARS.locMinUnused;
-#endif
-    numVals = ADOLC_GLOBAL_TAPE_VARS.numMaxAlive - firstVal;
+    numVals = ADOLC_GLOBAL_TAPE_VARS.storeSize;
     vals = new double[numVals];
-    memcpy(vals, ADOLC_GLOBAL_TAPE_VARS.store + firstVal,
+    memcpy(vals, ADOLC_GLOBAL_TAPE_VARS.store,
             numVals * sizeof(double));
 
     cpInfos->dp_internal_for = new double[cpInfos->n];
@@ -134,7 +124,7 @@ int checkpointing (CpInfos *cpInfos) {
         for (i=0; i<cpInfos->steps; ++i)
             cpInfos->function_double(cpInfos->n, cpInfos->dp_internal_for);
 
-    memcpy(ADOLC_GLOBAL_TAPE_VARS.store + firstVal, vals,
+    memcpy(ADOLC_GLOBAL_TAPE_VARS.store, vals,
             numVals * sizeof(double));
     delete[] vals;
 
@@ -288,31 +278,31 @@ int cp_fos_forward (int n, double *dp_x, double *dp_X,
     return 0;
 }
 
-int cp_fov_forward (int n, double *dp_x, double **dpp_X,
+int cp_fov_forward (int n, double *dp_x, int p, double **dpp_X,
                     int m, double *dp_y, double **dpp_Y) {
     printf("WARNING: Checkpointing algorithm not "
            "implemented for the fov_forward mode!\n");
     return 0;
 }
 
-int cp_hos_forward (int n, double *dp_x, double **dpp_X,
+int cp_hos_forward (int n, double *dp_x, int d, double **dpp_X,
                     int m, double *dp_y, double **dpp_Y) {
     printf("WARNING: Checkpointing algorithm not "
            "implemented for the hos_forward mode!\n");
     return 0;
 }
 
-int cp_hov_forward (int n, double *dp_x, double ***dppp_X,
+int cp_hov_forward (int n, double *dp_x, int d, int p, double ***dppp_X,
                     int m, double *dp_y, double ***dppp_Y) {
     printf("WARNING: Checkpointing algorithm not "
            "implemented for the hov_forward mode!\n");
     return 0;
 }
 
-int cp_fos_reverse (int m, double *dp_U, int n, double *dp_Z) {
+int cp_fos_reverse (int m, double *dp_U, int n, double *dp_Z, double *dp_x, double *dp_y) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
-    double *A = ADOLC_CURRENT_TAPE_INFOS.dp_A;
+    revreal *A = ADOLC_CURRENT_TAPE_INFOS.rp_A;
     int oldTraceFlag;
     locint arg;
     CpInfos *cpInfos=get_cp_fct(ADOLC_CURRENT_TAPE_INFOS.cpIndex);
@@ -407,10 +397,10 @@ int cp_fos_reverse (int m, double *dp_U, int n, double *dp_Z) {
     return 0;
 }
 
-int cp_fov_reverse (int m, double **dpp_U, int n, double **dpp_Z) {
+int cp_fov_reverse (int m, int p, double **dpp_U, int n, double **dpp_Z, double */*unused*/, double */*unused*/) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
-    double **A = ADOLC_CURRENT_TAPE_INFOS.dpp_A;
+    revreal **A = ADOLC_CURRENT_TAPE_INFOS.rpp_A;
     int oldTraceFlag, numDirs;
     locint arg;
     CpInfos *cpInfos = get_cp_fct(ADOLC_CURRENT_TAPE_INFOS.cpIndex);
@@ -510,13 +500,13 @@ int cp_fov_reverse (int m, double **dpp_U, int n, double **dpp_Z) {
     return 0;
 }
 
-int cp_hos_reverse (int m, double *dp_U, int n, double **dpp_Z) {
+int cp_hos_reverse (int m, double *dp_U, int n, int d,  double **dpp_Z) {
     printf("WARNING: Checkpointing algorithm not "
            "implemented for the hos_reverse mode!\n");
     return 0;
 }
 
-int cp_hov_reverse (int m, double **dpp_U, int n, double ***dppp_Z,
+int cp_hov_reverse (int m, int p, double **dpp_U, int n, int d, double ***dppp_Z,
                     short **spp_nz) {
     printf("WARNING: Checkpointing algorithm not "
            "implemented for the hov_reverse mode!\n");

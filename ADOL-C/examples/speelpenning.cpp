@@ -15,10 +15,10 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adouble.h>            // use of active doubles
-#include <drivers/drivers.h>    // use of "Easy to Use" drivers
+#include <adolc/adouble.h>            // use of active doubles
+#include <adolc/drivers/drivers.h>    // use of "Easy to Use" drivers
 // gradient(.) and hessian(.)
-#include <taping.h>             // use of taping
+#include <adolc/taping.h>             // use of taping
 
 #include <iostream>
 using namespace std;
@@ -30,7 +30,7 @@ using namespace std;
 /*                                                             MAIN PROGRAM */
 int main() {
     int n,i,j;
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
 
     cout << "SPEELPENNINGS PRODUCT (ADOL-C Documented Example)\n\n";
     cout << "number of independent variables = ?  \n";
@@ -51,7 +51,7 @@ int main() {
     } // end for
     y >>= yp;
     delete[] x;                        
-    trace_off();
+    trace_off(1);
 
     tapestats(1,tape_stats);             // reading of tape statistics
     cout<<"maxlive "<<tape_stats[NUM_MAX_LIVES]<<"\n";

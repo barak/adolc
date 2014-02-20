@@ -5,7 +5,7 @@
  Contents: private functions and data types for extern (differentiated)
            functions.
  
- Copyright (c) Andreas Kowarz
+ Copyright (c) Andreas Kowarz, Jean Utke
   
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
@@ -16,8 +16,8 @@
 #if !defined(ADOLC_EXTERNFCTS_P_H)
 #define ADOLC_EXTERNFCTS_P_H 1
 
-#include <common.h>
-#include <externfcts.h>
+#include <adolc/common.h>
+#include <adolc/externfcts.h>
 
 BEGIN_C_DECLS
 /****************************************************************************/
@@ -27,7 +27,10 @@ BEGIN_C_DECLS
 
 ext_diff_fct *get_ext_diff_fct(int index);
 
-void init_ext_diff_fct(ext_diff_fct *edfct);
+/**
+ * initialize with defaults
+ */
+void edf_init(ext_diff_fct *edfct);
 
 END_C_DECLS
 

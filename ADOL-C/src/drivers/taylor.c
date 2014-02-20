@@ -12,10 +12,10 @@
  recipient's acceptance of the terms of the accompanying license file.
  
 ----------------------------------------------------------------------------*/
-#include <drivers/taylor.h>
-#include <interfaces.h>
-#include <adalloc.h>
-#include <taping_p.h>
+#include <adolc/drivers/taylor.h>
+#include <adolc/interfaces.h>
+#include <adolc/adalloc.h>
+#include "taping_p.h"
 
 #include <math.h>
 
@@ -117,6 +117,8 @@ void freetensor( int m, int n, int d, double** tensor ) {
 
 
 long binomi(int n, int k) {
+    long double accum = 1;
+    unsigned int i;
 
     if (k > n)
         return 0;
@@ -124,8 +126,6 @@ long binomi(int n, int k) {
     if (k > n/2)
         k = n-k;
 
-    long double accum = 1;
-    unsigned int i;
     for (i = 1; i <= k; i++)
          accum = accum * (n-k+i) / i;
 
@@ -260,13 +260,41 @@ void convert( int p, int d, int *im, int *multi ) {
 }
 
 /*--------------------------------------------------------------------------*/
-int address( int d, int* im ) {
-    int i,
-    add = 0;
+int tensor_address( int d, int* multi) {
+    int i, j, max, ind;
+    int add = 0;
+    int *im = (int*) malloc(d*sizeof(int));
+    int *mymulti = (int*) malloc(d*sizeof(int));
+
+    max = 0;
+    ind = d-1;
+    for (i=0; i<d; i++) {
+        mymulti[i] = multi[i];
+        if (mymulti[i] > max)
+            max = mymulti[i];
+        im[i] = 0;
+    }
+
+    for (i=0; i<d; i++) {
+        if (mymulti[i] == max) 
+        { im[ind] = mymulti[i];
+          mymulti[i] = 0;
+          max = 0;
+          ind -= 1;
+          for (j=0; j<d; j++)
+            if (mymulti[j] > max)
+              max = mymulti[j];
+        }
+    }
 
     for (i=0; i<d; i++)
+      {
         add += binomi(im[i]+i,i+1);
-    return add;
+      }
+    free((char*) im);
+    free((char*) mymulti);
+
+    return add; 
 }
 
 
@@ -349,7 +377,7 @@ int LUFactorization( double** J, int n, int* RI, int* CI ) {
                 }
         if (ZERO > v) {
             fprintf(DIAG_OUT,
-                    "Error:LUFactorisation(..): no Pivot in step %d (%le)\n",k+1,v);
+                    "Error:LUFactorisation(..): no Pivot in step %d (%E)\n",k+1,v);
             return -(k+1);
         }
         /* row and column change resp. */
@@ -396,7 +424,7 @@ void GauszSolve( double** J, int n, int* RI, int* CI, double* b ) {
 
 
 /****************************************************************************/
-int jac_solv( unsigned short tag, int n, double* x, double* b, unsigned short mode ) {
+int jac_solv( unsigned short tag, int n, const double* x, double* b, unsigned short mode ) {
     double *y;
     int i, newX = 0;
     int rc = 3;
@@ -563,12 +591,17 @@ int inverse_Taylor_prop( short tag, int n, int d,
     }
     ii = bd;
     for (i=0; i<n; i++)
+      {
         for (j=0; j<d; j++)
 	{
             Xhelp[i][j] = 0;
             X[i][j+1] = 0;
             W[i][j] = 0;
 	}
+        for (j=0; j<n; j++)
+	  for (l=0; l<=d; l++)
+	    A[i][j][l] = 0;
+      }
 
     while (--ii > 0) {
         di = dd[ii-1]-1;
@@ -581,13 +614,13 @@ int inverse_Taylor_prop( short tag, int n, int d,
                 if (l == 0)
                     bi = w[i]-Y[i][0];
                 else
-                    bi = W[i][l-1]-Y[i][l];
+		    bi = W[i][l-1]-Y[i][l];
                 for (j=0; j<n; j++)
                     if (nonzero[i][j]>1) {
                         Aij = A[i][j];
-			indexA = 1;
+			indexA = l-1;
                         Xj = X[j]+l;
-			indexX = l-1;
+			indexX = 1;
 			if (da == l-1)
 			  {
                             bi += (*(++Aij))*(*(--Xj));
@@ -598,20 +631,19 @@ int inverse_Taylor_prop( short tag, int n, int d,
 			      {
 				bi += (*(++Aij))*(*(--Xj));
 				bi += A[i][j][indexA]*X[j][indexX];
-				indexA++;
-				indexX--;
+				indexA--;
+				indexX++;
 			      }
 			  }
                     }
                 b[i] = -bi;
             }
             MINDEC(rc,jac_solv(tag,n,xold,b,2));
-            if (rc == -3)
+           if (rc == -3)
                 return -3;
             for (i=0; i<n; i++) {
-                X[i][l] += b[i];
-                /* 981214 new nl */
-                Xhelp[i][l-1] += b[i];
+	      X[i][l] += b[i];
+	      Xhelp[i][l-1] += b[i];
             }
         }
     }
@@ -638,7 +670,7 @@ int inverse_tensor_eval( short tag, int n, int d, int p,
     for(i=0;i<n;i++)
         for(j=0;j<dimten;j++)
             tensor[i][j] = 0;
-    MINDEC(rc,zos_forward(1,n,n,0,x,y));
+    MINDEC(rc,zos_forward(tag,n,n,0,x,y));
     if (d > 0) {
         if ((d != dold) || (p != pold)) {
             if (pold) { /* olvo 980728 */
@@ -698,7 +730,9 @@ int inverse_tensor_eval( short tag, int n, int d, int p,
                 ptr = &coeff_list[i];
                 do {
                     for(j=0;j<n;j++)
+		      {
                         tensor[j][ptr->a] += X[j][ptr->b]*ptr->c;
+		      }
                     ptr = ptr->next;
                 } while (ptr != NULL);
             }
@@ -737,7 +771,7 @@ int tensor_eval( short tag, int m, int n, int d, int p,
         for (j=0; j<dimten; j++)
             tensor[i][j] = 0;
     if (d == 0) {
-        MINDEC(rc,zos_forward(1,m,n,0,x,y));
+        MINDEC(rc,zos_forward(tag,m,n,0,x,y));
     } else {
         if ((d != dold) || (p != pold)) {
             if (pold) {
@@ -776,10 +810,12 @@ int tensor_eval( short tag, int m, int n, int d, int p,
                     for (k=0; k<bd; k++)
                         do {
                             for (j=0; j<m; j++)
+			      {
                                 tensor[j][ptr[k]->a] += Y[0][j][k]*ptr[k]->c;
-                            ptr[k] = ptr[k]->next;
+			      }
+                           ptr[k] = ptr[k]->next;
                         } while (ptr[k] != NULL);
-                    if (dim-i < bd)
+                    if (dim-i <= bd)
                         bd = dim-i-1;
                     ctr = 0;
                 }
@@ -811,7 +847,7 @@ int tensor_eval( short tag, int m, int n, int d, int p,
                                 tensor[j][ptr[k]->a] += Y[j][k][ptr[k]->b-1]*ptr[k]->c;
                             ptr[k] = ptr[k]->next;
                         } while (ptr[k] != NULL);
-                    if (dim-i < bd)
+                    if (dim-i <= bd)
                         bd = dim-i-1;
                     ctr = 0;
                 }
@@ -859,7 +895,7 @@ void tensor_value( int d, int m, double *y, double **tensor, int *multi ) {
                     max = multi[j];
         }
     }
-    add = address(d,im);
+    add = tensor_address(d,im);
     for (i=0; i<m; i++)
         y[i] = tensor[i][add];
     free((char*) im);

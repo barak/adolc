@@ -12,21 +12,17 @@
 
 AM_CFLAGS               = @ac_adolc_cflags@
 AM_CXXFLAGS             = @ac_adolc_cxxflags@
-AM_CPPFLAGS             = -I$(top_srcdir)/ADOL-C/src
+AM_CPPFLAGS             = -I$(top_builddir)/ADOL-C/include -I$(top_srcdir)/ADOL-C/include
 
-if SPARSE
-LDADD                   = -ladolc $(libdir)/libColPack.a
-AM_LDFLAGS              = -L../src
-else
-LDADD                   = -ladolc 
-AM_LDFLAGS              = -L../src
-endif
-
-INCLUDES                = -I$(top_builddir)
+LDADD                   = -l${adolclib}
+AM_LDFLAGS              = -L$(top_builddir)/ADOL-C
 
 MAINTAINERCLEANFILES    = Makefile.in *~ *.orig ADOLC-*.tap
 
-EXTRA_DIST              = Makefile.win
+EXTRA_DIST              = adolc_examples.sln \
+                          detexam.vcxproj speelpenning.vcxproj odexam.vcxproj \
+                          tapeless_scalar.vcxproj tapeless_vector.vcxproj \
+                          Readme_VC++.txt
 
 if ADDEXA
 SUBDIRS                 = additional_examples
@@ -37,8 +33,9 @@ SUBDIRS                 = additional_examples
 endif
 
 if DOCEXA
-noinst_PROGRAMS         = detexam speelpenning powexam odexam \
+noinst_PROGRAMS         = detexam speelpenning powexam odexam luexam \
                           tapeless_scalar tapeless_vector
+endif
 
 detexam_SOURCES         = detexam.cpp
 
@@ -48,7 +45,8 @@ powexam_SOURCES         = powexam.cpp
 
 odexam_SOURCES          = odexam.cpp 
 
+luexam_SOURCES          = luexam.cpp
+
 tapeless_scalar_SOURCES = tapeless_scalar.cpp
 
 tapeless_vector_SOURCES = tapeless_vector.cpp
-endif

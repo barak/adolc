@@ -4,28 +4,39 @@
  Revision: $Id$
  Contents: "Easy To Use" C++ interfaces of SPARSE package
  
- Copyright (c) Andrea Walther
-  
+
+ Copyright (c) Andrea Walther, Benjamin Letschert, Kshitij Kulshreshtha
+
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
  recipient's acceptance of the terms of the accompanying license file.  
   
 ----------------------------------------------------------------------------*/
+#include <adolc/sparse/sparsedrivers.h>
+#include "oplate.h"
+#include <adolc/adalloc.h>
+#include <adolc/interfaces.h>
+#include "taping_p.h"
 
+#if defined(ADOLC_INTERNAL)
+#    if HAVE_CONFIG_H
+#        include "config.h"
+#    endif
+#endif
 
-#include <sparse/sparsedrivers.h>
-#include <oplate.h>
-#include <adalloc.h>
-#include <interfaces.h>
-#include <taping_p.h>
-
-#include <../../ThirdParty/ColPack/ColPackHeaders.h>
+#if HAVE_LIBCOLPACK
+#include <ColPack/ColPackHeaders.h>
+#endif
 
 #include <math.h>
 #include <cstring>
 
+#if HAVE_LIBCOLPACK
 using namespace ColPack;
+#endif
+
 using namespace std;
+
 
 /****************************************************************************/
 /*******       sparse Jacobains, separate drivers             ***************/
@@ -34,13 +45,13 @@ using namespace std;
 /*--------------------------------------------------------------------------*/
 /*                                                sparsity pattern Jacobian */
 /*--------------------------------------------------------------------------*/
-/*                                                                          */
+/*                                                                         */
 
 int jac_pat(
-    short        tag,        /* tape identification                        */
-    int          depen,      /* number of dependent variables              */
-    int          indep,      /* number of independent variables            */
-    double       *basepoint, /* independant variable values                */
+    short          tag,       /* tape identification                       */
+    int            depen,     /* number of dependent variables             */
+    int            indep,     /* number of independent variables           */
+    const double  *basepoint, /* independant variable values               */
     unsigned int **crs,
     /* returned compressed row block-index storage                         */
     int          *options
@@ -71,7 +82,7 @@ int jac_pat(
         options[0] = 0; /* default */
     if (( options[1] < 0 ) || (options[1] > 1 ))
         options[1] = 0; /* default */
-    if (( options[2] < 0 ) || (options[2] > 2 ))
+    if (( options[2] < -1 ) || (options[2] > 2 ))
         options[2] = 0; /* default */
 
     if (options[0] == 0) {
@@ -103,18 +114,27 @@ void generate_seed_jac
                                0 - column compression (default)
                                1 - row compression                */
 ) 
+#if HAVE_LIBCOLPACK
 {
   int dummy;
 
-  BipartiteGraphPartialColoringInterface *g = new BipartiteGraphPartialColoringInterface;
+    BipartiteGraphPartialColoringInterface *g = new BipartiteGraphPartialColoringInterface(SRC_MEM_ADOLC, JP, m, n);
 
-  if (option == 1)
-    g->GenerateSeedJacobian(JP, m, n, Seed, p, &dummy, 
-                            "LEFT_PARTIAL_DISTANCE_TWO", "SMALLEST_LAST"); 
-  else
-    g->GenerateSeedJacobian(JP, m, n, Seed, &dummy, p, 
-                            "RIGHT_PARTIAL_DISTANCE_TWO", "SMALLEST_LAST"); 
+    if (option == 1) 
+      g->GenerateSeedJacobian_unmanaged(Seed, p, &dummy, 
+					"SMALLEST_LAST","ROW_PARTIAL_DISTANCE_TWO"); 
+    else 
+      g->GenerateSeedJacobian_unmanaged(Seed, &dummy, p, 
+					"SMALLEST_LAST","COLUMN_PARTIAL_DISTANCE_TWO"); 
+    delete g;
+
 }
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
 
 /****************************************************************************/
 /*******        sparse Hessians, separate drivers             ***************/
@@ -125,16 +145,18 @@ void generate_seed_jac
 /*                                                                           */
 
 int hess_pat(
-    short        tag,        /* tape identification                        */
-    int          indep,      /* number of independent variables            */
-    double       *basepoint, /* independant variable values                */
+    short          tag,        /* tape identification                        */
+    int            indep,      /* number of independent variables            */
+    const double  *basepoint,  /* independant variable values                */
     unsigned int **crs,
     /* returned compressed row block-index storage                         */
     int          option
     /* control option
        option : test the computational graph control flow
                                0 - safe mode (default)
-                               1 - tight mode                              */
+                               1 - tight mode
+                               2 - old safe mode 
+                               3 - old tight mode                         */
 
 ) {
     int         rc= -1;
@@ -148,13 +170,17 @@ int hess_pat(
         for (i=0; i<indep; i++)
             crs[i] = NULL;
 
-    if (( option < 0 ) || (option > 2 ))
+    if (( option < 0 ) || (option > 3 ))
       option = 0;   /* default */
 
-    if (option == 1)
-      rc = nonl_ind_forward_tight(tag, indep, basepoint, crs);
+    if (option == 3)
+	rc = nonl_ind_old_forward_tight(tag, 1, indep, basepoint, crs);
+    else if (option == 2)
+	rc = nonl_ind_old_forward_safe(tag, 1, indep, basepoint, crs);
+    else if (option == 1)
+      rc = nonl_ind_forward_tight(tag, 1, indep, basepoint, crs);
     else
-      rc = nonl_ind_forward_safe(tag, indep, basepoint, crs);
+      rc = nonl_ind_forward_safe(tag, 1, indep, basepoint, crs);
 
     return(rc);
 }
@@ -169,19 +195,38 @@ void generate_seed_hess
                     option : way of compression
                                0 - indirect recovery (default)
                                1 - direct recovery                */
-) 
+)
+#if HAVE_LIBCOLPACK 
 {
-  int dummy;
+  int seed_rows;
 
-  GraphColoringInterface *g = new GraphColoringInterface;
+  GraphColoringInterface *g = new GraphColoringInterface(SRC_MEM_ADOLC, HP, n);
 
   if (option == 0)
-    g->GenerateSeedHessian(HP, n, Seed, &dummy, p, 
-		  	         "ACYCLIC_FOR_INDIRECT_RECOVERY", "NATURAL"); 
+    g->GenerateSeedHessian_unmanaged(Seed, &seed_rows, p, 
+		  	   "SMALLEST_LAST","ACYCLIC_FOR_INDIRECT_RECOVERY"); 
   else
-    g->GenerateSeedHessian(HP, n, Seed, &dummy, p, 
-			   "STAR", "SMALLEST_LAST"); 
+    g->GenerateSeedHessian_unmanaged(Seed, &seed_rows, p, 
+			   "SMALLEST_LAST","STAR"); 
+  delete g;
+}
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
 
+static void deepcopy_HP(unsigned int ***HPnew, unsigned int **HP, int indep)
+{
+    int i,j,s;
+    *HPnew = (unsigned int **)malloc(indep*sizeof(unsigned int *));
+    for (i=0; i<indep; i++) {
+       s=HP[i][0];
+       (*HPnew)[i] = (unsigned int *)malloc((s+1)*(sizeof(unsigned int)));
+       for (j=0; j<=s; j++)
+           (*HPnew)[i][j] = HP[i][j];
+    }
 }
 
 /****************************************************************************/
@@ -193,7 +238,7 @@ int sparse_jac(
     int            depen,      /* number of dependent variables           */
     int            indep,      /* number of independent variables         */
     int            repeat,     /* indicated repeated call with same seed  */
-    double        *basepoint,  /* independant variable values             */
+    const double  *basepoint,  /* independant variable values             */
     int           *nnz,        /* number of nonzeros                      */
     unsigned int **rind,       /* row index                               */
     unsigned int **cind,       /* column index                            */
@@ -213,14 +258,17 @@ int sparse_jac(
                     options[3] : way of compression
                                0 - column compression (default)
                                1 - row compression                         */
-) {
+)
+#if HAVE_LIBCOLPACK
+{
     int i;
     unsigned int j;
     SparseJacInfos sJinfos;
-    int dummy;
-    int ret_val;
+    int ret_val = 0;
     BipartiteGraphPartialColoringInterface *g;
     TapeInfos *tapeInfos;
+    JacobianRecovery1D *jr1d;
+    JacobianRecovery1D jr1d_loc;
 
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
@@ -230,7 +278,7 @@ int sparse_jac(
         options[0] = 0; /* default */
       if (( options[1] < 0 ) || (options[1] > 1 ))
         options[1] = 0; /* default */
-      if (( options[2] < 0 ) || (options[2] > 2 ))
+      if (( options[2] < -1 ) || (options[2] > 2 ))
         options[2] = 0; /* default */
       if (( options[3] < 0 ) || (options[3] > 1 ))
         options[3] = 0; /* default */
@@ -238,11 +286,14 @@ int sparse_jac(
       sJinfos.JP    = (unsigned int **) malloc(depen*sizeof(unsigned int *));
       ret_val = jac_pat(tag, depen, indep, basepoint, sJinfos.JP, options);
       
+
       if (ret_val < 0) {
 	printf(" ADOL-C error in sparse_jac() \n");
 	return ret_val;
       }
       
+      sJinfos.depen = depen;
+      sJinfos.nnz_in = depen;
       sJinfos.nnz_in = 0;
       for (i=0;i<depen;i++) {
             for (j=1;j<=sJinfos.JP[i][0];j++)
@@ -250,27 +301,46 @@ int sparse_jac(
       }
       
       *nnz = sJinfos.nnz_in;
-      
-      
-      FILE *fp_JP;
+
+      if (options[2] == -1)
+	{
+	  (*rind) = (unsigned int*)calloc(*nnz,sizeof(unsigned int));
+	  (*cind) = (unsigned int*)calloc(*nnz,sizeof(unsigned int));
+	  unsigned int index = 0;
+	  for (i=0;i<depen;i++) 
+            for (j=1;j<=sJinfos.JP[i][0];j++)
+	      {
+ 		(*rind)[index] = i;
+ 		(*cind)[index++] = sJinfos.JP[i][j];
+	      }
+	}
 			
-      g = new BipartiteGraphPartialColoringInterface;
+      /* sJinfos.Seed is memory managed by ColPack and will be deleted 
+       * along with g. We only keep it in sJinfos for the repeat != 0 case */
+
+      g = new BipartiteGraphPartialColoringInterface(SRC_MEM_ADOLC, sJinfos.JP, depen, indep);
+      jr1d = new JacobianRecovery1D;
 	
       if (options[3] == 1)
-	g->GenerateSeedJacobian(sJinfos.JP, depen, indep, &(sJinfos.Seed), &(sJinfos.p), &dummy, 
-				"LEFT_PARTIAL_DISTANCE_TWO", "SMALLEST_LAST"); 
+	{
+	  g->GenerateSeedJacobian(&(sJinfos.Seed), &(sJinfos.seed_rows), 
+				  &(sJinfos.seed_clms), "SMALLEST_LAST","ROW_PARTIAL_DISTANCE_TWO"); 
+	  sJinfos.seed_clms = indep;
+	  ret_val = sJinfos.seed_rows;
+	}  
       else
-	g->GenerateSeedJacobian(sJinfos.JP, depen, indep, &(sJinfos.Seed), &dummy, &(sJinfos.p), 
-				"RIGHT_PARTIAL_DISTANCE_TWO", "SMALLEST_LAST"); 
+	{
+	  g->GenerateSeedJacobian(&(sJinfos.Seed), &(sJinfos.seed_rows), 
+                                &(sJinfos.seed_clms), "SMALLEST_LAST","COLUMN_PARTIAL_DISTANCE_TWO"); 
+	  sJinfos.seed_rows = depen;
+	  ret_val = sJinfos.seed_clms;
+	}
       
-      if (options[3] == 1)
-	sJinfos.B = myalloc2(sJinfos.p,indep);
-      else
-	sJinfos.B = myalloc2(depen,sJinfos.p);
-      
-      sJinfos.y=myalloc1(depen);
+      sJinfos.B = myalloc2(sJinfos.seed_rows,sJinfos.seed_clms);
+      sJinfos.y = myalloc1(depen);
       
       sJinfos.g = (void *) g;
+      sJinfos.jr1d = (void *) jr1d;
       setTapeInfoJacSparse(tag, sJinfos);
       tapeInfos=getTapeInfos(tag);
       memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
@@ -279,13 +349,16 @@ int sparse_jac(
       {
 	tapeInfos=getTapeInfos(tag);
 	memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
-	sJinfos.nnz_in = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.nnz_in;
-	sJinfos.JP     = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.JP;
-    	sJinfos.B      = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.B;
-	sJinfos.y      = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.y;
-        sJinfos.Seed   = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.Seed;
-        sJinfos.p      = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.p;
+	sJinfos.depen    = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.depen;
+	sJinfos.nnz_in    = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.nnz_in;
+	sJinfos.JP        = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.JP;
+    	sJinfos.B         = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.B;
+	sJinfos.y         = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.y;
+        sJinfos.Seed      = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.Seed;
+        sJinfos.seed_rows = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.seed_rows;
+        sJinfos.seed_clms = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.seed_clms;
         g = (BipartiteGraphPartialColoringInterface *)ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.g;
+	jr1d = (JacobianRecovery1D *)ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.jr1d;
       }
 	
     if (sJinfos.nnz_in != *nnz) {
@@ -295,6 +368,9 @@ int sparse_jac(
         return -3;
     }
 
+    if (options[2] == -1)
+      return ret_val;
+
     /* compute jacobian times matrix product */
 
     if (options[3] == 1)
@@ -302,22 +378,45 @@ int sparse_jac(
         ret_val = zos_forward(tag,depen,indep,1,basepoint,sJinfos.y);
         if (ret_val < 0) 
 	  return ret_val;
-        MINDEC(ret_val,fov_reverse(tag,depen,indep,sJinfos.p,sJinfos.Seed,sJinfos.B));
+        MINDEC(ret_val,fov_reverse(tag,depen,indep,sJinfos.seed_rows,sJinfos.Seed,sJinfos.B));
       }
     else
-      ret_val = fov_forward(tag, depen, indep, sJinfos.p, basepoint, sJinfos.Seed, sJinfos.y, sJinfos.B);
+      ret_val = fov_forward(tag, depen, indep, sJinfos.seed_clms, basepoint, sJinfos.Seed, sJinfos.y, sJinfos.B);
     
-    /* recover compressed Jacobian => ColPack library */
 
-    if (options[3] == 1)
-      JacobianRecovery1D::RecoverForPD2RowWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
-    else
-      JacobianRecovery1D::RecoverForPD2ColumnWise_CoordinateFormat(g, sJinfos.B, sJinfos.JP, rind, cind, values);
-    
+    /* recover compressed Jacobian => ColPack library */
+ 
+    if (*values != NULL && *rind != NULL && *cind != NULL) {
+      // everything is preallocated, we assume correctly
+      // call usermem versions
+      if (options[3] == 1)
+       jr1d->RecoverD2Row_CoordinateFormat_usermem(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+     else
+       jr1d->RecoverD2Cln_CoordinateFormat_usermem(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+    } else {
+      // at least one of rind cind values is not allocated, deallocate others
+      // and call unmanaged versions
+      if (*values != NULL)
+	  free(*values);
+      if (*rind != NULL)
+	  free(*rind);
+      if (*cind != NULL)
+	  free(*cind);
+      if (options[3] == 1)
+       jr1d->RecoverD2Row_CoordinateFormat_unmanaged(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+     else
+       jr1d->RecoverD2Cln_CoordinateFormat_unmanaged(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+    }
+
     return ret_val;
 
 }
-
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
 
 /****************************************************************************/
 /*******        sparse Hessians, complete driver              ***************/
@@ -327,7 +426,7 @@ int sparse_hess(
     short          tag,        /* tape identification                     */
     int            indep,      /* number of independent variables         */
     int            repeat,     /* indicated repeated call with same seed  */
-    double        *basepoint,  /* independant variable values             */
+    const double  *basepoint,  /* independant variable values             */
     int           *nnz,        /* number of nonzeros                      */
     unsigned int **rind,       /* row index                               */
     unsigned int **cind,       /* column index                            */
@@ -337,10 +436,14 @@ int sparse_hess(
                     options[0] :test the computational graph control flow
                                0 - safe mode (default)
                                1 - tight mode
+			       2 - old safe mode
+			       3 - old tight mode
                     options[1] : way of recovery
                                0 - indirect recovery
                                1 - direct recovery                         */
-) {
+)
+#if HAVE_LIBCOLPACK
+{
     int i, l;
     unsigned int j;
     SparseHessInfos sHinfos;
@@ -351,28 +454,44 @@ int sparse_hess(
     GraphColoringInterface *g;
     TapeInfos *tapeInfos;
     double *v, *w, **X, yt, lag=1;
+    HessianRecovery *hr;
 
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
 
     /* Generate sparsity pattern, determine nnz, allocate memory */
-    if (repeat == 0) {
-        if (( options[0] < 0 ) || (options[0] > 1 ))
+    if (repeat <= 0) {
+        if (( options[0] < 0 ) || (options[0] > 3 ))
           options[0] = 0; /* default */
         if (( options[1] < 0 ) || (options[1] > 1 ))
           options[1] = 0; /* default */
 
-        sHinfos.HP    = (unsigned int **) malloc(indep*sizeof(unsigned int *));
+	if (repeat == 0)
+	  {
+	    sHinfos.HP    = (unsigned int **) malloc(indep*sizeof(unsigned int *));
 
-        /* generate sparsity pattern */
-        ret_val = hess_pat(tag, indep, basepoint, sHinfos.HP, options[0]);
+	    /* generate sparsity pattern */
+	    ret_val = hess_pat(tag, indep, basepoint, sHinfos.HP, options[0]);
 
-        if (ret_val < 0) {
-            printf(" ADOL-C error in sparse_hess() \n");
-            return ret_val;
-        }
+	    if (ret_val < 0) {
+	      printf(" ADOL-C error in sparse_hess() \n");
+	      return ret_val;
+	    }
+	  }
+	else
+	  {
+	    tapeInfos=getTapeInfos(tag);
+	    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+            if (indep != ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.indep) {
+                fprintf(DIAG_OUT,"ADOL-C Error: wrong number of independents stored in hessian pattern.\n");
+                exit(-1);
+            }
+	    deepcopy_HP(&sHinfos.HP,ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP,indep);	    
+	  }
 
-        sHinfos.nnz_in = 0;
+	sHinfos.indep = indep;
+	sHinfos.nnz_in = 0;
+
         for (i=0;i<indep;i++) {
             for (j=1;j<=sHinfos.HP[i][0];j++)
 	      if ((int) sHinfos.HP[i][j] >= i)
@@ -385,23 +504,24 @@ int sparse_hess(
 
 	Seed = NULL;
 
-	g = new GraphColoringInterface;
+	g = new GraphColoringInterface(SRC_MEM_ADOLC, sHinfos.HP, indep);
+	hr = new HessianRecovery;
 
 	if (options[1] == 0)
-	  g->GenerateSeedHessian(sHinfos.HP, indep, &Seed, &dummy, &sHinfos.p, 
-				 "ACYCLIC_FOR_INDIRECT_RECOVERY", "NATURAL"); 
+	  g->GenerateSeedHessian(&Seed, &dummy, &sHinfos.p, 
+				 "SMALLEST_LAST","ACYCLIC_FOR_INDIRECT_RECOVERY"); 
 	else
-	  g->GenerateSeedHessian(sHinfos.HP, indep, &Seed, &dummy, &sHinfos.p, 
-		  	         "STAR", "SMALLEST_LAST"); 
+	  g->GenerateSeedHessian(&Seed, &dummy, &sHinfos.p, 
+		  	         "SMALLEST_LAST","STAR"); 
 
-	sHinfos.Hcomp = myalloc2(indep,sHinfos.p);
+       	sHinfos.Hcomp = myalloc2(indep,sHinfos.p);
         sHinfos.Xppp = myalloc3(indep,sHinfos.p,1);
 
 	for (i=0; i<indep; i++)
 	  for (l=0;l<sHinfos.p;l++)
             sHinfos.Xppp[i][l][0] = Seed[i][l];
 
-	delete[] Seed;
+	/* Seed will be freed by ColPack when g is freed */
 	Seed = NULL;
 
         sHinfos.Yppp = myalloc3(1,sHinfos.p,1);
@@ -413,9 +533,13 @@ int sparse_hess(
 	sHinfos.Upp[0][1] = 0;
 
 	sHinfos.g = (void *) g;
+	sHinfos.hr = (void *) hr;
+
 	setTapeInfoHessSparse(tag, sHinfos);
+
 	tapeInfos=getTapeInfos(tag);
 	memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+
     }
     else
       {
@@ -430,8 +554,8 @@ int sparse_hess(
     	sHinfos.Upp    = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.Upp;
         sHinfos.p      = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.p;
 	g = (GraphColoringInterface *)ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.g;
+	hr = (HessianRecovery *)ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.hr;
       }
-
 
     if (sHinfos.Upp == NULL) {
         printf(" ADOL-C error in sparse_hess():"
@@ -445,6 +569,9 @@ int sparse_hess(
                " new call with repeat = 0 \n");
         return -3;
     }
+
+    if (repeat == -1)
+      return ret_val;
 
 //     this is the most efficient variant. However, there is somewhere a bug in hos_ov_reverse
 //     ret_val = hov_wk_forward(tag,1,indep,1,2,sHinfos.p,basepoint,sHinfos.Xppp,&y,sHinfos.Yppp);
@@ -483,24 +610,112 @@ int sparse_hess(
 
     /* recover compressed Hessian => ColPack library */
 
-    if (options[1] == 0)
-      HessianRecovery::IndirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
-    else
-      HessianRecovery::DirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+//      if (options[1] == 0)
+//        HessianRecovery::IndirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+//      else
+//        HessianRecovery::DirectRecover_CoordinateFormat(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
  
+    if (*values != NULL && *rind != NULL && *cind != NULL) {
+     // everything is preallocated, we assume correctly
+     // call usermem versions
+     if (options[1] == 0)
+       hr->IndirectRecover_CoordinateFormat_usermem(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+     else
+       hr->DirectRecover_CoordinateFormat_usermem(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+    } else {
+      // at least one of rind cind values is not allocated, deallocate others
+      // and call unmanaged versions
+      if (*values != NULL)
+	  free(*values);
+      if (*rind != NULL)
+	  free(*rind);
+      if (*cind != NULL)
+	  free(*cind);
+     if (options[1] == 0)
+       hr->IndirectRecover_CoordinateFormat_unmanaged(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+     else
+       hr->DirectRecover_CoordinateFormat_unmanaged(g, sHinfos.Hcomp, sHinfos.HP, rind, cind, values);
+    }
     return ret_val;
 
 }
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
+
+
+/****************************************************************************/
+/*******      sparse Hessians, set and get sparsity pattern   ***************/
+/****************************************************************************/
+
+void set_HP(
+    short          tag,        /* tape identification                     */
+    int            indep,      /* number of independent variables         */
+    unsigned int ** HP)
+#ifdef SPARSE
+{
+    SparseHessInfos sHinfos;
+    TapeInfos *tapeInfos;
+
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+
+    tapeInfos=getTapeInfos(tag);
+    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+    sHinfos.nnz_in = 0;
+    deepcopy_HP(&sHinfos.HP,HP,indep);
+    sHinfos.Hcomp  = NULL;
+    sHinfos.Xppp   = NULL;
+    sHinfos.Yppp   = NULL;
+    sHinfos.Zppp   = NULL;
+    sHinfos.Upp    = NULL;
+    sHinfos.p      = 0;
+    sHinfos.g      = NULL;
+    sHinfos.hr     = NULL;
+    sHinfos.indep  = indep;
+    setTapeInfoHessSparse(tag, sHinfos);
+}
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if sparse configuration option was used\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
+
+void get_HP(
+    short          tag,        /* tape identification                     */
+    int            indep,      /* number of independent variables         */
+    unsigned int *** HP)
+#ifdef SPARSE
+{
+    TapeInfos *tapeInfos;
+
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+
+    tapeInfos=getTapeInfos(tag);
+    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+    deepcopy_HP(HP,ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP,indep);
+}
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if sparse configuration option was used\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
 
 /*****************************************************************************/
 /*                                                    JACOBIAN BLOCK PATTERN */
 
 /* ------------------------------------------------------------------------- */
 int bit_vector_propagation(
-    short  tag,        /* tape identification                        */
-    int    depen,      /* number of dependent variables              */
-    int    indep,      /* number of independent variables            */
-    double *basepoint, /* independant variable values                */
+    short          tag,        /* tape identification                */
+    int            depen,      /* number of dependent variables      */
+    int            indep,      /* number of independent variables    */
+    const double  *basepoint, /* independant variable values         */
     unsigned int **crs,
     /* compressed block row storage                                  */
     int *options       /* control options                            */
@@ -830,6 +1045,287 @@ int bit_vector_propagation(
 
     return(rc);
 }
+
+BEGIN_C_DECLS
+/*****************************************************************************/
+/*                                                FREE SPARSE JACOBIAN INFOS */
+
+/* ------------------------------------------------------------------------- */
+void freeSparseJacInfos(double *y, double **B, unsigned int **JP, void *g, 
+			void *jr1d, int seed_rows, int seed_clms, int depen)
+{
+    if(y)
+      myfree1(y);
+
+    if(B)
+      myfree2(B);
+
+    for (int i=0;i<depen;i++) {
+      free(JP[i]);
+    }
+
+    free(JP);
+
+#ifdef HAVE_LIBCOLPACK
+     if (g) 
+       delete (BipartiteGraphPartialColoringInterface *) g;
+
+    if (jr1d)
+	delete (JacobianRecovery1D*)jr1d;
+#endif
+}
+/*****************************************************************************/
+/*                                                 FREE SPARSE HESSIAN INFOS */
+
+/* ------------------------------------------------------------------------- */
+void freeSparseHessInfos(double **Hcomp, double ***Xppp, double ***Yppp, double ***Zppp, 
+                         double **Upp, unsigned int **HP,
+                         void *g, void *hr, int p, int indep)
+{
+    if(Hcomp)
+      myfree2(Hcomp);
+
+   if(Xppp)
+      myfree3(Xppp);
+
+   if(Yppp)
+      myfree3(Yppp);
+
+   if(Zppp)
+      myfree3(Zppp);
+
+   if(Upp)
+      myfree2(Upp);
+
+   if(HP)
+     {
+       for (int i=0;i<indep;i++) 
+   	 free(HP[i]);
+       free(HP);
+     }
+
+#ifdef HAVE_LIBCOLPACK
+     if (g) 
+       delete (GraphColoringInterface *) g;
+    if (hr)
+	delete (HessianRecovery*) hr;
+#endif
+}
+
+END_C_DECLS
+
+#include <adolc/adtl.h>
+
+namespace adtl {
+
+#ifdef SPARSE
+SparseJacInfos sJinfos
+     = { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
+#endif
+
+int ADOLC_get_sparse_jacobian( func_ad *const fun,
+			       int n, int m, int repeat, double* basepoints,
+			       int *nnz, unsigned int **rind,
+			       unsigned int **cind, double **values)
+#if HAVE_LIBCOLPACK
+{
+    int i;
+    unsigned int j;
+    int dummy;
+    int ret_val = -1;
+    if (!repeat) {
+    freeSparseJacInfos(sJinfos.y, sJinfos.B, sJinfos.JP, sJinfos.g, sJinfos.jr1d, sJinfos.seed_rows, sJinfos.seed_clms, sJinfos.depen);
+    //setNumDir(n);
+    setMode(ADTL_INDO);
+    {
+#ifdef __GNUC__
+	adouble x[n],y[m];
+#else
+	adouble *x, *y;
+	x = new adouble[n];
+	y = new adouble[m];
+#endif
+    for (i=0; i < n ; i++){
+      x[i] = basepoints[i];
+      //x[i].setADValue(i,1);
+    }
+    ret_val = ADOLC_Init_sparse_pattern(x,n,0);
+
+    ret_val = (*fun)(n,x,m,y);
+
+    if (ret_val < 0) {
+       printf(" ADOL-C error in tapeless sparse_jac() \n");
+       return ret_val;
+    }
+
+    ret_val = ADOLC_get_sparse_pattern(y, m, sJinfos.JP );
+#ifndef __GNUC__
+	delete[] x;
+	delete[] y;
+#endif
+    }
+    sJinfos.depen = m;
+    sJinfos.nnz_in = 0;
+    for (i=0;i<m;i++) {
+       for (j=1;j<=sJinfos.JP[i][0];j++)
+          sJinfos.nnz_in++;
+    }
+      *nnz = sJinfos.nnz_in;
+      /* sJinfos.Seed is memory managed by ColPack and will be deleted
+       * along with g. We only keep it in sJinfos for the repeat != 0 case */
+      BipartiteGraphPartialColoringInterface *g;
+      JacobianRecovery1D *jr1d;
+
+      g = new BipartiteGraphPartialColoringInterface(SRC_MEM_ADOLC, sJinfos.JP, m, n);
+      jr1d = new JacobianRecovery1D;
+
+      g->GenerateSeedJacobian(&(sJinfos.Seed), &(sJinfos.seed_rows),
+                                &(sJinfos.seed_clms), "SMALLEST_LAST","COLUMN_PARTIAL_DISTANCE_TWO");
+      sJinfos.seed_rows = m;
+
+      sJinfos.B = myalloc2(sJinfos.seed_rows,sJinfos.seed_clms);
+      sJinfos.y = myalloc1(m);
+
+      sJinfos.g = (void *) g;
+      sJinfos.jr1d = (void *) jr1d;
+
+    if (sJinfos.nnz_in != *nnz) {
+        printf(" ADOL-C error in sparse_jac():"
+               " Number of nonzeros not consistent,"
+               " repeat call with repeat = 0 \n");
+        return -3;
+    }
+
+    }
+//  ret_val = fov_forward(tag, depen, indep, sJinfos.seed_clms, basepoint, sJinfos.Seed, sJinfos.y, sJinfos.B);
+    setNumDir(sJinfos.seed_clms);
+    setMode(ADTL_FOV);
+    {
+#ifdef __GNUC__
+	adouble x[n],y[m];
+#else
+	adouble *x, *y;
+	x = new adouble[n];
+	y = new adouble[m];
+#endif
+    for (i=0; i < n ; i++){
+      x[i] = basepoints[i];
+      for (j=0; j < sJinfos.seed_clms; j++)
+	  x[i].setADValue(j,sJinfos.Seed[i][j]);
+    }
+
+    ret_val = (*fun)(n,x,m,y);
+
+    for (i=0;i<m;i++)
+       for (j=0; j< sJinfos.seed_clms;j++)
+          sJinfos.B[i][j] = y[i].getADValue(j);
+#ifndef __GNUC__
+	delete[] x;
+	delete[] y;
+#endif
+    }
+	/* recover compressed Jacobian => ColPack library */
+
+      if (*values != NULL)
+       free(*values);
+      if (*rind != NULL)
+       free(*rind);
+      if (*cind != NULL)
+       free(*cind);
+     BipartiteGraphPartialColoringInterface *g;
+     JacobianRecovery1D *jr1d;
+     g = (BipartiteGraphPartialColoringInterface*)sJinfos.g;
+     jr1d = (JacobianRecovery1D*)sJinfos.jr1d;
+     jr1d->RecoverD2Cln_CoordinateFormat_unmanaged(g, sJinfos.B, sJinfos.JP, rind, cind, values);
+
+    //delete g;
+    //delete jr1d;
+
+    return ret_val;
+
+}
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
+
+#if 0
+int ADOLC_get_sparse_jacobian(int n, int m, adouble *x, int *nnz, unsigned int *rind, unsigned int *cind, double *values)
+#if HAVE_LIBCOLPACK
+{
+    int i;
+    unsigned int j;
+    SparseJacInfos sJinfos;
+    int dummy;
+    int ret_val = -1;
+    BipartiteGraphPartialColoringInterface *g;
+    JacobianRecovery1D *jr1d;
+
+    ret_val = ADOLC_get_sparse_pattern(x, m, sJinfos.JP );
+
+    sJinfos.depen = m;
+    sJinfos.nnz_in = 0;
+    for (i=0;i<m;i++) {
+       for (j=1;j<=sJinfos.JP[i][0];j++)
+          sJinfos.nnz_in++;
+    }
+      *nnz = sJinfos.nnz_in;
+      /* sJinfos.Seed is memory managed by ColPack and will be deleted
+       * along with g. We only keep it in sJinfos for the repeat != 0 case */
+
+      g = new BipartiteGraphPartialColoringInterface(SRC_MEM_ADOLC, sJinfos.JP, m, n);
+      jr1d = new JacobianRecovery1D;
+
+      g->GenerateSeedJacobian(&(sJinfos.Seed), &(sJinfos.seed_rows),
+                                &(sJinfos.seed_clms), "SMALLEST_LAST","COLUMN_PARTIAL_DISTANCE_TWO");
+      sJinfos.seed_rows = m;
+
+      sJinfos.B = myalloc2(sJinfos.seed_rows,sJinfos.seed_clms);
+      sJinfos.y = myalloc1(m);
+
+      sJinfos.g = (void *) g;
+      sJinfos.jr1d = (void *) jr1d;
+
+    if (sJinfos.nnz_in != *nnz) {
+        printf(" ADOL-C error in sparse_jac():"
+               " Number of nonzeros not consistent,"
+               " repeat call with repeat = 0 \n");
+        return -3;
+    }
+
+//  ret_val = fov_forward(tag, depen, indep, sJinfos.seed_clms, basepoint, sJinfos.Seed, sJinfos.y, sJinfos.B);
+    for (i=0;i<m;i++)
+       for (j=0; j< sJinfos.seed_clms;j++)
+          sJinfos.B[i][j] = x[i].getADValue(j);
+
+    /* recover compressed Jacobian => ColPack library */
+
+      if (values != NULL)
+       free(values);
+      if (rind != NULL)
+       free(rind);
+      if (cind != NULL)
+       free(cind);
+     jr1d->RecoverD2Cln_CoordinateFormat_unmanaged(g, sJinfos.B, sJinfos.JP, &rind, &cind, &values);
+
+    delete g;
+    delete jr1d;
+
+    return ret_val;
+
+}
+#else
+{
+    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
+    exit(-1);
+}
+#endif
+#endif
+
+}
+
 /****************************************************************************/
 /*                                                               THAT'S ALL */
 

@@ -17,15 +17,15 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include <adolc.h>
-#include <adolc_sparse.h>
+#include <adolc/adolc.h>
+#include <adolc/adolc_sparse.h>
 
 #define tag 1
 
 void   ceval_ad(adouble *x, adouble *c);
 void   ceval(double *x, double *c);
 
-void printmat(char* name, int n, int m, double** M);
+void printmat(const char* name, int n, int m, double** M);
 
 int main() {
     int n=6, m=3;
@@ -93,6 +93,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /*--------------------------------------------------------------------------*/
 /*  same approach but using row compression                                 */
 /*--------------------------------------------------------------------------*/
@@ -107,6 +110,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /*--------------------------------------------------------------------------*/
 /*  change value of x, but not the sparsity pattern                         */
 /*--------------------------------------------------------------------------*/
@@ -129,7 +135,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
-
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /*--------------------------------------------------------------------------*/
 /*  same approach but using row compression                                 */
 /*--------------------------------------------------------------------------*/
@@ -144,6 +152,9 @@ int main() {
     for (i=0;i<nnz;i++)
         printf("%2d %2d %10.6f\n\n",rind[i],cind[i],values[i]);
 
+    free(rind); rind=NULL;
+    free(cind); cind=NULL;
+    free(values); values=NULL;
 /****************************************************************************/
 /*******       sparse Jacobians, separate drivers             ***************/
 /****************************************************************************/
@@ -221,6 +232,16 @@ int main() {
     printmat("compressed J:",m,p,Jcomp);
     printf("\n");
 
+    for (i=0;i<m;i++)
+	free(JP[i]);
+    free(JP);
+    myfree2(J);
+
+    for (i = 0; i < n; i++)
+        delete[] Seed[i];
+    delete[] Seed;
+
+    myfree2(Jcomp);
 }
 
 
@@ -243,7 +264,7 @@ void ceval_ad(adouble *x, adouble *c) {
 
 /***************************************************************************/
 
-void printmat(char* name, int m, int n, double** M) {
+void printmat(const char* name, int m, int n, double** M) {
     int i,j;
 
     printf("%s \n",name);

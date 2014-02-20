@@ -28,8 +28,8 @@
 
 /****************************************************************************/
 /*                                                                 INCLUDES */
-#include <adolc.h>
-#include <../examples/additional_examples/clock/myclock.h>
+#include <adolc/adolc.h>
+#include "../clock/myclock.h"
 
 #include <cstdlib>
 #include <time.h>
@@ -37,7 +37,7 @@
 
 /****************************************************************************/
 /*                                                                   MACROS */
-#define TIMEFORMAT " %12.6le units,   %12.6le seconds\n"
+#define TIMEFORMAT " %12.6E units,   %12.6E seconds\n"
 
 
 /****************************************************************************/
@@ -267,7 +267,7 @@ int main() {
     depTape = tapingScalarFunction(tag,indeps);
     t01 = myclock();
 
-    int tape_stats[STAT_SIZE];
+    size_t tape_stats[STAT_SIZE];
     tapestats(tag,tape_stats);
 
     fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);
@@ -318,7 +318,7 @@ int main() {
         if (controlParameters[cpZosFW] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,depTape);
         }
     }
@@ -369,7 +369,7 @@ int main() {
         if (controlParameters[cpFosFW] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,YP[0]);
         }
 
@@ -428,7 +428,7 @@ int main() {
         if (controlParameters[cpHosFW] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,YP[0]);
         }
 
@@ -794,7 +794,7 @@ int main() {
         if (controlParameters[cpFunction] > 1) {
             fprintf(stdout,"\n    Return value: %d\n",retVal);
             fprintf(stdout,"    Should be the same values:\n");
-            fprintf(stdout,"    (original) %12.8le =? %12.8le (forward from tape)\n",
+            fprintf(stdout,"    (original) %12.8E =? %12.8E (forward from tape)\n",
                     depOrig,depTape);
         }
     }
