@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 314 2012-03-30 12:50:27Z kulshres $
+## Revision: $Id: Makefile.am 483 2014-02-20 16:51:15Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -9,6 +9,8 @@
 ## recipient's acceptance of the terms of the accompanying license file.
 ## 
 ##############################################################################
+
+ACLOCAL_AMFLAGS = -I autoconf
 
 AUTOMAKE_OPTIONS     = foreign
 
@@ -35,6 +37,14 @@ EXTRA_DIST           = TODO BUGS LICENSE update_versions.sh \
 
 SUBDIRS              = ADOL-C
 
+# install pkg-config information
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = @adolclib@.pc
+
+@adolclib@.pc: adolclib.pc
+	mv $< $@
+
 test: all
 	cd ADOL-C; $(MAKE) test
 
+.PHONY: test

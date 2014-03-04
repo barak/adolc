@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ho_rev.c
- Revision: $Id: ho_rev.c 376 2012-12-14 11:22:56Z kulshres $
+ Revision: $Id: ho_rev.c 439 2013-12-02 13:30:22Z kulshres $
  Contents: Contains the routines :
            hos_reverse (higher-order-scalar reverse mode): 
               define _HOS_
@@ -374,7 +374,7 @@ int hov_ti_reverse(
     locint arg1 = 0;
     locint arg2 = 0;
 
-    double coval = 0, *d = 0;
+    double coval = 0;
 
     int indexi = 0,  indexd = 0;
 
@@ -2066,7 +2066,7 @@ int hov_ti_reverse(
 	    case subscript:
 		coval = get_val_r();
 		{
-		    size_t cnt, idx, numval = (size_t)trunc(fabs(coval));
+		    size_t idx, numval = (size_t)trunc(fabs(coval));
 		    locint vectorloc;
 		    vectorloc = get_locint_r();
 		    res = get_locint_r();
@@ -2074,7 +2074,7 @@ int hov_ti_reverse(
 		    ASSIGN_T(Targ, rpp_T[arg])
 		    idx = (size_t)trunc(fabs(TARG));
 		    if (idx >= numval)
-			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting n=%z, idx=%z\n", numval, idx);
+			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting n=%zu, idx=%zu\n", numval, idx);
 		    arg1 = vectorloc+idx;
 		    ASSIGN_A(Aarg1, rpp_A[arg1])
 		    ASSIGN_A(Ares, rpp_A[res])
@@ -2100,7 +2100,7 @@ int hov_ti_reverse(
 	    case subscript_ref:
 		coval = get_val_r();
 		{
-		    size_t cnt, idx, numval = (size_t)trunc(fabs(coval));
+		    size_t idx, numval = (size_t)trunc(fabs(coval));
 		    locint vectorloc;
 		    vectorloc = get_locint_r();
 		    res = get_locint_r();
@@ -2109,13 +2109,15 @@ int hov_ti_reverse(
 		    ASSIGN_T(Tres, rpp_T[res])
 		    idx = (size_t)trunc(fabs(TARG));
 		    if (idx >= numval)
-			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting (ref) n=%z, idx=%z\n", numval, idx);
+			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting (ref) n=%zu, idx=%zu\n", numval, idx);
 		    arg1 = (size_t)trunc(fabs(TRES));
-		    // This is actually NOP 
-                    // basically all we need is that arg1 == vectorloc[idx]
-                    // so doing a check here is probably good
+		    /*
+		     * This is actually NOP
+                     * basically all we need is that arg1 == vectorloc[idx]
+                     * so doing a check here is probably good
+                     */
 		    if (arg1 != vectorloc+idx) {
-			fprintf(DIAG_OUT, "ADOL-C error: indexed active position does not match referenced position\nindexed = %d, referenced = %d\n", vectorloc+idx, arg1);
+			fprintf(DIAG_OUT, "ADOL-C error: indexed active position does not match referenced position\nindexed = %zu, referenced = %d\n", vectorloc+idx, arg1);
 			exit(-2);
 		    }
 		    GET_TAYL(res,k,p)
@@ -2162,7 +2164,7 @@ int hov_ti_reverse(
             case ref_assign_d:      /* assign an adouble variable a    assign_d */
                 /* double value. (=) */
                 coval = get_val_r();
-		// fallthrough 
+		/* fallthrough */
             case ref_assign_d_zero: /* assign an adouble a        assign_d_zero */
             case ref_assign_d_one:  /* double value. (=)           assign_d_one */
                 arg1   = get_locint_r();
@@ -2513,7 +2515,7 @@ int hov_ti_reverse(
             case take_stock_op:                                  /* take_stock_op */
                 res = get_locint_r();
                 size = get_locint_r();
-                d = get_val_v_r(size);
+                get_val_v_r(size);
 
                 res += size;
                 for (ls=size;ls>0;ls--) {

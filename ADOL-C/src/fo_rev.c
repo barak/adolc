@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fo_rev.c
- Revision: $Id: fo_rev.c 376 2012-12-14 11:22:56Z kulshres $
+ Revision: $Id: fo_rev.c 444 2013-12-28 16:39:08Z kulshres $
  Contents: Contains the routines :
            fos_reverse (first-order-scalar reverse mode)  : define _FOS_
            fov_reverse (first-order-vector reverse mode)  : define _FOV_
@@ -22,7 +22,7 @@
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
  recipient's acceptance of the terms of the accompanying license file.
-           
+          
 ----------------------------------------------------------------------------*/
 
 /*****************************************************************************
@@ -63,7 +63,11 @@ results   Taylor-Jacobians       ------------          Taylor Jacobians
 
 /*--------------------------------------------------------------------------*/
 #ifdef _FOS_
+#ifdef _ABS_NORM_
+#define GENERATED_FILENAME "fos_an_reverse"
+#else
 #define GENERATED_FILENAME "fos_reverse"
+#endif
 
 #define RESULTS(l,indexi)  results[indexi]
 #define LAGRANGE(l,indexd) lagrange[indexd]
@@ -195,6 +199,12 @@ results   Taylor-Jacobians       ------------          Taylor Jacobians
 #include "externfcts_p.h"
 
 #include <math.h>
+#include <string.h>
+
+#ifdef ADOLC_AMPI_SUPPORT
+#include "ampi/ampi.h"
+#include "ampi/libCommon/modified.h"
+#endif
 
 BEGIN_C_DECLS
 
@@ -205,12 +215,24 @@ BEGIN_C_DECLS
 /****************************************************************************/
 /* First-Order Scalar Reverse Pass.                                         */
 /****************************************************************************/
+#ifdef _ABS_NORM_
+/****************************************************************************/
+/* Abs-Normal extended adjoint row computation.                             */
+/****************************************************************************/
+int fos_an_reverse(short  tnum,     /* tape id */
+		   int    depen,     /* consistency chk on # of deps */
+		   int    indep,     /* consistency chk on # of indeps */
+		   int    swchk,    /* consistency chk on # of switches */
+		   int    rownum,   /* required row no. of abs-normal form */
+		   double *results) /*  coefficient vectors */
+#else
 int fos_reverse(short   tnum,       /* tape id */
                 int     depen,      /* consistency chk on # of deps */
                 int     indep,      /* consistency chk on # of indeps */
                 double  *lagrange,
                 double  *results)   /*  coefficient vectors */
 
+#endif
 #else
 #if _FOV_
 /****************************************************************************/
@@ -267,10 +289,13 @@ int int_reverse_safe(
     locint arg2 = 0;
 
 #if !defined (_NTIGHT_)
-    double coval = 0, *d = 0;
+    double coval = 0;
 #endif
 
     int indexi = 0,  indexd = 0;
+#if defined(_ABS_NORM_)
+    int switchnum;
+#endif
 
     /* loop indices */
 #if defined(_FOV_)
@@ -318,35 +343,50 @@ int int_reverse_safe(
     int p = nrows;
 #endif
 
-#if !defined(ADOLC_USE_CALLOC)
-    char * c_Ptr;
-#endif
-
     /****************************************************************************/
     /*                                          extern diff. function variables */
 #if defined(_FOS_)
 # define ADOLC_EXT_FCT_U edfct->dp_U
 # define ADOLC_EXT_FCT_Z edfct->dp_Z
 # define ADOLC_EXT_FCT_POINTER fos_reverse
+# define ADOLC_EXT_FCT_IARR_POINTER fos_reverse_iArr
 # define ADOLC_EXT_FCT_COMPLETE \
   fos_reverse(m, edfct->dp_U, n, edfct->dp_Z, edfct->dp_x, edfct->dp_y)
+# define ADOLC_EXT_FCT_IARR_COMPLETE \
+  fos_reverse_iArr(iArrLength,iArr, m, edfct->dp_U, n, edfct->dp_Z, edfct->dp_x, edfct->dp_y)
 # define ADOLC_EXT_FCT_SAVE_NUMDIRS
 #else
 # define ADOLC_EXT_FCT_U edfct->dpp_U
 # define ADOLC_EXT_FCT_Z edfct->dpp_Z
 # define ADOLC_EXT_FCT_POINTER fov_reverse
+# define ADOLC_EXT_FCT_IARR_POINTER fov_reverse_iArr
 # define ADOLC_EXT_FCT_COMPLETE \
   fov_reverse(m, p, edfct->dpp_U, n, edfct->dpp_Z, edfct->dp_x, edfct->dp_y)
+# define ADOLC_EXT_FCT_IARR_COMPLETE \
+  fov_reverse_iArr(iArrLength, iArr, m, p, edfct->dpp_U, n, edfct->dpp_Z, edfct->dp_x, edfct->dp_y)
 # define ADOLC_EXT_FCT_SAVE_NUMDIRS ADOLC_CURRENT_TAPE_INFOS.numDirs_rev = nrows
 #endif
 #if !defined(_INT_REV_)
     locint n, m;
     ext_diff_fct *edfct;
+    int iArrLength;
+    int *iArr;
     int loop;
     int ext_retc;
     int oldTraceFlag;
 #endif
-
+#ifdef ADOLC_AMPI_SUPPORT
+    MPI_Op op;
+    void *buf, *rbuf;
+    int count, rcount;
+    MPI_Datatype datatype, rtype;
+    int src; 
+    int tag;
+    enum AMPI_PairedWith_E pairedWith;
+    MPI_Comm comm;
+    MPI_Status* status;
+    struct AMPI_Request_S request;
+#endif
 
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
@@ -380,23 +420,37 @@ int int_reverse_safe(
     indexi = ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS] - 1;
     indexd = ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS] - 1;
 
+#if defined(_ABS_NORM_)
+    if (! ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX] ) {
+	fprintf(DIAG_OUT, "ADOL-C error: Tape %d was not created compatible "
+		"with %s(..)\n              Please call enableMinMaxUsingAbs() "
+		"before trace_on(%d)\n", tnum, GENERATED_FILENAME, tnum);
+	exit(-1);
+    }
+    else if (swchk != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]) {
+	fprintf(DIAG_OUT, "ADOL-C error: Number of switches passed %d does not "
+		"match with the one recorded on tape %d (%d)\n",swchk,tnum,
+		ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]);
+	exit(-1);
+    }
+    else
+	switchnum = swchk - 1;
+#endif
 
+    
     /****************************************************************************/
     /*                                                  MEMORY ALLOCATION STUFF */
 
     /*--------------------------------------------------------------------------*/
 #ifdef _FOS_                                                         /* FOS */
-    rp_A = (revreal*) malloc(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES] * sizeof(revreal));
+    rp_A = (revreal*) calloc(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES], sizeof(revreal));
     if (rp_A == NULL) fail(ADOLC_MALLOC_FAILED);
     ADOLC_CURRENT_TAPE_INFOS.rp_A = rp_A;
     rp_T = (revreal *)malloc(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES] *
             sizeof(revreal));
     if (rp_T == NULL) fail(ADOLC_MALLOC_FAILED);
-#if !defined(ADOLC_USE_CALLOC)
-    c_Ptr = (char *) ADOLC_GLOBAL_TAPE_VARS.rp_A;
-    *c_Ptr = 0;
-    memcpy(c_Ptr + 1, c_Ptr, sizeof(double) *
-            ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES] - 1);
+#ifdef _ABS_NORM_
+    memset(results,0,sizeof(double)*(indep+swchk));
 #endif
 # define ADJOINT_BUFFER rp_A
 # define ADJOINT_BUFFER_ARG_L rp_A[arg]
@@ -452,6 +506,7 @@ int int_reverse_safe(
     /*                                                    TAYLOR INITIALIZATION */
 
 #if !defined(_NTIGHT_)
+
     ADOLC_CURRENT_TAPE_INFOS.rp_T = rp_T;
 
     taylor_back(tnum, &numdep, &numind, &taycheck);
@@ -625,9 +680,15 @@ int int_reverse_safe(
 
                 ASSIGN_A( Ares, ADJOINT_BUFFER[res])
 
+#if defined(_ABS_NORM_)
+		if (indexd + swchk == rownum)
+		    ARES = 1.0;
+		else
+		    ARES = 0.0;
+#else
                 FOR_0_LE_l_LT_p
                 ARES_INC = LAGRANGE(l,indexd);
-
+#endif
                 indexd--;
                 break;
 
@@ -1434,6 +1495,16 @@ int int_reverse_safe(
                 ASSIGN_A( Ares, ADJOINT_BUFFER[res])
                 ASSIGN_A( Aarg, ADJOINT_BUFFER[arg])
 
+#if defined(_ABS_NORM_) 
+		    if (rownum == switchnum) {
+			AARG = 1.0;
+		    } else {
+			results[indep+switchnum] = ARES;
+			AARG = 0.0;
+			ARES = 0.0;
+		    }
+		    switchnum--;
+#else
 #if !defined(_NTIGHT_)
                 if (TARG < 0.0)
                     FOR_0_LE_l_LT_p
@@ -1484,6 +1555,7 @@ int int_reverse_safe(
                                               AARG_INC |= aTmp;
                                             }
 #endif /* !_NTIGHT_ */
+#endif /* _ABS_NORM */
              break;
 
             /*--------------------------------------------------------------------------*/
@@ -1699,16 +1771,22 @@ int int_reverse_safe(
                 /*--------------------------------------------------------------------------*/
             case subscript:
 	        {
-		    double val = get_val_r();
-		    size_t cnt, idx, numval = (size_t)trunc(fabs(val));
+#if !defined(_NTIGHT_)
+		    double val = 
+#endif
+		    get_val_r();
+#if !defined(_NTIGHT_)
+		    size_t idx, numval = (size_t)trunc(fabs(val));
 		    locint vectorloc;
-		    vectorloc = get_locint_r();
+		    vectorloc = 
+#endif
+		    get_locint_r();
 		    res = get_locint_r();
 		    arg = get_locint_r();
 #if !defined(_NTIGHT_)
 		    idx = (size_t)trunc(fabs(TARG));
 		    if (idx >= numval)
-			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting n=%z, idx=%z\n", numval, idx);
+			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting n=%zu, idx=%zu\n", numval, idx);
 		    arg1 = vectorloc+idx;
 		    ASSIGN_A( Aarg1, ADJOINT_BUFFER[arg1])
 		    ASSIGN_A( Ares, ADJOINT_BUFFER[res])
@@ -1732,22 +1810,30 @@ int int_reverse_safe(
 
             case subscript_ref:
 	        {
-		    double val = get_val_r();
-		    size_t cnt, idx, numval = (size_t)trunc(fabs(val));
+#if !defined(_NTIGHT_)
+		    double val = 
+#endif
+		    get_val_r();
+#if !defined(_NTIGHT_)
+		    size_t idx, numval = (size_t)trunc(fabs(val));
 		    locint vectorloc;
-		    vectorloc = get_locint_r();
+		    vectorloc = 
+#endif
+		    get_locint_r();
 		    res = get_locint_r();
 		    arg = get_locint_r();
 #if !defined(_NTIGHT_)
 		    idx = (size_t)trunc(fabs(TARG));
 		    if (idx >= numval)
-			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting (ref) n=%z, idx=%z\n", numval, idx);
+			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting (ref) n=%zu, idx=%zu\n", numval, idx);
 		    arg1 = (size_t)trunc(fabs(TRES));
-		    // This is actually NOP 
-                    // basically all we need is that arg1 == vectorloc+idx
-                    // so doing a check here is probably good
+		    /*
+		     * This is actually NOP
+                     * basically all we need is that arg1 == vectorloc+idx
+                     * so doing a check here is probably good
+                     */
 		    if (arg1 != vectorloc+idx) {
-			fprintf(DIAG_OUT, "ADOL-C error: indexed active position does not match referenced position\nindexed = %d, referenced = %d\n", vectorloc+idx, arg1);
+			fprintf(DIAG_OUT, "ADOL-C error: indexed active position does not match referenced position\nindexed = %zu, referenced = %d\n", vectorloc+idx, arg1);
 			exit(-2);
 		    }
 		    ADOLC_GET_TAYLOR(res);
@@ -2019,7 +2105,10 @@ int int_reverse_safe(
 
         case ref_cond_assign:                                      /* cond_assign */
 	   {
-                locint ref    = get_locint_r();
+#if !defined(_NTIGHT_)
+                locint ref    = 
+#endif
+		get_locint_r();
                 arg2   = get_locint_r();
                 arg1   = get_locint_r();
                 arg    = get_locint_r();
@@ -2123,7 +2212,7 @@ int int_reverse_safe(
                 res  = get_locint_r();
                 size = get_locint_r();
 #if !defined(_NTIGHT_)
-                d    = get_val_v_r(size);
+		get_val_v_r(size);
 #endif /* !_NTIGHT_ */
 
                 res += size;
@@ -2235,6 +2324,237 @@ int int_reverse_safe(
                 ADOLC_CURRENT_TAPE_INFOS.traceFlag = oldTraceFlag;
 
                 break;
+            case ext_diff_iArr:                       /* extern differntiated function */
+                ADOLC_CURRENT_TAPE_INFOS.cpIndex = get_locint_r();
+                ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_rev = get_locint_r();
+                ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_rev = get_locint_r();
+                m = get_locint_r();
+                n = get_locint_r();
+                ADOLC_CURRENT_TAPE_INFOS.ext_diff_fct_index = get_locint_r();
+                iArrLength=get_locint_r();
+                iArr=(int*)malloc(iArrLength*sizeof(int));
+                for (loop=iArrLength-1;loop>=0;--loop) iArr[loop]=get_locint_r();
+                get_locint_r(); /* get it again */
+                ADOLC_EXT_FCT_SAVE_NUMDIRS;
+                edfct = get_ext_diff_fct(ADOLC_CURRENT_TAPE_INFOS.ext_diff_fct_index);
+
+                oldTraceFlag = ADOLC_CURRENT_TAPE_INFOS.traceFlag;
+                ADOLC_CURRENT_TAPE_INFOS.traceFlag = 0;
+
+                if (edfct->ADOLC_EXT_FCT_IARR_POINTER == NULL)
+                    fail(ADOLC_EXT_DIFF_NULLPOINTER_FUNCTION);
+                if (m>0) {
+                    if (ADOLC_EXT_FCT_U == NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+                    if (edfct->dp_y==NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+                }
+                if (n>0) {
+                    if (ADOLC_EXT_FCT_Z == NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+                    if (edfct->dp_x==NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+                }
+                arg = ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_rev;
+                for (loop = 0; loop < m; ++loop) {
+                    FOR_0_LE_l_LT_p {
+                        ADOLC_EXT_FCT_U_L_LOOP = ADJOINT_BUFFER_ARG_L;
+                    }
+                    ++arg;
+                }
+
+                arg = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_rev;
+                for (loop = 0; loop < n; ++loop) {
+                    FOR_0_LE_l_LT_p {
+                        ADOLC_EXT_FCT_Z_L_LOOP = ADJOINT_BUFFER_ARG_L;
+                    }
+                    ++arg;
+                }
+                arg = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_rev;
+                for (loop = 0; loop < n; ++loop,++arg) {
+                  edfct->dp_x[loop]=TARG;
+                }
+                arg = ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_rev;
+                for (loop = 0; loop < m; ++loop,++arg) {
+                  edfct->dp_y[loop]=TARG;
+                }
+                ext_retc = edfct->ADOLC_EXT_FCT_IARR_COMPLETE;
+                MINDEC(ret_c, ext_retc);
+
+                res = ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_rev;
+                for (loop = 0; loop < m; ++loop) {
+                    FOR_0_LE_l_LT_p {
+                        ADJOINT_BUFFER_RES_L = 0.; /* \bar{v}_i = 0 !!! */
+                    }
+                    ++res;
+                }
+                res = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_rev;
+                for (loop = 0; loop < n; ++loop) {
+                    FOR_0_LE_l_LT_p {
+                        ADJOINT_BUFFER_RES_L = ADOLC_EXT_FCT_Z_L_LOOP;
+                    }
+                    ++res;
+                }
+                if (edfct->dp_y_priorRequired) {
+                  arg = ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_rev+m-1;
+                  for (loop = 0; loop < m; ++loop,--arg) {
+                    ADOLC_GET_TAYLOR(arg);
+                  }
+                }
+                if (edfct->dp_x_changes) {
+                  arg = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_rev+n-1;
+                  for (loop = 0; loop < n; ++loop,--arg) {
+                    ADOLC_GET_TAYLOR(arg);
+                  }
+                }
+                ADOLC_CURRENT_TAPE_INFOS.traceFlag = oldTraceFlag;
+
+                break;
+#ifdef ADOLC_AMPI_SUPPORT
+                /*--------------------------------------------------------------------------*/
+            case ampi_send: {
+              BW_AMPI_Send(buf,
+                           count,
+                           datatype,
+                           src,
+                           tag,
+                           pairedWith,
+                           comm);
+              break;
+            }
+            case ampi_recv: {
+	      BW_AMPI_Recv(buf,
+			   count,
+			   datatype,
+			   src,
+			   tag,
+			   pairedWith,
+			   comm,
+			   status);
+	      break;
+	    }
+	  case ampi_isend: { 
+	    BW_AMPI_Isend(buf,
+			  count,
+			  datatype,
+			  src,
+			  tag,
+			  pairedWith,
+			  comm,
+			  &request);
+	    break;
+	  }
+          case ampi_irecv: {
+            BW_AMPI_Irecv(buf,
+                          count,
+                          datatype,
+                          src,
+                          tag,
+                          pairedWith,
+                          comm,
+                          &request);
+            break;
+          }
+	  case ampi_wait: { 
+	    BW_AMPI_Wait(&request,
+			 status);
+	    break;
+	  }
+	  case ampi_barrier: {
+	    BW_AMPI_Barrier(comm);
+	    break;
+	  }
+	  case ampi_gather: { 
+	    BW_AMPI_Gather(buf,
+			   count,
+			   datatype,
+			   rbuf,
+			   rcount,
+			   rtype,
+			   src,
+			   comm);
+	    break;
+	  }
+	  case ampi_scatter: {
+	    BW_AMPI_Scatter(rbuf,
+			    rcount,
+			    rtype,
+			    buf,
+			    count,
+			    datatype,
+			    src,
+			    comm);
+	    break;
+	  }
+	  case ampi_allgather: {
+	    BW_AMPI_Allgather(buf,
+	                      count,
+	                      datatype,
+	                      rbuf,
+	                      rcount,
+	                      rtype,
+	                      comm);
+	    break;
+	  }
+	  case ampi_gatherv: {
+	    BW_AMPI_Gatherv(buf,
+			    count,
+			    datatype,
+			    rbuf,
+			    NULL,
+			    NULL,
+			    rtype,
+			    src,
+			    comm);
+	    break;
+	  }
+	  case ampi_scatterv: { 
+	    BW_AMPI_Scatterv(rbuf,
+			     NULL,
+			     NULL,
+			     rtype,
+			     buf,
+			     count,
+			     datatype,
+			     src,
+			     comm);
+	    break;
+	  }
+	  case ampi_allgatherv: {
+	    BW_AMPI_Allgatherv(buf,
+	                       count,
+	                       datatype,
+	                       rbuf,
+	                       NULL,
+	                       NULL,
+	                       rtype,
+	                       comm);
+	    break;
+	  }
+	  case ampi_bcast: {
+	    BW_AMPI_Bcast(buf,
+			  count,
+			  datatype,
+			  src,
+			  comm);
+	    break;
+	  }
+	  case ampi_reduce: {
+	    BWB_AMPI_Reduce(buf,
+			   rbuf,
+			   count,
+			   datatype,
+			   op,
+			   src,
+			   comm);
+	    break;
+	  }
+	  case ampi_allreduce: {
+	    BW_AMPI_Allreduce(buf,
+	                      rbuf,
+	                      count,
+	                      datatype,
+	                      op,
+	                      comm);
+	    break;
+	  }
+#endif
 #endif /* !_INT_REV_ */
                 /*--------------------------------------------------------------------------*/
             default:                                                   /* default */

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     interfaces.h
- Revision: $Id: interfaces.h 372 2012-12-07 12:24:46Z kulshres $
+ Revision: $Id: interfaces.h 469 2014-02-04 15:02:07Z kulshres $
  Contents: Declaration of the standard interfaces to ADOL-C forward and
            reverse calls (C++, C and Fortran callable C functions).
  
@@ -431,6 +431,15 @@ ADOLC_DLL_EXPORT int int_reverse_tight
 
 ADOLC_DLL_EXPORT int int_reverse_safe
 (short, int, int, int, unsigned long int**, unsigned long int**);
+
+/*--------------------------------------------------------------------------*/
+ADOLC_DLL_EXPORT int get_num_switches(short);
+ADOLC_DLL_EXPORT int zos_an_forward(short,int,int,int,const double*,double*,double*);
+ADOLC_DLL_EXPORT double firstsign(int, double, double*);
+ADOLC_DLL_EXPORT int fos_an_forward(short,int,int,const double*,double*,double*,double*,double*,double*);
+ADOLC_DLL_EXPORT int fov_an_forward(short,int,int,int,const double*,double**,double*,double**,double*,double**);
+/*--------------------------------------------------------------------------*/
+ADOLC_DLL_EXPORT int fos_an_reverse(short,int,int,int,int,double*);
 
 END_C_DECLS
 

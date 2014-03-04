@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     luexam.cpp
- Revision: $Id$
+ Revision: $Id: luexam.cpp 431 2013-06-18 20:14:07Z kulshres $
  Contents: computation of LU factorization with pivoting
 
  Copyright (c) Kshitij Kulshreshtha
@@ -24,6 +24,8 @@
 #include <cstring>
 #include <iomanip>
 #include <sstream>
+
+using namespace std;
 
 adouble findmaxindex(const size_t n, const advector& col, const size_t k) {
     adouble idx = k;

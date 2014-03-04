@@ -1,8 +1,14 @@
 /* ADOL-C/src/config.h.  Generated from config.h.in by configure.  */
 /* ADOL-C/src/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* ADOL-C adouble late initialization mode */
+/* #undef ADOLC_ADOUBLE_LATEINIT */
+
 /* ADOL-C adouble zeroing mode */
 #define ADOLC_ADOUBLE_STDCZERO 1
+
+/* defined if adjoinable MPI support is to be compiled in */
+/* #undef ADOLC_AMPI_SUPPORT */
 
 /* ADOL-C debug mode */
 /* #undef ADOLC_DEBUG */
@@ -11,10 +17,13 @@
 /* #undef ADOLC_HARDDEBUG */
 
 /* ADOL-C Patchlevel */
-#define ADOLC_PATCHLEVEL 1
+#define ADOLC_PATCHLEVEL 0
 
 /* ADOL-C Subversion */
-#define ADOLC_SUBVERSION 4
+#define ADOLC_SUBVERSION 5
+
+/* ADOL-C tape_doc routine computes values */
+#define ADOLC_TAPE_DOC_VALUES 1
 
 /* ADOL-C thread save errno mode */
 /* #undef ADOLC_THREADSAVE_ERRNO */
@@ -24,6 +33,9 @@
 
 /* ADOL-C Version */
 #define ADOLC_VERSION 2
+
+/* Define if the compiler provides __builtin_expect */
+#define HAVE_BUILTIN_EXPECT 0
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -122,7 +134,7 @@
 #define PACKAGE_NAME "adolc"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "adolc 2.4.1"
+#define PACKAGE_STRING "adolc 2.5.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "adolc"
@@ -131,7 +143,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.4.1"
+#define PACKAGE_VERSION "2.5.0"
 
 /* The size of `void *', as computed by sizeof. */
 #define SIZEOF_VOID_P 8
@@ -149,7 +161,10 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "2.4.1"
+#define VERSION "2.5.0"
+
+/* Define to rpl_calloc if the replacement function should be used. */
+#define calloc rpl_calloc
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */

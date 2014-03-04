@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id$
+## Revision: $Id: Makefile.am 429 2013-05-27 09:28:48Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz, Kshitij Kulshreshtha
 ##
@@ -15,7 +15,8 @@ pkginclude_HEADERS   = adolc.h adalloc.h adouble.h adutils.h adutilsc.h \
                        interfaces.h taping.h usrparms.h \
                        externfcts.h checkpointing.h fixpoint.h\
                        adolc_sparse.h adolc_openmp.h \
-                       revolve.h advector.h adolc_settings.h
+                       revolve.h advector.h adolc_settings.h \
+                       adtl.h adoublecuda.h
 
 SUBDIRS = drivers tapedoc
 

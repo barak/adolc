@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     externfcts_p.h
- Revision: $Id: externfcts_p.h 106 2010-06-29 17:19:50Z kulshres $
+ Revision: $Id: externfcts_p.h 439 2013-12-02 13:30:22Z kulshres $
  Contents: private functions and data types for extern (differentiated)
            functions.
  
- Copyright (c) Andreas Kowarz
+ Copyright (c) Andreas Kowarz, Jean Utke
   
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
@@ -27,7 +27,10 @@ BEGIN_C_DECLS
 
 ext_diff_fct *get_ext_diff_fct(int index);
 
-void init_ext_diff_fct(ext_diff_fct *edfct);
+/**
+ * initialize with defaults
+ */
+void edf_init(ext_diff_fct *edfct);
 
 END_C_DECLS
 
