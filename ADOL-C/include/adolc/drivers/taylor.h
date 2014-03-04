@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     drivers/taylor.h
- Revision: $Id: taylor.h 354 2012-10-01 11:32:26Z kulshres $
+ Revision: $Id: taylor.h 450 2014-01-21 10:16:57Z awalther $
  Contents: Easy to use drivers for the evaluation of higher order derivative
            tensors and inverse/impicit function differentiation
  
@@ -58,8 +58,8 @@ ADOLC_DLL_EXPORT void** tensorsetup(int m, int p, int d, double** tensorig);
 ADOLC_DLL_EXPORT void freetensor(int m, int p, int d, double** tensor);
 
 /*--------------------------------------------------------------------------*/
-/* int address(d, im[d]) */
-ADOLC_DLL_EXPORT int address(int d, int* im);
+/* int tensor_address(d, im[d]) */
+ADOLC_DLL_EXPORT int tensor_address(int d, int* im);
 
 /****************************************************************************/
 /*                                                                    UTILS */

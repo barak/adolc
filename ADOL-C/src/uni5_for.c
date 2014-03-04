@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 376 2012-12-14 11:22:56Z kulshres $
+ Revision: $Id: uni5_for.c 469 2014-02-04 15:02:07Z kulshres $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_
@@ -39,10 +39,13 @@
 
 #include <math.h>
 
-#if defined(ADOLC_DEBUG)
+#if defined(ADOLC_DEBUG) || defined(_ZOS_)
 #include <string.h>
 #endif /* ADOLC_DEBUG */
 
+#ifdef ADOLC_AMPI_SUPPORT
+#include "ampisupportAdolc.h"
+#endif
 
 /****************************************************************************/
 /*                                                                   MACROS */
@@ -53,12 +56,19 @@
 
 /*--------------------------------------------------------------------------*/
 #if defined(_ZOS_)
+#if defined(_ABS_NORM_)
+#  define GENERATED_FILENAME "zos_an_forward"
+#else
 #  define GENERATED_FILENAME "zos_forward"
-
+#endif
 /*--------------------------------------------------------------------------*/
 #else
 #if defined(_FOS_)
+#if defined(_ABS_NORM_)
+#define GENERATED_FILENAME "fos_an_forward"
+#else
 #define GENERATED_FILENAME "fos_forward"
+#endif
 
 #define ARGUMENT(indexi,l,i) argument[indexi]
 #define TAYLORS(indexd,l,i)   taylors[indexd]
@@ -66,7 +76,11 @@
 /*--------------------------------------------------------------------------*/
 #else
 #if defined(_FOV_)
+#if defined(_ABS_NORM_)
+#define GENERATED_FILENAME "fov_an_forward"
+#else
 #define GENERATED_FILENAME "fov_forward"
+#endif
 
 #define _ADOLC_VECTOR_
 
@@ -404,6 +418,10 @@ if (keep){\
 #if defined(_ADOLC_VECTOR_)
 #define FOR_0_LE_l_LT_p for (l=0; l<p; l++)
 #define FOR_p_GT_l_GE_0 for (l=p-1; l>=0; l--)
+#if defined(_ABS_NORM_)
+#define FIRSTSIGN_P(x,y) firstsign(p,x,y)
+#define COPYTAYL_P(x,y)  FOR_0_LE_l_LT_p x[l] = y[l]
+#endif
 #else
 #if defined(_INT_FOR_)
 #define FOR_0_LE_l_LT_p for (l=0; l<p; l++)
@@ -411,6 +429,10 @@ if (keep){\
 #else
 #define FOR_0_LE_l_LT_p
 #define FOR_p_GT_l_GE_0
+#if defined(_ABS_NORM_)
+#define FIRSTSIGN_P(x,y) firstsign(1,x,y)
+#define COPYTAYL_P(x,y)  x = *y
+#endif
 #endif
 #endif
 
@@ -477,6 +499,15 @@ BEGIN_C_DECLS
 /****************************************************************************/
 /* Zero Order Scalar version of the forward mode.                           */
 /****************************************************************************/
+#if defined(_ABS_NORM_)
+int zos_an_forward(short tnum,
+                  int depcheck,
+		  int indcheck,
+		  int keep,
+		  const double *basepoint,
+		  double *valuepoint,
+		  double *swargs)
+#else
 #if defined(_KEEP_)
 int  zos_forward(
 #else
@@ -491,11 +522,24 @@ int  zos_forward_nk(
     const double *basepoint,  /* independant variable values */
     double       *valuepoint) /* dependent variable values */
 
+#endif
+
 #else
 #if defined(_FOS_)
 /****************************************************************************/
 /* First Order Scalar version of the forward mode.                          */
 /****************************************************************************/
+#if defined(_ABS_NORM_)
+int  fos_an_forward(short tnum,
+		    int depcheck,
+		    int indcheck,
+		    const double* basepoint,
+		    double *argument,
+		    double *valuepoint,
+		    double *taylors,
+		    double *swargs,
+		    double *swtaylors)
+#else
 #if defined(_KEEP_)
 int  fos_forward(
 #else
@@ -512,6 +556,7 @@ int  fos_forward_nk(
     double *valuepoint, /* Taylor coefficients (output) */
     double *taylors)    /* matrix of coefficient vectors */
 /* the order of the indices in argument and taylors is [var][taylor] */
+#endif
 
 #else
 #if defined(_INT_FOR_)
@@ -683,6 +728,20 @@ int  fov_offset_forward(
 /****************************************************************************/
 /* First Order Vector version of the forward mode.                          */
 /****************************************************************************/
+#if defined(_ABS_NORM_)
+int  fov_an_forward(
+    short         tnum,        /* tape id */
+    int           depcheck,    /* consistency chk on # of deps */
+    int           indcheck,    /* consistency chk on # of indeps */
+    int           p,           /* # of taylor series */
+    const double *basepoint,   /* independent variable values */
+    double      **argument,    /* Taylor coefficients (input) */
+    double       *valuepoint,  /* Taylor coefficients (output) */
+    double      **taylors,     /* matrix of coifficient vectors */
+    double       *swargs,
+    double      **swtaylors)
+/* the order of the indices in argument and taylors is [var][taylor] */
+#else
 int  fov_forward(
     short         tnum,        /* tape id */
     int           depcheck,    /* consistency chk on # of deps */
@@ -693,6 +752,7 @@ int  fov_forward(
     double       *valuepoint,  /* Taylor coefficients (output) */
     double      **taylors)     /* matrix of coifficient vectors */
 /* the order of the indices in argument and taylors is [var][taylor] */
+#endif
 #endif
 
 #else
@@ -762,7 +822,10 @@ int  hov_forward(
     locint arg1 = 0;
     locint arg2 = 0;
 
-    double coval = 0, *d = 0;
+#if !defined(_NTIGHT_)
+    double coval = 0;
+    double *d=NULL;
+#endif
 
     int indexi = 0,  indexd = 0;
 
@@ -788,9 +851,9 @@ int  hov_forward(
     int l=0;
 #endif
 #if defined (_INDO_)
+#if defined(_INDOPRO_)
     int l=0;
     int max_ind_dom;
-#if defined(_INDOPRO_)
     /* index domains */
     locint** ind_dom;
 #endif 
@@ -809,8 +872,6 @@ int  hov_forward(
 #if defined(_NONLIND_OLD_)
     /* nonlinear interaction domains */
     locint** nonl_dom;
-    locint*  temp;
-    locint*  temp1;
 #endif
 #endif
 
@@ -819,7 +880,9 @@ int  hov_forward(
 #if !defined (_INDO_)
 #if !defined (_INT_FOR_)
     double r0=0.0, x, y, divs;
+#if defined(_HIGHER_ORDER_)
     int even;
+#endif
 #endif
 #endif
 #endif
@@ -827,7 +890,7 @@ int  hov_forward(
 #if defined(_INT_FOR_)
 #ifdef _TIGHT_
     double  *dp_T0;
-    double y, divs;
+    double y;
 #endif /* _TIGHT_ */
 
     /* Taylor stuff */
@@ -844,8 +907,6 @@ int  hov_forward(
 #if defined(_INDO_)
 #ifdef _TIGHT_
     double  *dp_T0;
-    double  T0temp;
-    double divs;
 #endif /* _TIGHT_ */
 #define T0res  T0temp
 #define T0arg  T0temp
@@ -889,6 +950,11 @@ int  hov_forward(
 #endif
 #endif
 
+#if !defined(_NTIGHT_)
+    locint switchnum = 0;
+    double* signature = NULL;
+#endif
+
     /* extern diff. function variables */
 #if defined(_EXTERN_)
 #  undef (_EXTERN_)
@@ -897,8 +963,11 @@ int  hov_forward(
 #if defined(_ZOS_)
 #   define _EXTERN_ 1
 #   define ADOLC_EXT_FCT_POINTER zos_forward
+#   define ADOLC_EXT_FCT_IARR_POINTER zos_forward_iArr
 #   define ADOLC_EXT_FCT_COMPLETE \
     zos_forward(n, edfct->dp_x, m, edfct->dp_y)
+#   define ADOLC_EXT_FCT_IARR_COMPLETE \
+    zos_forward_iArr(iArrLength, iArr, n, edfct->dp_x, m, edfct->dp_y)
 #   define ADOLC_EXT_LOOP
 #   define ADOLC_EXT_SUBSCRIPT
 #endif
@@ -906,8 +975,11 @@ int  hov_forward(
 #if defined(_FOS_)
 #   define _EXTERN_ 1
 #   define ADOLC_EXT_FCT_POINTER fos_forward
+#   define ADOLC_EXT_FCT_IARR_POINTER fos_forward_iArr
 #   define ADOLC_EXT_FCT_COMPLETE \
     fos_forward(n, edfct->dp_x, edfct->dp_X, m, edfct->dp_y, edfct->dp_Y)
+#   define ADOLC_EXT_FCT_IARR_COMPLETE \
+    fos_forward_iArr(iArrLength, iArr, n, edfct->dp_x, edfct->dp_X, m, edfct->dp_y, edfct->dp_Y)
 #   define ADOLC_EXT_POINTER_X edfct->dp_X
 #   define ADOLC_EXT_POINTER_Y edfct->dp_Y
 #   define ADOLC_EXT_LOOP
@@ -917,8 +989,11 @@ int  hov_forward(
 #if defined(_FOV_)
 #   define _EXTERN_ 1
 #   define ADOLC_EXT_FCT_POINTER fov_forward
+#   define ADOLC_EXT_FCT_IARR_POINTER fov_forward_iArr
 #   define ADOLC_EXT_FCT_COMPLETE \
     fov_forward(n, edfct->dp_x,p, edfct->dpp_X, m, edfct->dp_y, edfct->dpp_Y)
+#   define ADOLC_EXT_FCT_IARR_COMPLETE \
+    fov_forward_iArr(iArrLength, iArr, n, edfct->dp_x,p, edfct->dpp_X, m, edfct->dp_y, edfct->dpp_Y)
 #   define ADOLC_EXT_POINTER_X edfct->dpp_X
 #   define ADOLC_EXT_POINTER_Y edfct->dpp_Y
 #   define ADOLC_EXT_LOOP for (loop2 = 0; loop2 < p; ++loop2)
@@ -929,10 +1004,25 @@ int  hov_forward(
     locint n, m;
     ext_diff_fct *edfct;
     int loop;
+    int iArrLength;
+    int *iArr;
 #   if defined(_FOV_)
         int loop2;
 #   endif
     int ext_retc;
+#endif
+
+#ifdef ADOLC_AMPI_SUPPORT
+    MPI_Op op;
+    void *buf, *rbuf;
+    int count, rcount;
+    MPI_Datatype datatype, rtype;
+    int src;
+    int tag;
+    enum AMPI_PairedWith_E pairedWith;
+    MPI_Comm comm;
+    MPI_Status* status;
+    struct AMPI_Request_S request;
 #endif
 
     ADOLC_OPENMP_THREAD_NUMBER;
@@ -969,13 +1059,20 @@ int  hov_forward(
         fprintf(DIAG_OUT,"ADOL-C error: forward sweep on tape %d  aborted!\n"
                 "Number of dependent(%u) and/or independent(%u) variables passed"
                 " to forward is\ninconsistent with number "
-                "recorded on tape (%d, %d) \n", tnum,
+                "recorded on tape (%zu, %zu) \n", tnum,
                 depcheck, indcheck,
                 ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS],
                 ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]);
         exit (-1);
     }
-
+#if defined(_ABS_NORM_)
+      if (! ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX] ) {
+	  fprintf(DIAG_OUT,"ADOL-C error: tape %d was not created compatible "
+		  "with %s\n              Please call enableMinMaxUsingAbs() "
+		  "before trace_on(%d)\n", tnum, __FUNCTION__, tnum);
+	  exit(-1);
+      }
+#endif
     /****************************************************************************/
     /*                                                        MEMORY ALLOCATION */
     /* olvo 980626 has to be revised for common blocks */
@@ -984,6 +1081,19 @@ int  hov_forward(
 #if !defined(_NTIGHT_)
     dp_T0 = myalloc1(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES]);
     ADOLC_CURRENT_TAPE_INFOS.dp_T0 = dp_T0;
+
+    if(ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX]) {
+	if (ADOLC_CURRENT_TAPE_INFOS.signature == NULL) {
+	    signature = myalloc1(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]);
+	    ADOLC_CURRENT_TAPE_INFOS.signature = signature;
+	} else
+	    signature = ADOLC_CURRENT_TAPE_INFOS.signature;
+    }
+
+    ADOLC_CURRENT_TAPE_INFOS.dpp_T = &dp_T0;
+    ADOLC_CURRENT_TAPE_INFOS.numTay = 0;
+    ADOLC_CURRENT_TAPE_INFOS.gDegree = 0;
+    ADOLC_CURRENT_TAPE_INFOS.workMode = ADOLC_ZOS_FORWARD;
 #endif /* !_NTIGHT_ */
 #if defined(_ZOS_)                                                   /* ZOS */
 
@@ -998,7 +1108,7 @@ int  hov_forward(
     if (keep) {
       taylbuf = ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE];
 
-        taylor_begin(taylbuf,&dp_T0,keep-1);
+        taylor_begin(taylbuf,keep-1);
     }
 #endif
 
@@ -1013,11 +1123,15 @@ int  hov_forward(
     }
 #endif
     dp_T = myalloc1(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES]);
+    ADOLC_CURRENT_TAPE_INFOS.dpp_T = &dp_T;
+    ADOLC_CURRENT_TAPE_INFOS.numTay = 1;
+    ADOLC_CURRENT_TAPE_INFOS.gDegree = 1;
+    ADOLC_CURRENT_TAPE_INFOS.workMode = ADOLC_FOS_FORWARD;
 # define TAYLOR_BUFFER dp_T
 #if defined(_KEEP_)
     if (keep) {
         taylbuf = ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE];
-        taylor_begin(taylbuf,&dp_T,keep-1);
+        taylor_begin(taylbuf,keep-1);
     }
 #endif
 
@@ -1073,6 +1187,10 @@ int  hov_forward(
 #else                                                                /* FOV */
 #if defined(_FOV_)
     dpp_T = myalloc2(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES],p);
+    ADOLC_CURRENT_TAPE_INFOS.dpp_T = dpp_T;
+    ADOLC_CURRENT_TAPE_INFOS.numTay = p;
+    ADOLC_CURRENT_TAPE_INFOS.gDegree = 1;
+    ADOLC_CURRENT_TAPE_INFOS.workMode = ADOLC_FOV_FORWARD;
 # define TAYLOR_BUFFER dpp_T
     dp_Ttemp = myalloc1(p);
 # define T_TEMP dp_Ttemp;
@@ -1081,6 +1199,10 @@ int  hov_forward(
 #else                                                                /* HOS */
 #if defined(_HOS_)
     dpp_T = myalloc2(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES],k);
+    ADOLC_CURRENT_TAPE_INFOS.dpp_T = dpp_T;
+    ADOLC_CURRENT_TAPE_INFOS.numTay = 1;
+    ADOLC_CURRENT_TAPE_INFOS.gDegree = k;
+    ADOLC_CURRENT_TAPE_INFOS.workMode = ADOLC_HOS_FORWARD;
 # define TAYLOR_BUFFER dpp_T
     dp_z  = myalloc1(k);
     dp_Ttemp = myalloc1(k);
@@ -1088,13 +1210,17 @@ int  hov_forward(
 #if defined(_KEEP_)
     if (keep) {
         taylbuf = ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE];
-        taylor_begin(taylbuf,dpp_T,keep-1);
+        taylor_begin(taylbuf,keep-1);
     }
 #endif
 
     /*--------------------------------------------------------------------------*/
 #else                                                     /* HOV and HOV_WK */
     dpp_T = myalloc2(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES],p*k);
+    ADOLC_CURRENT_TAPE_INFOS.dpp_T = dpp_T;
+    ADOLC_CURRENT_TAPE_INFOS.numTay = p;
+    ADOLC_CURRENT_TAPE_INFOS.gDegree = k;
+    ADOLC_CURRENT_TAPE_INFOS.workMode = ADOLC_HOV_FORWARD;
 # define TAYLOR_BUFFER dpp_T
     dp_z  = myalloc1(k);
     dp_Ttemp = myalloc1(p*k);
@@ -1102,7 +1228,7 @@ int  hov_forward(
 #if defined(_KEEP_)
     if (keep) {
         taylbuf = ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE];
-        taylor_begin(taylbuf,dpp_T,keep-1);
+        taylor_begin(taylbuf,keep-1);
     }
 #endif
 #endif
@@ -1315,7 +1441,10 @@ int  hov_forward(
             case assign_d:            /* assign an adouble variable a    assign_d */
                 /* double value. (=) */
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -1498,7 +1627,10 @@ int  hov_forward(
             case eq_plus_d:            /* Add a floating point to an    eq_plus_d */
                 /* adouble. (+=) */
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -1549,7 +1681,10 @@ int  hov_forward(
             case eq_min_d:       /* Subtract a floating point from an    eq_min_d */
                 /* adouble. (-=) */
                 res = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -1600,7 +1735,10 @@ int  hov_forward(
             case eq_mult_d:              /* Multiply an adouble by a    eq_mult_d */
                 /* flaoting point. (*=) */
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -1749,7 +1887,10 @@ int  hov_forward(
                 /* (+) */
                 arg   = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -1822,7 +1963,10 @@ int  hov_forward(
                 /* double (-) */
                 arg =get_locint_f();
                 res = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -2061,7 +2205,10 @@ int  hov_forward(
                 /* (*) */
                 arg   = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -2102,7 +2249,7 @@ int  hov_forward(
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
 #if !defined(_NTIGHT_)
-#if !defined(_ZOS_) /* BREAK_ZOS */
+#if !defined(_ZOS_) && !defined(_INT_FOR_) && !defined(_INDO_)
                 divs = 1.0 / dp_T0[arg2];
 #endif /* ALL_TOGETHER_AGAIN */
 
@@ -2164,7 +2311,10 @@ int  hov_forward(
         case div_d_a:             /* Division double - adouble (/)    div_d_a */
             arg   = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -2174,7 +2324,7 @@ int  hov_forward(
                 }
 
 #if !defined(_NTIGHT_)
-#if !defined(_ZOS_) /* BREAK_ZOS */
+#if !defined(_ZOS_) && !defined(_INT_FOR_) && !defined(_INDO_)
                 divs = 1.0 / dp_T0[arg];
 #endif /* ALL_TOGETHER_AGAIN */
 
@@ -3172,7 +3322,10 @@ int  hov_forward(
                 arg   = get_locint_f();
                 res   = get_locint_f();
 
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+                get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3184,7 +3337,7 @@ int  hov_forward(
 #if !defined(_NTIGHT_)
 
 #ifndef _ZOS_ /* BREAK_ZOS */
-#if !defined(_INT_FOR_)
+#if !defined(_INT_FOR_) && !defined(_INDO_)
                 T0arg   = dp_T0[arg];
 #endif
 #endif /* ALL_TOGETHER_AGAIN */
@@ -3385,7 +3538,9 @@ int  hov_forward(
                   }
                   Targ = TargOP;
 
+#if defined(_HIGHER_ORDER_)
                   even = 1;
+#endif
                   FOR_0_LE_i_LT_k
                   { TRES_FOINC = r0 * TARG_INC;
 #if defined(_HIGHER_ORDER_)
@@ -3424,7 +3579,10 @@ int  hov_forward(
                 }
 #endif /* !_NTIGHT_ */
 
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval =
+#endif 
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3478,7 +3636,10 @@ int  hov_forward(
             arg1  = get_locint_f();
                 arg2  = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3644,7 +3805,10 @@ int  hov_forward(
             case abs_val:                                              /* abs_val */
                 arg   = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3660,6 +3824,12 @@ int  hov_forward(
                         if (!coval)
                             MINDEC(ret_c,2);
                     }
+		if (ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX]) {
+		    signature[switchnum] = dp_T0[arg];
+#if defined(_ABS_NORM_)
+		    swargs[switchnum] = dp_T0[arg];
+#endif
+		}
 #endif /* !_NTIGHT_ */
 
 #if defined(_INDO_)
@@ -3697,6 +3867,12 @@ int  hov_forward(
                 TRES_INC = TARG_INC;
 #endif /* _NTIGHT_ */
 #else
+#ifdef _ABS_NORM_
+		y = FIRSTSIGN_P(dp_T0[arg],Targ);
+		COPYTAYL_P(swtaylors[switchnum],Targ);
+		FOR_0_LE_l_LT_p
+		    TRES_INC = y * TARG_INC;
+#else
                 y = 0.0;
                 if (dp_T0[arg] != 0.0) {
                     if (dp_T0[arg] < 0.0)
@@ -3716,13 +3892,16 @@ int  hov_forward(
                             x = 1.0;
                     }
                     TRES_INC = x * TARG_INC;
-              }
-            }
+		  }
+		}
+#endif
 #endif
 #endif
 #endif /* ALL_TOGETHER_AGAIN */
 #if !defined(_NTIGHT_)
                 dp_T0[res] = fabs(dp_T0[arg]);
+		if (ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX])
+		    switchnum++;
 #endif /* !_NTIGHT_ */
                 break;
 
@@ -3730,7 +3909,10 @@ int  hov_forward(
             case ceil_op:                                              /* ceil_op */
                 arg   = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3766,7 +3948,10 @@ int  hov_forward(
             case floor_op:                 /* Compute ceil of adouble    floor_op */
                 arg   = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3808,7 +3993,10 @@ int  hov_forward(
                 arg1  = get_locint_f();
                 arg2  = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3921,7 +4109,10 @@ int  hov_forward(
                 arg   = get_locint_f();
                 arg1  = get_locint_f();
                 res   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3990,7 +4181,10 @@ int  hov_forward(
             case ge_a_a:
             case lt_a_a:
             case gt_a_a:
-		coval = get_val_f();
+#if !defined(_NTIGHT_)
+		coval = 
+#endif
+		get_val_f();
 		arg = get_locint_f();
 		arg1 = get_locint_f();
 		res = get_locint_f();
@@ -4056,17 +4250,23 @@ int  hov_forward(
 
                 /*--------------------------------------------------------------------------*/
             case subscript:
-		coval = get_val_f();
+#if !defined(_NTIGHT_)
+		coval = 
+#endif
+		get_val_f();
 		arg = get_locint_f();
 		res = get_locint_f();
 		{
-		    size_t cnt, idx, numvar = (size_t)trunc(fabs(coval));
+#if !defined(_NTIGHT_)
+		    size_t idx, numvar = (size_t)trunc(fabs(coval));
 		    locint vectorloc;
-		    vectorloc = get_locint_f();
+		    vectorloc = 
+#endif
+		    get_locint_f();
 #if !defined(_NTIGHT_)
 		    idx = (size_t)trunc(fabs(dp_T0[arg]));
 		    if (idx >= numvar)
-			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting n=%z, idx=%z\n", numvar, idx);
+			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting n=%zu, idx=%zu\n", numvar, idx);
 		    arg1 = vectorloc+idx;
 		    IF_KEEP_WRITE_TAYLOR(res,keep,k,p);
 		    dp_T0[res] = dp_T0[arg1];
@@ -4094,17 +4294,23 @@ int  hov_forward(
 		break;
 
             case subscript_ref:
-		coval = get_val_f();
+#if !defined(_NTIGHT_)
+		coval = 
+#endif
+		get_val_f();
 		arg = get_locint_f();
 		res = get_locint_f();
 		{
-		    size_t cnt, idx, numvar = (size_t)trunc(fabs(coval));
+#if !defined(_NTIGHT_)
+		    size_t idx, numvar = (size_t)trunc(fabs(coval));
 		    locint vectorloc;
-		    vectorloc = get_locint_f();
+		    vectorloc = 
+#endif
+		    get_locint_f();
 #if !defined(_NTIGHT_)
 		    idx = (size_t)trunc(fabs(dp_T0[arg]));
 		    if (idx >= numvar)
-			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting (ref) n=%z, idx=%z\n", numvar, idx);
+			fprintf(DIAG_OUT, "ADOL-C warning: index out of bounds while subscripting (ref) n=%zu, idx=%zu\n", numvar, idx);
 		    arg1 = vectorloc+idx;
 		    IF_KEEP_WRITE_TAYLOR(res,keep,k,p);
 		    dp_T0[res] = arg1;
@@ -4170,7 +4376,10 @@ int  hov_forward(
 
             case ref_assign_d:
 		arg = get_locint_f();
-		coval = get_val_f();
+#if !defined(_NTIGHT_)
+		coval = 
+#endif
+		get_val_f();
 		
 #if !defined(_NTIGHT_)
 		arg1 = (size_t)trunc(fabs(dp_T0[arg]));
@@ -4337,7 +4546,10 @@ int  hov_forward(
             case ref_eq_plus_d:            /* Add a floating point to an    eq_plus_d */
                 /* adouble. (+=) */
                 arg  = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
 
 #if !defined(_NTIGHT_)
@@ -4393,7 +4605,10 @@ int  hov_forward(
             case ref_eq_min_d:       /* Subtract a floating point from an    eq_min_d */
                 /* adouble. (-=) */
                 arg = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
 #if !defined(_NTIGHT_)
 		res = (size_t)trunc(fabs(dp_T0[arg]));
@@ -4448,7 +4663,10 @@ int  hov_forward(
             case ref_eq_mult_d:              /* Multiply an adouble by a    eq_mult_d */
                 /* flaoting point. (*=) */
                 arg = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
 #if !defined(_NTIGHT_)
 		res = (size_t)trunc(fabs(dp_T0[arg]));
@@ -4536,8 +4754,14 @@ int  hov_forward(
                 arg1  = get_locint_f();
                 arg2  = get_locint_f();
 		{ 
-		    locint ref = get_locint_f();
-		    coval = get_val_f();
+#if !defined(_NTIGHT_)
+		    locint ref = 
+#endif
+		    get_locint_f();
+#if !defined(_NTIGHT_)
+		    coval = 
+#endif
+		    get_val_f();
 #if !defined(_NTIGHT_)
 		    res   = (size_t)trunc(fabs(dp_T0[ref]));
 
@@ -4634,7 +4858,10 @@ int  hov_forward(
                 arg   = get_locint_f();
                 arg1  = get_locint_f();
                 arg2   = get_locint_f();
-                coval = get_val_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
 
 #if !defined(_NTIGHT_)
 		res = (size_t)trunc(fabs(dp_T0[arg2]));
@@ -4698,7 +4925,10 @@ int  hov_forward(
             case take_stock_op:                                  /* take_stock_op */
                 size = get_locint_f();
                 res  = get_locint_f();
-                d    = get_val_v_f(size);
+#if !defined(_NTIGHT_)
+		d =
+#endif
+                get_val_v_f(size);
 
                 for (ls=0;ls<size;ls++) {
 #if !defined(_NTIGHT_)
@@ -4812,6 +5042,237 @@ int  hov_forward(
                 }
 
                 break;
+
+            case ext_diff_iArr:                 /* extern differntiated function */
+                iArrLength=get_locint_f();
+                iArr=malloc(iArrLength*sizeof(int));
+                for (loop=0;loop<iArrLength;++loop) iArr[loop]=get_locint_f();
+                get_locint_f(); /* iArrLength again */
+                ADOLC_CURRENT_TAPE_INFOS.ext_diff_fct_index=get_locint_f();
+                n=get_locint_f();
+                m=get_locint_f();
+                ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_for = get_locint_f();
+                ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_for = get_locint_f();
+                ADOLC_CURRENT_TAPE_INFOS.cpIndex = get_locint_f();
+                edfct=get_ext_diff_fct(ADOLC_CURRENT_TAPE_INFOS.ext_diff_fct_index);
+
+                if (edfct->ADOLC_EXT_FCT_IARR_POINTER==NULL)
+                    fail(ADOLC_EXT_DIFF_NULLPOINTER_DIFFFUNC);
+                if (n>0) {
+                    if (edfct->dp_x==NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#if !defined(_ZOS_)
+                    if (ADOLC_EXT_POINTER_X==NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#endif
+                }
+                if (m>0) {
+                    if (edfct->dp_y==NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#if !defined(_ZOS_)
+                    if (ADOLC_EXT_POINTER_Y==NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#endif
+                }
+
+                arg = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_for;
+                for (loop=0; loop<n; ++loop) {
+                    if (edfct->dp_x_changes) {
+                      IF_KEEP_WRITE_TAYLOR(arg, keep, k, p);
+                    }
+                    edfct->dp_x[loop]=dp_T0[arg];
+#if !defined(_ZOS_)
+                    ADOLC_EXT_LOOP
+                        ADOLC_EXT_POINTER_X[loop]ADOLC_EXT_SUBSCRIPT =
+                        TAYLOR_BUFFER[arg]ADOLC_EXT_SUBSCRIPT;
+#endif
+                    ++arg;
+                }
+                arg = ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_for;
+                for (loop=0; loop<m; ++loop) {
+                    if (edfct->dp_y_priorRequired) {
+                      IF_KEEP_WRITE_TAYLOR(arg, keep, k, p);
+                    }
+                    edfct->dp_y[loop]=dp_T0[arg];
+#if !defined(_ZOS_)
+                    ADOLC_EXT_LOOP
+                        ADOLC_EXT_POINTER_Y[loop]ADOLC_EXT_SUBSCRIPT =
+                        TAYLOR_BUFFER[arg]ADOLC_EXT_SUBSCRIPT;
+#endif
+                    ++arg;
+                }
+
+                ext_retc = edfct->ADOLC_EXT_FCT_IARR_COMPLETE;
+                MINDEC(ret_c, ext_retc);
+
+                res = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_for;
+                for (loop=0; loop<n; ++loop) {
+                    dp_T0[res]=edfct->dp_x[loop];
+#if !defined(_ZOS_)
+                    ADOLC_EXT_LOOP
+                        TAYLOR_BUFFER[res]ADOLC_EXT_SUBSCRIPT =
+                        ADOLC_EXT_POINTER_X[loop]ADOLC_EXT_SUBSCRIPT;
+#endif
+                    ++res;
+                }
+                res = ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_for;
+                for (loop=0; loop<m; ++loop) {
+                    dp_T0[res]=edfct->dp_y[loop];
+#if !defined(_ZOS_)
+                    ADOLC_EXT_LOOP
+                        TAYLOR_BUFFER[res]ADOLC_EXT_SUBSCRIPT =
+                        ADOLC_EXT_POINTER_Y[loop]ADOLC_EXT_SUBSCRIPT;
+#endif
+                    ++res;
+                }
+                free((void*)iArr); iArr=0;
+                break;
+#endif
+
+#ifdef ADOLC_AMPI_SUPPORT
+                /*--------------------------------------------------------------------------*/
+            case ampi_send: {
+              ADOLC_TLM_AMPI_Send(buf,
+                  count,
+                  datatype,
+                  src,
+                  tag,
+                  pairedWith,
+                  comm);
+              break;
+            }
+            case ampi_recv: {
+              ADOLC_TLM_AMPI_Recv(buf,
+                            count,
+                            datatype,
+                            src,
+                            tag,
+                            pairedWith,
+                            comm,
+                            status);
+              break;
+            }
+          case ampi_isend: {
+            ADOLC_TLM_AMPI_Isend(buf,
+                           count,
+                           datatype,
+                           src,
+                           tag,
+                           pairedWith,
+                           comm,
+                           &request);
+            break;
+          }
+          case ampi_irecv: {
+            ADOLC_TLM_AMPI_Irecv(buf,
+                           count,
+                           datatype,
+                           src,
+                           tag,
+                           pairedWith,
+                           comm,
+                           &request);
+            break;
+          }
+          case ampi_wait: {
+            ADOLC_TLM_AMPI_Wait(&request,
+                          status);
+            break;
+          }
+          case ampi_barrier: {
+            ADOLC_TLM_AMPI_Barrier(comm);
+            break;
+          }
+          case ampi_gather: {
+            ADOLC_TLM_AMPI_Gather(buf,
+                            count,
+                            datatype,
+                            rbuf,
+                            rcount,
+                            rtype,
+                            src,
+                            comm);
+            break;
+          }
+          case ampi_scatter: {
+            ADOLC_TLM_AMPI_Scatter(rbuf,
+                             rcount,
+                             rtype,
+                             buf,
+                             count,
+                             datatype,
+                             src,
+                             comm);
+            break;
+          }
+          case ampi_allgather: {
+            ADOLC_TLM_AMPI_Allgather(buf,
+                               count,
+                               datatype,
+                               rbuf,
+                               rcount,
+                               rtype,
+                               comm);
+            break;
+          }
+          case ampi_gatherv: {
+            ADOLC_TLM_AMPI_Gatherv(buf,
+                             count,
+                             datatype,
+                             rbuf,
+                             NULL,
+                             NULL,
+                             rtype,
+                             src,
+                             comm);
+            break;
+          }
+          case ampi_scatterv: {
+            ADOLC_TLM_AMPI_Scatterv(rbuf,
+                              NULL,
+                              NULL,
+                              rtype,
+                              buf,
+                              count,
+                              datatype,
+                              src,
+                              comm);
+            break;
+          }
+          case ampi_allgatherv: {
+            ADOLC_TLM_AMPI_Allgatherv(buf,
+                                count,
+                                datatype,
+                                rbuf,
+                                NULL,
+                                NULL,
+                                rtype,
+                                comm);
+            break;
+          }
+          case ampi_bcast: {
+            ADOLC_TLM_AMPI_Bcast(buf,
+                           count,
+                           datatype,
+                           src,
+                           comm);
+            break;
+          }
+          case ampi_reduce: {
+            ADOLC_TLM_AMPI_Reduce(buf,
+                            rbuf,
+                            count,
+                            datatype,
+                            op,
+                            src,
+                            comm);
+            break;
+          }
+          case ampi_allreduce: {
+            ADOLC_TLM_AMPI_Allreduce(buf,
+                               rbuf,
+                               count,
+                               datatype,
+                               op,
+                               comm);
+            break;
+          }
 #endif
 
                 /*--------------------------------------------------------------------------*/
@@ -4916,6 +5377,38 @@ int  hov_forward(
     return ret_c;
 }
 
+
+/****************************************************************************/
+#if defined(_ZOS_) && defined(_ABS_NORM_)
+int get_num_switches(short tapeID) {
+    int nswitch;
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+
+    init_for_sweep(tapeID);
+    if (!ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX]) {
+	fprintf(DIAG_OUT,"ADOL-C error: tape %d was not created compatible "
+		"with %s\n              Please call enableMinMaxUsingAbs() "
+		"before trace_on(%d)\n", tapeID, __FUNCTION__, tapeID);
+	exit(-1);
+    }
+    nswitch = ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES];
+    end_sweep();
+    return nswitch;
+}
+#endif
+#if defined(_ABS_NORM_) && defined(_FOV_)
+double firstsign(int p, double u, double* du) {
+    int i=0;
+    double tmp;
+    tmp=(u>0.0)?1.0:((u<0.0)?-1.0:0.0);
+    while(i<p && tmp==0.0) {
+	tmp=(du[i]>0.0)?1.0:((du[i]<0.0)?-1.0:0.0);
+	i++;
+    }
+    return tmp;
+}
+#endif
 /****************************************************************************/
 
 #if defined(_INDOPRO_) && !defined(_NONLIND_OLD_)
@@ -5059,7 +5552,6 @@ void traverse_crs(IndexElement* tree,  IndexElement_sod* sod, int num)
 {
 
   IndexElement_sod *temp, *temp1;
-  int ii;
 
   if (tree->left != NULL)
     {
@@ -5158,7 +5650,7 @@ void extend_nonlinearity_domain_binary_step
 (int arg1, int arg2, locint **ind_dom, locint **nonl_dom) 
 {
   int index,num,num1, num2, i,j,k,l,m;
-  locint *temp_nonl, *index_nonl_dom, *arg1_ind_dom, *arg2_ind_dom;
+  locint *temp_nonl, *index_nonl_dom;
 
   num = ind_dom[arg2][0];
 

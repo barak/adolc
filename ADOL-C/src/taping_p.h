@@ -1,10 +1,10 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping_p.h
- Revision: $Id: taping_p.h 370 2012-11-22 13:18:52Z kulshres $
+ Revision: $Id: taping_p.h 466 2014-02-03 13:46:56Z kulshres $
  Contents: declarations for used by taping routines
  
- Copyright (c) Andreas Kowarz
+ Copyright (c) Andreas Kowarz, Jean Utke
 
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
@@ -193,7 +193,22 @@ typedef struct PersistantTapeInfos { /* survive tape re-usage */
     int keepTape; /* - remember if tapes shall be written out to disk
                      - this information can only be given at taping time and
                        must survive all other actions on the tape */
+
+    /**
+     * defaults to 0, if 1 skips file removal (when file operations are costly)
+     */
+    int skipFileCleanup;
+
 } PersistantTapeInfos;
+
+/**
+ * maximal number of locations writen per op code 
+ */
+#if defined(__USE_ISOC99)
+extern const int maxLocsPerOp;
+#else
+#define maxLocsPerOp 10
+#endif
 
 typedef struct TapeInfos {
     short tapeID;
@@ -251,6 +266,12 @@ typedef struct TapeInfos {
 
     /* evaluation forward */
     double *dp_T0;
+    int gDegree, numTay;
+    enum WORKMODES workMode;
+    /*
+     * Taylor coefficient array  allocated like this:
+     * dpp_T[ADOLC_CURRENT_TAPE_INFOS.stats[NUM_MAX_LIVES][numTay*gDegree]
+     */
     double **dpp_T;
 
     /* evaluation reverse */
@@ -262,6 +283,10 @@ typedef struct TapeInfos {
 
     /* extern diff. fcts */
     locint ext_diff_fct_index;    /* set by forward and reverse (from tape) */
+
+    size_t numSwitches;
+    locint* switchlocs;
+    double* signature;
 
     PersistantTapeInfos pTapeInfos;
 
@@ -288,6 +313,7 @@ typedef struct GlobalTapeVarsCL {
     char newTape;               /* signals: at least one tape created (0/1) */
     char branchSwitchWarning;
     TapeInfos *currentTapeInfosPtr;
+    uint nominmaxFlag;
 #ifdef __cplusplus
     StoreManager *storeManagerPtr;
     GlobalTapeVarsCL();
@@ -404,7 +430,7 @@ locint next_loc();
 void free_loc(locint loc);
 /* frees the specified location in "adouble" memory */
 
-void taylor_begin(uint bufferSize, double **Tg, int degreeSave);
+void taylor_begin(uint bufferSize, int degreeSave);
 /* set up statics for writing taylor data */
 
 void taylor_close(uint buffer);
@@ -517,9 +543,10 @@ char *createFileName(short tapeID, int tapeType);
 
 
 
-void put_op(unsigned char op);
 /* puts an operation into the operation buffer, ensures that location buffer
  * and constants buffer are prepared to take the belonging stuff */
+void put_op_reserve(unsigned char op, unsigned int reserveExtraLocations);
+#define put_op(i) put_op_reserve((i),0)
 
 void put_op_block(unsigned char *lastOpP1);
 /* writes a block of operations onto hard disk and handles file creation,

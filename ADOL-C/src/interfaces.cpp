@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     interfaces.cpp
- Revision: $Id: interfaces.cpp 106 2010-06-29 17:19:50Z kulshres $
+ Revision: $Id: interfaces.cpp 436 2013-07-04 13:36:47Z kulshres $
  Contents: Genuine C++ Interfaces to ADOL-C forward & reverse calls.
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -457,7 +457,7 @@ int reverse( short  tag,
            If p and U are omitted they default to m and I                   */
 { static int depax;
     static double** I;
-    if (m compsize depax) {
+    if (m adolc_compsize depax) {
         if (depax)
             myfreeI2(depax,I);
         I = myallocI2(depax = m);

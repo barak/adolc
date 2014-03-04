@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac 415 2013-03-13 16:15:36Z kulshres $
+# Revision: $Id: configure.ac 490 2014-02-24 14:13:54Z kulshres $
 #
 # Copyright (C) Andrea Walther, Andreas Kowarz
 #               
@@ -8,21 +8,26 @@
 #
 ##############################################################################
 define([ADOLC_VER], [2])
-define([ADOLC_SUB], [4])
-define([ADOLC_LVL], [1])
+define([ADOLC_SUB], [5])
+define([ADOLC_LVL], [0])
 
 AC_PREREQ(2.67)
 AC_INIT(adolc,
         ADOLC_VER.ADOLC_SUB.ADOLC_LVL,
         [adol-c@list.coin-or.org])
 config_flags="$*"
-AC_REVISION($Revision: 415 $)
+AC_REVISION($Revision: 490 $)
 AC_CONFIG_SRCDIR([ADOL-C/src/adouble.cpp])
-AC_CONFIG_AUX_DIR(autoconf)
+AC_CONFIG_AUX_DIR([autoconf])
+AC_CONFIG_MACRO_DIR([autoconf])
 AC_CONFIG_HEADERS([ADOL-C/src/config.h])
 AC_PREFIX_DEFAULT(${HOME}/adolc_base)
 AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign])
+AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
+
+
+adolclib=adolc
 
 if test "x$CFLAGS" == x ; then
     ac_shell_cflags="not_set"
@@ -44,6 +49,16 @@ for i in $config_flags ; do
     esac
 done
 
+AC_MSG_CHECKING(whether to build ADOL-C with adjoinable MPI (AMPI) support)
+AC_ARG_ENABLE(ampi,
+              [AS_HELP_STRING([--enable-ampi],[build ADOL-C with adjoinable MPI (AMPI) support [default=disabled]])],
+	      [adolc_ampi_support=$enableval],[adolc_ampi_support=no])
+AC_MSG_RESULT($adolc_ampi_support)
+AM_CONDITIONAL(BUILD_ADOLC_AMPI_SUPPORT,[test x${adolc_ampi_support} = xyes])
+if test x"${adolc_ampi_support}" = xyes ; then
+AC_DEFINE(ADOLC_AMPI_SUPPORT,1,[defined if adjoinable MPI support is to be compiled in])
+fi
+
 # checks for programs
 AC_PROG_CXX
 AC_PROG_CC
@@ -54,6 +69,8 @@ AC_PROG_MAKE_SET
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
+MPI_CONF_PRE
+
 AC_CHECK_SIZEOF([void *])
 if test "x$ac_cv_sizeof_void_p" = "x8" ; then
    _lib=lib64
@@ -61,10 +78,13 @@ else
    _lib=lib
 fi
 if test "x$libdir_set_on_cmd" = "xno" ; then
-   libdir='${exec_prefix}/${_lib}'
+   libdir='${exec_prefix}'/"${_lib}"
    AC_SUBST(_lib)
    AC_SUBST(libdir)
 fi
+
+# check for builtin
+ACX_C_BUILTIN_EXPECT
 
 # checks for header files
 AC_HEADER_STDC
@@ -81,6 +101,9 @@ AC_STRUCT_TM
 # Checks for library functions
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
+if test x$ac_cv_func_malloc_0_nonnull != xyes ; then
+AC_DEFINE_UNQUOTED([calloc],[rpl_calloc],[Define to rpl_calloc if the replacement function should be used.])
+fi
 
 # Checks for libraries and fuctions
 AC_SEARCH_LIBS([pow], [m])
@@ -119,14 +142,11 @@ AC_ARG_ENABLE(atrig-erf,[AS_HELP_STRING([--enable-atrig-erf],
 AC_MSG_RESULT($use_atrig_erf)
 
 if test x$use_atrig_erf = xyes ; then
-  ATRIG_ERF_FALSE="// "
-  ATRIG_ERF_TRUE=""
+  ATRIG_ERF="#define ATRIG_ERF 1"
 else
-  ATRIG_ERF_FALSE=""
-  ATRIG_ERF_TRUE="// "
+  ATRIG_ERF="#undef ATRIG_ERF"
 fi
-AC_SUBST(ATRIG_ERF_FALSE)
-AC_SUBST(ATRIG_ERF_TRUE)
+AC_SUBST(ATRIG_ERF)
 
 AC_MSG_CHECKING(whether to use 32-bit or 64-bit locations)
 AC_ARG_ENABLE(ulong,[AS_HELP_STRING([--enable-ulong],
@@ -167,14 +187,12 @@ switch branches in conjunction with condassign or advector (see manual).])],
 AC_MSG_RESULT($use_advbranch)
 
 if test x$use_advbranch = xyes ; then
-  ADVBRANCH_TRUE=""
-  ADVBRANCH_FALSE="// "
+  ADVBRANCH="#define ADOLC_ADVANCED_BRANCHING 1"
 else
-  ADVBRANCH_TRUE="// "
-  ADVBRANCH_FALSE=""
+  ADVBRANCH="#undef ADOLC_ADVANCED_BRANCHING"
 fi
-AC_SUBST(ADVBRANCH_TRUE)
-AC_SUBST(ADVBRANCH_FALSE)
+AC_SUBST(ADVBRANCH)
+AC_SUBST(ADVBRANCH)
 
 AC_MSG_CHECKING(whether to use ADOL-C debug mode)
 AC_ARG_ENABLE(debug,
@@ -215,7 +233,7 @@ fi
 AC_MSG_CHECKING(whether the default adouble constructor should initialize the value to 0)
 AC_ARG_ENABLE(stdczero,
               [
-AS_HELP_STRING([--disable-stdczero],[adouble default constructor does not initialze the value to zero
+AS_HELP_STRING([--disable-stdczero],[adouble default constructor does not initialize the value to zero
 (improves performance but yields incorrect results for implicit array initializations, see manual) [default=enabled]])],
   [
   adolc_stdczero=no
@@ -228,6 +246,23 @@ AS_HELP_STRING([--disable-stdczero],[adouble default constructor does not initia
 
 if test x$adolc_stdczero == xyes; then
 AC_DEFINE(ADOLC_ADOUBLE_STDCZERO,1,[ADOL-C adouble zeroing mode])
+fi
+
+AC_MSG_CHECKING(whether the adouble variables have a late initialize option for functions like malloc/realloc)
+AC_ARG_ENABLE(lateinit,
+              [
+AS_HELP_STRING([--enable-lateinit],[adouble constructors need to be called. With malloc or realloc that is not the case. With this option the adouble can do a late initialization.) [default=disabled]])],
+  [
+  adolc_late_init=yes
+  AC_MSG_RESULT(yes)
+  ],
+  [
+  adolc_late_init=no
+  AC_MSG_RESULT(no)
+  ])
+
+if test x$adolc_late_init == xyes; then
+AC_DEFINE(ADOLC_ADOUBLE_LATEINIT,1,[ADOL-C adouble late initialization mode])
 fi
 
 AC_MSG_CHECKING(whether errno is thread save)
@@ -267,59 +302,13 @@ AS_HELP_STRING([--enable-sparse],[build sparse drivers [default=disabled]])],
             [sparse="no"
              AC_MSG_RESULT(no)])
 
-AC_ARG_WITH(colpack,
-	[
-AS_HELP_STRING([--with-colpack=DIR],[path to the colpack library and headers [default=system libraries]])],
-[
-colpack=$withval
-COLPACK_CFLAGS="$ac_adolc_openmpflag -I$colpack/include"
-COLPACK_LIBDIR="$colpack/${_lib}"
-COLPACK_LIBS="$ac_adolc_openmpflag -L$COLPACK_LIBDIR -lColPack"
-],
-[
-COLPACK_CFLAGS="$ac_adolc_openmpflag"
-COLPACK_LIBDIR=""
-COLPACK_LIBS="-lColPack"
-])
+COLPACK_CONF
 
-AC_LANG_PUSH([C++])
-save_CPPFLAGS="$CPPFLAGS"
-save_LIBS="$LIBS"
-CPPFLAGS="$CPPFLAGS $COLPACK_CFLAGS"
-LIBS="$COLPACK_LIBS $LIBS"
-AC_CHECK_HEADER([ColPack/ColPackHeaders.h],[have_colpackheaders=yes],[have_colpackheaders=no])
-if test x$have_colpackheaders = xyes ; then
-   AC_MSG_CHECKING(for libColPack in $COLPACK_LIBDIR)
-   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <ColPack/ColPackHeaders.h>],
-			[ColPack::GraphColoring g])],
-                       [have_colpack=yes],
-                       [have_colpack=no])
-   AC_MSG_RESULT($have_colpack)
-else
-    have_colpack=no
-fi
-CPPFLAGS="$save_CPPFLAGS"
-LIBS="$save_LIBS"
-AC_LANG_POP([C++])
-
-AM_CONDITIONAL(HAVE_LIBCOLPACK,[test x$have_colpack = xyes])
-if test x$have_colpack = xyes; then 
-   sparse=yes
-   echo "will build sparse drivers as linking with -lColPack succeeded"
-fi
 AM_CONDITIONAL(SPARSE,[test x${sparse} = xyes])
+
 if test x$sparse = xyes ; then
    AC_DEFINE(SPARSE,[1],[Define 1 if sparse derivative propagation is to be enabled])
 fi
-
-if test x$sparse = xyes && test x$have_colpack = xyes; then
-	AC_DEFINE(HAVE_LIBCOLPACK,[1],[Define 1 if ColPack is available])
-else
-	COLPACK_CFLAGS=""
-	COLPACK_LIBS=""
-fi
-AC_SUBST(COLPACK_CFLAGS)
-AC_SUBST(COLPACK_LIBS)
 
 # ADOL-C Examples
 AC_MSG_CHECKING(whether to build documented examples)
@@ -369,7 +358,7 @@ AC_ARG_WITH(cflags,
                 ac_adolc_cflags="-O2"
                 if test x${adolc_debug} == xyes ||
                    test x${adolc_harddebug} == xyes ; then
-                   ac_adolc_cflags="-g -O3 -Wall -ansi"
+                   ac_adolc_cflags="-g -O0 -Wall -ansi"
                 fi
              else
                 ac_adolc_cflags="$CFLAGS"
@@ -402,7 +391,34 @@ AC_ARG_WITH(cxxflags,
              fi
              ac_adolc_cxxflags="$ac_adolc_cxxflags $ac_adolc_openmpflag"
             AC_SUBST(ac_adolc_cxxflags)
-             AC_MSG_RESULT($ac_adolc_cxxflags)])
+            AC_MSG_RESULT($ac_adolc_cxxflags)])
+
+MPI_CONF_POST
+AMPI_CONF
+
+AC_ARG_WITH(soname,
+            [AS_HELP_STRING([--with-soname=NAME],
+              [user can choose what to call his library here [default: if ampi enabled then adolc_ampi otherwise adolc]])],
+      [adolclib=$withval])
+
+AC_SUBST(adolclib)
+
+AC_MSG_CHECKING(whether tape_doc should compute values as it prints the tape contents)
+AC_ARG_ENABLE(tapedoc_values,
+              [
+		AS_HELP_STRING([--disable-tapedoc-values],
+			       [should the tape_doc routine compute the values as it interprets and prints the tape contents [default=enabled]])],
+  [
+  tapedoc_values=no
+  ],
+  [
+  tapedoc_values=yes
+  ])
+AC_MSG_RESULT($tapedoc_values)
+
+if test x$tapedoc_values == xyes; then
+AC_DEFINE(ADOLC_TAPE_DOC_VALUES,1,[ADOL-C tape_doc routine computes values])
+fi
 
 ###########################################################################
 #                      COIN_PATCH_LIBTOOL_CYGWIN                          #
@@ -420,6 +436,9 @@ AC_ARG_WITH(cxxflags,
 
 AC_DEFUN([AC_COIN_PATCH_LIBTOOL_CYGWIN],
 [ case "$CXX" in
+    clang* | */clang*) 
+	# do nothing but don't want to accidentally match the 'cl' patterns below
+	;;
     cl* | */cl* | CL* | */CL* | icl* | */icl* | ICL* | */ICL*) 
       AC_MSG_NOTICE(Applying patches to libtool for cl compiler)
       sed -e 's|fix_srcfile_path=\"`cygpath -w \"\$srcfile\"`\"|fix_srcfile_path=\"\\\`'"$CYGPATH_W"' \\\"\\$srcfile\\\"\\\`\"|' \
@@ -467,6 +486,7 @@ AC_CONFIG_FILES(Makefile
                 ADOL-C/doc/version.tex
                 ADOL-C/examples/Makefile
                 ADOL-C/examples/additional_examples/Makefile
+                ADOL-C/examples/additional_examples/cuda/Makefile
                 ADOL-C/examples/additional_examples/clock/Makefile
                 ADOL-C/examples/additional_examples/checkpointing/Makefile
                 ADOL-C/examples/additional_examples/ext_diff_func/Makefile
@@ -491,6 +511,7 @@ AC_CONFIG_FILES(Makefile
                 MSVisualStudio/v10/x64/sparse/config.h
                 MSVisualStudio/v10/x64/nosparse/config.h
 		adolc.spec
+                adolclib.pc
 )
 
 AC_OUTPUT
@@ -524,8 +545,10 @@ fi
 
 echo \
 "  Use ADOL-C safe extern mode:        ${adolc_safe_extern}
+  Use ADOL-C late init mode:          ${adolc_late_init}
 
   Build sparse drivers:               ${sparse}
+  Build with adjoinable MPI support:  ${adolc_ampi_support}
   Build with ColPack:		      ${have_colpack}"
 if test x$sparse = xyes && test x$have_colpack = xno; then
     echo -e \
@@ -538,6 +561,7 @@ echo
 echo \
 "  Build documented examples:          ${docexa}
   Build additional examples:          ${addexa}
+  tape_doc routine computes values:   ${tapedoc_values}
 
   See ADOL-C/src/config.h for further configuration information.
 -----------------------------------------------------------------------------"
@@ -562,7 +586,7 @@ if ! ${writable} ; then
     echo -e \
 "  \033@<:@1;31mPrefix ${prefix} not writable
   please run ./configure --prefix=DIR
-  with a writable directory path otherwise administrator privilages
+  with a writable directory path otherwise administrator privileges
   will be required to run \`make install'\033@<:@0m"
     warn=true
 fi
@@ -585,17 +609,17 @@ echo \
      compiling:
         * add \"-I${prefix}/include\" to your compiler call
      linking:
-        * add \"-L${prefix}/${_lib} -ladolc\" to your linker call
-        * extend your linker call by \"-Wl,--rpath -Wl,${prefix}/${_lib}\"
+        * add \"-L${libdir} -l$adolclib\" to your linker call
+        * extend your linker call by \"-Wl,--rpath -Wl,${libdir}\"
           (if you wish to skip the point \"executing\")
      executing (do one of the following things):
-        * add ${prefix}/${_lib} to your LD_LIBRARY_PATH variable
-        * ask your system administrator for adding ${prefix}/${_lib} to
+        * add ${libdir} to your LD_LIBRARY_PATH variable
+        * ask your system administrator for adding ${libdir} to
           the global file containing library search paths (/etc/ld.so.conf)
 
      (or use the static library by replacing
-        \"-L${prefix}/${_lib} -ladolc\" with
-        \"${prefix}/${_lib}/libadolc.a\" when linking)
+        \"-L${libdir} -l$adolclib\" with
+        \"${libdir}/lib$adolclib.a\" when linking)
 
   See README for instructions on how to change to a nonlocal installation!
 

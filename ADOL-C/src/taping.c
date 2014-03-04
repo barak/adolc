@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.c
- Revision: $Id: taping.c 370 2012-11-22 13:18:52Z kulshres $
+ Revision: $Id: taping.c 468 2014-02-03 13:57:27Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 
@@ -23,6 +23,11 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifdef ADOLC_AMPI_SUPPORT
+#include "ampi/ampi.h"
+#include "ampi/tape/support.h"
+#endif
 
 #if defined(_WINDOWS) && !__STDC__
 #define stat _stat
@@ -180,7 +185,7 @@ void fail( int error ) {
                     "independents(%u)\n"
                     "              variables passed to reverse is "
                     "inconsistent\n"
-                    "              with number recorded on tape(%u/%u)!\n",
+                    "              with number recorded on tape(%zu/%zu)!\n",
                     ADOLC_CURRENT_TAPE_INFOS.tapeID, failAdditionalInfo3,
                     failAdditionalInfo4,
                     ADOLC_CURRENT_TAPE_INFOS.stats[NUM_DEPENDENTS],
@@ -328,18 +333,22 @@ void printError() {
 }
 
 /* the base names of every tape type */
-char *tapeBaseNames[4];
+char *tapeBaseNames[4]={0,0,0,0};
 
 void clearTapeBaseNames() {
     int i;
-    for(i=0;i<4;i++)
-	free(tapeBaseNames[i]);
+    for(i=0;i<4;i++) {
+	if (tapeBaseNames[i]) {
+	    free(tapeBaseNames[i]);
+	    tapeBaseNames[i]=0;
+	}
+    }
 }
 
 /****************************************************************************/
 /* The subroutine get_fstr appends to the tape base name of type tapeType   */
 /* the number fnum and ".tap" and returns a pointer to the resulting string.*/
-/* The result string must be freed be thy caller!                           */
+/* The result string must be freed be the caller!                           */
 /****************************************************************************/
 char *createFileName(short tapeID, int tapeType) {
     char *numberString, *fileName, *extension = ".tap", *currPos;
@@ -623,11 +632,11 @@ void take_stock() {
 /* - intended to be used in stop_trace only                                 */
 /****************************************************************************/
 locint keep_stock() {
+    locint loc2;
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
-    /* if we have adoubles in use */
-    if (ADOLC_GLOBAL_TAPE_VARS.numLives > 0) {
-        locint loc2 = ADOLC_GLOBAL_TAPE_VARS.storeSize - 1;
+    /* save all the final adoubles when finishing tracing */
+        loc2 = ADOLC_GLOBAL_TAPE_VARS.storeSize - 1;
 
         /* special signal -> all alive adoubles recorded on the end of the
          * value stack -> special handling at the beginning of reverse */
@@ -642,7 +651,6 @@ locint keep_stock() {
                 ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[loc2]);
             } while (loc2-- > 0);
         }
-    }
     ADOLC_CURRENT_TAPE_INFOS.traceFlag = 0;
     return ADOLC_GLOBAL_TAPE_VARS.storeSize;
 }
@@ -651,7 +659,7 @@ locint keep_stock() {
 /****************************************************************************/
 /* Set up statics for writing taylor data                                   */
 /****************************************************************************/
-void taylor_begin(uint bufferSize, double **Tg, int degreeSave) {
+void taylor_begin(uint bufferSize, int degreeSave) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
     if (ADOLC_CURRENT_TAPE_INFOS.tayBuffer != NULL) {
@@ -671,7 +679,6 @@ void taylor_begin(uint bufferSize, double **Tg, int degreeSave) {
     }
 
     /* initial setups */
-    ADOLC_CURRENT_TAPE_INFOS.dpp_T = Tg;
     if (ADOLC_CURRENT_TAPE_INFOS.tayBuffer != NULL)
         free(ADOLC_CURRENT_TAPE_INFOS.tayBuffer);
     ADOLC_CURRENT_TAPE_INFOS.tayBuffer = (revreal *)
@@ -1059,6 +1066,7 @@ void start_trace() {
     ADOLC_CURRENT_TAPE_INFOS.currLoc = ADOLC_CURRENT_TAPE_INFOS.locBuffer;
     ADOLC_CURRENT_TAPE_INFOS.currVal = ADOLC_CURRENT_TAPE_INFOS.valBuffer;
     ADOLC_CURRENT_TAPE_INFOS.num_eq_prod = 0;
+    ADOLC_CURRENT_TAPE_INFOS.numSwitches = 0;
 
     /* Put operation denoting the start_of_the tape */
     put_op(start_of_tape);
@@ -1071,7 +1079,7 @@ void start_trace() {
 
     /* initialize value stack if necessary */
     if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
-        taylor_begin(ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE], NULL, 0);
+        taylor_begin(ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE], 0);
 
     /* mark possible (hard disk) tape creation */
     markNewTape();
@@ -1094,6 +1102,10 @@ void stop_trace(int flag) {
 
     ADOLC_CURRENT_TAPE_INFOS.stats[NUM_EQ_PROD] = 
         ADOLC_CURRENT_TAPE_INFOS.num_eq_prod; 
+
+    ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES] =
+	ADOLC_CURRENT_TAPE_INFOS.numSwitches;
+
     taylor_close(ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE]);
 
     /* The taylor stack size base estimation results in a doubled taylor count
@@ -1435,6 +1447,9 @@ void init_for_sweep(short tag) {
     }
     ADOLC_CURRENT_TAPE_INFOS.numVals_Tape = number;
     ADOLC_CURRENT_TAPE_INFOS.currVal = ADOLC_CURRENT_TAPE_INFOS.valBuffer;
+#ifdef ADOLC_AMPI_SUPPORT
+    TAPE_AMPI_resetBottom();
+#endif
 }
 
 /****************************************************************************/
@@ -1552,6 +1567,9 @@ void init_rev_sweep(short tag) {
         ADOLC_CURRENT_TAPE_INFOS.stats[NUM_VALUES] - number;
     ADOLC_CURRENT_TAPE_INFOS.currVal =
         ADOLC_CURRENT_TAPE_INFOS.valBuffer + number;
+#ifdef ADOLC_AMPI_SUPPORT
+    TAPE_AMPI_resetTop();
+#endif
 }
 
 /****************************************************************************/
@@ -1578,17 +1596,22 @@ void end_sweep() {
 
 /* --- Operations --- */
 
+#if defined(__USE_ISOC99)
+const int maxLocsPerOp=10;
+#endif
+
 /****************************************************************************/
 /* Puts an operation into the operation buffer. Ensures that location buffer*/
 /* and constants buffer are prepared to take the belonging stuff.           */
 /****************************************************************************/
-void put_op(unsigned char op) {
+void put_op_reserve(unsigned char op, unsigned int reserveExtraLocations) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
-    /* every operation writes <5 locations */
-    if (ADOLC_CURRENT_TAPE_INFOS.currLoc + 5 > ADOLC_CURRENT_TAPE_INFOS.lastLocP1) {
-        *(ADOLC_CURRENT_TAPE_INFOS.lastLocP1 - 1) = ADOLC_CURRENT_TAPE_INFOS.lastLocP1 -
-                ADOLC_CURRENT_TAPE_INFOS.currLoc;
+    /* make sure we have enough slots to write the locs */
+    if (ADOLC_CURRENT_TAPE_INFOS.currLoc + maxLocsPerOp + reserveExtraLocations > ADOLC_CURRENT_TAPE_INFOS.lastLocP1) {
+        size_t remainder = ADOLC_CURRENT_TAPE_INFOS.lastLocP1 - ADOLC_CURRENT_TAPE_INFOS.currLoc;
+        if (remainder>0) memset(ADOLC_CURRENT_TAPE_INFOS.currLoc,0,(remainder-1)*sizeof(locint));
+        *(ADOLC_CURRENT_TAPE_INFOS.lastLocP1 - 1) = remainder;
         put_loc_block(ADOLC_CURRENT_TAPE_INFOS.lastLocP1);
         /* every operation writes 1 opcode */
         if (ADOLC_CURRENT_TAPE_INFOS.currOp + 1 == ADOLC_CURRENT_TAPE_INFOS.lastOpP1) {
@@ -1602,7 +1625,10 @@ void put_op(unsigned char op) {
     }
     /* every operation writes <5 values --- 3 should be sufficient */
     if (ADOLC_CURRENT_TAPE_INFOS.currVal + 5 > ADOLC_CURRENT_TAPE_INFOS.lastValP1) {
-        ADOLC_PUT_LOCINT(ADOLC_CURRENT_TAPE_INFOS.lastValP1 - ADOLC_CURRENT_TAPE_INFOS.currVal);
+        locint valRemainder=ADOLC_CURRENT_TAPE_INFOS.lastValP1 - ADOLC_CURRENT_TAPE_INFOS.currVal;
+        ADOLC_PUT_LOCINT(valRemainder);
+        /* avoid writing uninitialized memory to the file and get valgrind upset */
+        memset(ADOLC_CURRENT_TAPE_INFOS.currVal,0,valRemainder*sizeof(double));
         put_val_block(ADOLC_CURRENT_TAPE_INFOS.lastValP1);
         /* every operation writes 1 opcode */
         if (ADOLC_CURRENT_TAPE_INFOS.currOp + 1 == ADOLC_CURRENT_TAPE_INFOS.lastOpP1) {

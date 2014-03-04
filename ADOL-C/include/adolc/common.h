@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     common.h
- Revision: $Id: common.h 392 2013-01-28 15:19:28Z kulshres $
+ Revision: $Id: common.h 439 2013-12-02 13:30:22Z kulshres $
  Contents: Common (global) ADOL-C header  
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -25,7 +25,6 @@
 #else
 #   include <cstdlib>
 #   include <cstdio>
-    using namespace std;
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -39,7 +38,7 @@
 #endif
 
 /*--------------------------------------------------------------------------*/
-/* system dependend configuration */
+/* system dependent configuration */
 #if defined(ADOLC_INTERNAL)
 #   if HAVE_CONFIG_H
 #       include "config.h"

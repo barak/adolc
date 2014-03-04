@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tape_handling.cpp
- Revision: $Id: tape_handling.cpp 353 2012-09-24 15:11:31Z kulshres $
+ Revision: $Id: tape_handling.cpp 446 2014-01-11 18:51:20Z kulshres $
  Contents: management of tape infos
 
  Copyright (c) Andreas Kowarz, Andrea Walther, Kshitij Kulshreshtha,
-               Benjamin Letschert
+               Benjamin Letschert, Jean Utke
 
  This file is part of ADOL-C. This software is provided as open source.
  Any use, reproduction, or distribution of the software constitutes 
@@ -43,6 +43,7 @@ GlobalTapeVarsCL::GlobalTapeVarsCL() {
   store = NULL;
   storeSize = 0;
   numLives = 0;
+  nominmaxFlag = 0;
   storeManagerPtr = new StoreManagerLocintBlock(store, storeSize, numLives);
 }
 
@@ -114,7 +115,7 @@ StoreManagerLocint::StoreManagerLocint(const StoreManagerLocint *const stm,
 #endif
     head = stm->head;
     indexFree = new locint[maxsize];
-    for (int i = 0; i < maxsize; i++)
+    for (size_t i = 0; i < maxsize; i++)
 	indexFree[i] = stm->indexFree[i];
 }
 
@@ -285,6 +286,7 @@ void initTapeInfos_keep(TapeInfos *newTapeInfos) {
     locint *locBuffer = newTapeInfos->locBuffer;
     double *valBuffer = newTapeInfos->valBuffer;
     revreal *tayBuffer = newTapeInfos->tayBuffer;
+    double *signature = newTapeInfos->signature;
     FILE *tay_file = newTapeInfos->tay_file;
 
     initTapeInfos(newTapeInfos);
@@ -293,6 +295,7 @@ void initTapeInfos_keep(TapeInfos *newTapeInfos) {
     newTapeInfos->locBuffer = locBuffer;
     newTapeInfos->valBuffer = valBuffer;
     newTapeInfos->tayBuffer = tayBuffer;
+    newTapeInfos->signature = signature;
     newTapeInfos->tay_file = tay_file;
 }
 
@@ -434,6 +437,8 @@ int initNewTape(short tapeID) {
         ADOLC_TAPE_STACK.push(&ADOLC_CURRENT_TAPE_INFOS_FALLBACK);
     }
     if (newTI) ADOLC_TAPE_INFOS_BUFFER.push_back(newTapeInfos);
+
+    newTapeInfos->pTapeInfos.skipFileCleanup=0;
 
     /* set the new tape infos as current */
     memcpy(&ADOLC_CURRENT_TAPE_INFOS, newTapeInfos, sizeof(TapeInfos));
@@ -726,7 +731,7 @@ void cleanUp() {
                 fclose((*tiIter)->loc_file);
                 (*tiIter)->loc_file = NULL;
             }
-            if ((*tiIter)->tay_file!=NULL) {
+            if ((*tiIter)->tay_file!=NULL && (*tiIter)->pTapeInfos.skipFileCleanup==0 ) {
                 fclose((*tiIter)->tay_file);
                 (*tiIter)->tay_file = NULL;
                 remove((*tiIter)->pTapeInfos.tay_fileName);
@@ -746,6 +751,11 @@ void cleanUp() {
                 free((*tiIter)->locBuffer);
                 (*tiIter)->locBuffer = NULL;
             }
+	    if ((*tiIter)->signature != NULL)
+	    {
+		free((*tiIter)->signature);
+		((*tiIter)->signature == NULL);
+	    }
             if ((*tiIter)->tayBuffer != NULL)
             {
                 free((*tiIter)->tayBuffer);
@@ -777,7 +787,7 @@ void cleanUp() {
             int filesWritten = (*tiIter)->stats[OP_FILE_ACCESS] +
                 (*tiIter)->stats[LOC_FILE_ACCESS] +
                 (*tiIter)->stats[VAL_FILE_ACCESS];
-            if ( (filesWritten > 0) && ((*tiIter)->pTapeInfos.keepTape == 0) )
+            if ( (filesWritten > 0) && ((*tiIter)->pTapeInfos.keepTape == 0) && (*tiIter)->pTapeInfos.skipFileCleanup==0 )
             {
                 /* try to remove all tapes (even those not written by this
                  * run) => this ensures that there is no mixture of tapes from
@@ -917,6 +927,8 @@ int trace_on(short tnum, int keepTaylors) {
     /* allocate memory for TapeInfos and update tapeStack */
     retval = initNewTape(tnum);
     ADOLC_CURRENT_TAPE_INFOS.keepTaylors=keepTaylors;
+    ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX] =
+	ADOLC_GLOBAL_TAPE_VARS.nominmaxFlag;
     if (keepTaylors!=0) ADOLC_CURRENT_TAPE_INFOS.deg_save=1;
     start_trace();
     take_stock();               /* record all existing adoubles on the tape */
@@ -924,7 +936,7 @@ int trace_on(short tnum, int keepTaylors) {
 }
 
 int trace_on(short tnum, int keepTaylors,
-        uint obs, uint lbs, uint vbs, uint tbs)
+        uint obs, uint lbs, uint vbs, uint tbs, int skipFileCleanup)
 {
     int retval = 0;
     ADOLC_OPENMP_THREAD_NUMBER;
@@ -937,6 +949,9 @@ int trace_on(short tnum, int keepTaylors,
     ADOLC_CURRENT_TAPE_INFOS.stats[VAL_BUFFER_SIZE] = vbs;
     ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE] = tbs;
     ADOLC_CURRENT_TAPE_INFOS.keepTaylors=keepTaylors;
+    ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX] =
+	ADOLC_GLOBAL_TAPE_VARS.nominmaxFlag;
+    ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.skipFileCleanup=skipFileCleanup;
     if (keepTaylors!=0) ADOLC_CURRENT_TAPE_INFOS.deg_save=1;
     start_trace();
     take_stock();               /* record all existing adoubles on the tape */
@@ -1181,17 +1196,21 @@ TapeInfos::TapeInfos(short _tapeID) {
 
 StoreManagerLocintBlock::StoreManagerLocintBlock(double * &storePtr, size_t &size, size_t &numlives) :
     storePtr(storePtr),
-    maxsize(size), currentfill(numlives)
-{
+    maxsize(size),
+    currentfill(numlives)
+#ifdef ADOLC_LOCDEBUG
+    ,ensure_blockCallsSinceLastConsolidateBlocks(0)
+#endif
+  {
     indexFree.clear();
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerIntegerBlock::StoreManagerIntegerBlock()\n";
 #endif
 }
 
 StoreManagerLocintBlock::~StoreManagerLocintBlock()
 {
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerIntegerBlock::~StoreManagerIntegerBlock()\n";
 #endif
     if (storePtr) {
@@ -1209,9 +1228,13 @@ StoreManagerLocintBlock::StoreManagerLocintBlock(
     const StoreManagerLocintBlock *const stm,
     double * &storePtr, size_t &size, size_t &numlives) :
     storePtr(storePtr),
-    maxsize(size), currentfill(numlives)
-{
-#ifdef ADOLC_DEBUG
+    maxsize(size),
+    currentfill(numlives)
+#ifdef ADOLC_LOCDEBUG
+    ,ensure_blockCallsSinceLastConsolidateBlocks(0)
+#endif
+  {
+#ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerInteger::StoreManagerInteger()\n";
 #endif
     indexFree.clear();
@@ -1231,8 +1254,9 @@ locint StoreManagerLocintBlock::next_loc() {
 
     ++currentfill;
 
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerLocintBlock::next_loc: result: " << result << " fill: " << size() << "max: " << maxSize() << endl;
+    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
     list<struct FreeBlock>::iterator iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
        std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
@@ -1250,33 +1274,44 @@ locint StoreManagerLocintBlock::next_loc() {
 
 void StoreManagerLocintBlock::ensure_block(size_t n) {
     bool found = false;
-
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
+    ++ensure_blockCallsSinceLastConsolidateBlocks;
     std::cerr << "StoreManagerLocintBlock::ensure_Block: required " << n << " ... ";
     std::cerr << "searching for big enough block " << endl;
 #endif
-    list<struct FreeBlock>::iterator iter = indexFree.begin();
-    for (; iter != indexFree.end() ; iter++ ) {
-	if ( iter->size >= n) {
-	    if (iter != indexFree.begin() ) {
-		struct FreeBlock tmp(*iter);
-		iter = indexFree.erase(iter);
-		indexFree.push_front(tmp);
-	    }
-	    found = true;
-	    break;
-	}
+    if (maxSize()-size()>n) {
+      if (indexFree.front().size>=n) found = true;
+      if ((!found) && (double(maxSize())/double(size()))>gcTriggerRatio() || maxSize()>gcTriggerMaxSize()) {
+        consolidateBlocks();
+#ifdef ADOLC_LOCDEBUG
+        std::cerr << "ADOLC: GC called consolidateBlocks because " << maxSize() << "/" << size() << ">" << gcTriggerRatio() << " or " << maxSize() << ">" << gcTriggerMaxSize() << " after " << ensure_blockCallsSinceLastConsolidateBlocks << std::endl;
+        ensure_blockCallsSinceLastConsolidateBlocks=0;
+#endif
+        list<struct FreeBlock>::iterator iter = indexFree.begin();
+        for (; iter != indexFree.end() ; iter++ ) {
+          if ( iter->size >= n) {
+            if (iter != indexFree.begin() ) {
+              struct FreeBlock tmp(*iter);
+              iter = indexFree.erase(iter);
+              indexFree.push_front(tmp);
+            }
+            found = true;
+            break;
+          }
+        }
+      }
     }
     if (!found) {
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
 	std::cerr << "no big enough block...growing " << endl;
 #endif
 	grow(n);
     }
 
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerLocintBlock::ensure_Block: " << " fill: " << size() << "max: " << maxSize() <<  " ensure_Block (" << n << ")" << endl;
-    iter = indexFree.begin();
+    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
+    list<struct FreeBlock>::iterator iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
 	std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
 #endif
@@ -1306,7 +1341,7 @@ void StoreManagerLocintBlock::grow(size_t minGrow) {
       exit(-3);
     }
 
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
     // index 0 is not used, means one slot less
     std::cerr << "StoreManagerIntegerBlock::grow(): increase size from " << oldMaxsize
       << " to " << maxsize << " entries (currently " << size() << " entries used)\n";
@@ -1314,7 +1349,7 @@ void StoreManagerLocintBlock::grow(size_t minGrow) {
 
     double *const oldStore = storePtr;
 
-#if defined(ADOLC_DEBUG)
+#if defined(ADOLC_LOCDEBUG)
     std::cerr << "StoreManagerInteger::grow(): allocate " << maxsize * sizeof(double) << " B doubles\n";
 #endif
     storePtr = new double[maxsize];
@@ -1322,13 +1357,13 @@ void StoreManagerLocintBlock::grow(size_t minGrow) {
     memset(storePtr, 0, maxsize*sizeof(double));
 
     if (oldStore != NULL) { // not the first time
-#if defined(ADOLC_DEBUG)
+#if defined(ADOLC_LOCDEBUG)
       std::cerr << "StoreManagerInteger::grow(): copy values\n";
 #endif
 
       memcpy(storePtr, oldStore, oldMaxsize*sizeof(double));
 
-#if defined(ADOLC_DEBUG)
+#if defined(ADOLC_LOCDEBUG)
       std::cerr << "StoreManagerInteger::grow(): free " << oldMaxsize * sizeof(double) << "\n";
 #endif
       delete [] oldStore;
@@ -1361,8 +1396,9 @@ void StoreManagerLocintBlock::grow(size_t minGrow) {
 	 else
 	     iter++;
     }
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
     std::cerr << "Growing:" << endl;
+    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
     iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
        std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
@@ -1373,22 +1409,12 @@ void StoreManagerLocintBlock::free_loc(locint loc) {
     assert( loc < maxsize);
 
     list<struct FreeBlock>::iterator iter = indexFree.begin();
-    for (; iter != indexFree.end() ; iter++ ) {
-         if (loc+1 == iter->next || iter->next + iter->size == loc) {
-              iter->size++;
-              if (loc + 1 == iter->next)
-                   iter->next = loc;
-    // bringing the matched element to the front maybe a good idea
-    // in case several contiguous adouble are deallcated right after 
-    // one another, e.g. advector
-	      struct FreeBlock tmp(*iter);
-	      iter = indexFree.erase(iter);
-	      indexFree.push_front(tmp);
-	      iter = indexFree.begin();
-	      break;
-         }
+    if (loc+1 == iter->next || iter->next + iter->size == loc) {
+	iter->size++;
+	if (loc + 1 == iter->next)
+	    iter->next = loc;
     }
-    if (iter == indexFree.end()) {
+    else {
          struct FreeBlock tmp;
          tmp.next = loc;
          tmp.size = 1;
@@ -1396,9 +1422,9 @@ void StoreManagerLocintBlock::free_loc(locint loc) {
     }
 
     --currentfill;
-#ifdef ADOLC_DEBUG
+#ifdef ADOLC_LOCDEBUG
     std::cerr << "free_loc: " << loc << " fill: " << size() << "max: " << maxSize() << endl;
-
+    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
     iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
        std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
@@ -1409,4 +1435,63 @@ void ensureContiguousLocations(size_t n) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
     ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->ensure_block(n);
+}
+
+void setStoreManagerControl(double gcTriggerRatio, size_t gcTriggerMaxSize) {
+  ADOLC_OPENMP_THREAD_NUMBER;
+  ADOLC_OPENMP_GET_THREAD_NUMBER;
+  ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->setStoreManagerControl(gcTriggerRatio,gcTriggerMaxSize);
+}
+
+void StoreManagerLocintBlock::consolidateBlocks() {
+    indexFree.sort();
+    list<struct FreeBlock>::iterator iter = indexFree.begin(), niter = iter++;
+    while (iter != indexFree.end()) {
+	if (niter->next + niter->size == iter->next) {
+	    niter->size += iter->size;
+	    indexFree.erase(iter);
+	    iter = niter;
+	    iter++;
+	} else {
+	    niter = iter;
+	    iter++;
+	}
+    }
+#ifdef ADOLC_LOCDEBUG
+    std::cerr << "StoreManagerLocintBlock::consolidateBlocks: " << " fill: " << size() << "max: " << maxSize() << endl;
+    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
+    iter = indexFree.begin();
+    for( ; iter != indexFree.end(); iter++ )
+	std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
+#endif
+}
+
+void enableMinMaxUsingAbs() {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+
+    if (!isTaping())
+	ADOLC_GLOBAL_TAPE_VARS.nominmaxFlag = 1;
+    else
+	fprintf(DIAG_OUT, "ADOL-C warning: "
+		"change from native Min/Max to using Abs during tracing "
+		"will lead to inconsistent results, not changing behaviour now\n"
+		"                "
+		"call %s before trace_on(tape_id) for the correct behaviour\n"
+		,__FUNCTION__);
+}
+
+void disableMinMaxUsingAbs() {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+
+    if (!isTaping())
+	ADOLC_GLOBAL_TAPE_VARS.nominmaxFlag = 0;
+    else
+	fprintf(DIAG_OUT, "ADOL-C warning: "
+		"change from native Min/Max to using Abs during tracing "
+		"will lead to inconsistent results, not changing behaviour now\n"
+		"                "
+		"call %s after trace_off() for the correct behaviour\n"
+		,__FUNCTION__);
 }
