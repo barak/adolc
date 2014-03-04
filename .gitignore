@@ -11,6 +11,7 @@
 /ADOL-C/examples/additional_examples/Makefile
 /ADOL-C/examples/additional_examples/checkpointing/Makefile
 /ADOL-C/examples/additional_examples/clock/Makefile
+/ADOL-C/examples/additional_examples/cuda/Makefile
 /ADOL-C/examples/additional_examples/detexam/Makefile
 /ADOL-C/examples/additional_examples/ext_diff_func/Makefile
 /ADOL-C/examples/additional_examples/fixpoint_exam/Makefile
@@ -27,12 +28,19 @@
 /ADOL-C/examples/additional_examples/tapesave/Makefile
 /ADOL-C/examples/additional_examples/taylor/Makefile
 /ADOL-C/examples/additional_examples/timing/Makefile
+/ADOL-C/include/Makefile
+/ADOL-C/include/adolc/Makefile
+/ADOL-C/include/adolc/drivers/Makefile
+/ADOL-C/include/adolc/sparse/Makefile
+/ADOL-C/include/adolc/tapedoc/Makefile
 /ADOL-C/test/Makefile
 /ADOL-C/test/fminmax
 /ADOL-C/test/powexam
 /ADOL-C/test/speelpenning
 /Makefile
+/adolc.pc
 /autoconf/*.dh-orig
+/autoconf/compile
 /autoconf/shave
 /autoconf/shave-libtool
 /autom4te.cache
