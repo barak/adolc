@@ -1,3 +1,10 @@
+adolc (2.5.0-1) unstable; urgency=medium
+
+  * Don't compress incompressible PDF documentation.
+  * New Upstream Version
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 04 Mar 2014 09:23:10 +0000
+
 adolc (2.4.1-2) unstable; urgency=medium
 
   * multiarch support
