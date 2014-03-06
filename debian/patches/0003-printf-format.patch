@@ -1,0 +1,51 @@
+From: "Barak A. Pearlmutter" <barak+git@cs.nuim.ie>
+Date: Thu, 6 Mar 2014 11:43:01 +0000
+Subject: printf format
+
+Address compiler warnings about printf format strings.
+These fall into two classes.
+The "%z" alone is illegal.
+And a portable way to print a size_t is to cast it to long
+and use a long-compatible format specifier like "%ld" or "%lu".
+---
+ ADOL-C/include/adolc/adtl.h | 4 ++--
+ ADOL-C/src/fo_rev.c         | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/ADOL-C/include/adolc/adtl.h b/ADOL-C/include/adolc/adtl.h
+index fbfb639..6b88f3a 100644
+--- a/ADOL-C/include/adolc/adtl.h
++++ b/ADOL-C/include/adolc/adtl.h
+@@ -293,7 +293,7 @@ inline bool adouble::_do_indo() {
+ 
+ inline void setNumDir(const size_t p) {
+     if (refcounter::refcnt > 0) {
+-	fprintf(DIAG_OUT, "ADOL-C Warning: Tapeless: Setting numDir will not change the number of\n directional derivative in existing adoubles and may lead to erronious results\n or memory corruption\n Number of currently existing adoubles = %z\n", refcounter::refcnt);
++	fprintf(DIAG_OUT, "ADOL-C Warning: Tapeless: Setting numDir will not change the number of\n directional derivative in existing adoubles and may lead to erronious results\n or memory corruption\n Number of currently existing adoubles = %lu\n", (long)refcounter::refcnt);
+     }
+     if (p < 1) {
+ 	fprintf(DIAG_OUT, "ADOL-C Error: Tapeless: You are being a moron now.\n");
+@@ -304,7 +304,7 @@ inline void setNumDir(const size_t p) {
+ 
+ inline void setMode(enum Mode newmode) {
+     if (refcounter::refcnt > 0) {
+-	fprintf(DIAG_OUT, "ADOL-C Warning: Tapeless: Setting mode will the change the mode of\n computation in previously computed variables and may lead to erronious results\n or memory corruption\n Number of currently exisiting adoubles = %z\n", refcounter::refcnt);
++	fprintf(DIAG_OUT, "ADOL-C Warning: Tapeless: Setting mode will the change the mode of\n computation in previously computed variables and may lead to erronious results\n or memory corruption\n Number of currently exisiting adoubles = %lu\n", (long)refcounter::refcnt);
+     }
+     adouble::forward_mode = newmode;
+ }
+diff --git a/ADOL-C/src/fo_rev.c b/ADOL-C/src/fo_rev.c
+index 608607d..bec6dd5 100644
+--- a/ADOL-C/src/fo_rev.c
++++ b/ADOL-C/src/fo_rev.c
+@@ -429,8 +429,8 @@ int int_reverse_safe(
+     }
+     else if (swchk != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]) {
+ 	fprintf(DIAG_OUT, "ADOL-C error: Number of switches passed %d does not "
+-		"match with the one recorded on tape %d (%d)\n",swchk,tnum,
+-		ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]);
++		"match with the one recorded on tape %d (%lu)\n",swchk,tnum,
++		(long)ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]);
+ 	exit(-1);
+     }
+     else

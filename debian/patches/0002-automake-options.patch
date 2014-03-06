@@ -1,0 +1,82 @@
+From: "Barak A. Pearlmutter" <barak+git@cs.nuim.ie>
+Date: Thu, 6 Mar 2014 11:36:20 +0000
+Subject: automake options
+
+The subdir-objects is to address this autoreconf verbiage.
+
+ADOL-C/examples/additional_examples/detexam/Makefile.am:26: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/detexam/Makefile.am:26: but option 'subdir-objects' is disabled
+automake: warning: possible forward-incompatibility.
+automake: At least a source file is in a subdirectory, but the 'subdir-objects'
+automake: automake option hasn't been enabled.  For now, the corresponding output
+automake: object file(s) will be placed in the top-level directory.  However,
+automake: this behaviour will change in future Automake versions: they will
+automake: unconditionally cause object files to be placed in the same subdirectory
+automake: of the corresponding sources.
+automake: You are advised to start using 'subdir-objects' option throughout your
+automake: project, to avoid future incompatibilities.
+ADOL-C/examples/additional_examples/detexam/Makefile.am:28: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/detexam/Makefile.am:28: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/ode/Makefile.am:29: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/ode/Makefile.am:29: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/ode/Makefile.am:31: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/ode/Makefile.am:31: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/ode/Makefile.am:27: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/ode/Makefile.am:27: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/sparse/Makefile.am:31: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/sparse/Makefile.am:31: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/speelpenning/Makefile.am:26: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/speelpenning/Makefile.am:26: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:49: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:49: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:82: warning: source file '$(srcdir)/../ode/vfunc_eutroph.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:82: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:82: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:82: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:91: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:91: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:88: warning: source file '$(srcdir)/../ode/vfunc_fic.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:88: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:88: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:88: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:73: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:73: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:55: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:55: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:67: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:67: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:58: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:58: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:76: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:76: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:64: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:64: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:85: warning: source file '$(srcdir)/../ode/vfunc_robertson.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:85: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:85: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:85: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:61: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:61: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:70: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:70: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:79: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:79: but option 'subdir-objects' is disabled
+ADOL-C/examples/additional_examples/timing/Makefile.am:52: warning: source file '$(srcdir)/../clock/myclock.cpp' is in a subdirectory,
+ADOL-C/examples/additional_examples/timing/Makefile.am:52: but option 'subdir-objects' is disabled
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 27e04ac..e8289fc 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -22,7 +22,7 @@ AC_CONFIG_AUX_DIR([autoconf])
+ AC_CONFIG_MACRO_DIR([autoconf])
+ AC_CONFIG_HEADERS([ADOL-C/src/config.h])
+ AC_PREFIX_DEFAULT(${HOME}/adolc_base)
+-AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign])
++AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign subdir-objects -Wall])
+ AM_MAINTAINER_MODE([disable])
+ AM_SILENT_RULES([yes])
+ 
