@@ -1,3 +1,10 @@
+adolc (2.5.0-2) unstable; urgency=medium
+
+  * Install .pc file for pkg-config adolc
+  * Build with ColPack; build dependency suffices
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 06 Mar 2014 11:28:34 +0000
+
 adolc (2.5.0-1) unstable; urgency=medium
 
   * Don't compress incompressible PDF documentation.
