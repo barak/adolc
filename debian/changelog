@@ -3,8 +3,9 @@ adolc (2.5.0-2) unstable; urgency=medium
   * Install .pc file for pkg-config adolc
   * Build with ColPack; build dependency suffices
   * Quilt patches for autotools and compiler warnings
+  * Move package into debian-science
 
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 06 Mar 2014 11:54:49 +0000
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 07 Mar 2014 12:13:19 +0000
 
 adolc (2.5.0-1) unstable; urgency=medium
 
