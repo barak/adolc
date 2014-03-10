@@ -1,3 +1,9 @@
+adolc (2.5.0-3) unstable; urgency=medium
+
+  * Point doc-base at now-uncompressed PDF documentation.
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 10 Mar 2014 10:14:15 +0000
+
 adolc (2.5.0-2) unstable; urgency=medium
 
   * Install .pc file for pkg-config adolc
