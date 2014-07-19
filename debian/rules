@@ -4,7 +4,7 @@
 	dh $@ --with autoreconf --parallel
 
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-sparse
+	dh_auto_configure -- --enable-sparse --enable-atrig-erf
 
 override_dh_compress:
 	dh_compress --exclude=.pdf
