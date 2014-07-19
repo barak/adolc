@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fixpoint.c
- Revision: $Id: fixpoint.cpp 370 2012-11-22 13:18:52Z kulshres $
+ Revision: $Id: fixpoint.cpp 527 2014-07-15 14:09:31Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
  
@@ -77,7 +77,7 @@ static int fp_zos_forward ( int dim_xu, double *xu, int dim_x, double *x_fix ) {
     }
     if (fpi_stack_iterator==fpi_stack.end()) {
         fprintf(stderr,"ADOL-C Error! No edf found for fixpoint iteration.\n");
-        exit(-1);
+        adolc_exit(-1,"",__func__,__FILE__,__LINE__);
     }
     for (i=0; i<dim_x; i++) x_fix[i] = xu[i];
     for (k=1; k<=current->N_max; k++) {
@@ -108,7 +108,7 @@ static int fp_fos_forward ( int dim_xu, double *xu, double *xu_dot,
     }
     if (fpi_stack_iterator==fpi_stack.end()) {
         fprintf(stderr,"ADOL-C Error! No edf found for fixpoint iteration.\n");
-        exit(-1);
+        adolc_exit(-1,"",__func__,__FILE__,__LINE__);
     }
     for (k=1; (k<current->N_max_deriv)|(k<current->N_max); k++) {
         for (i=0; i<dim_x; i++) xu[i] = x_fix[i];
@@ -142,7 +142,7 @@ static int fp_fos_reverse ( int dim_x, double *x_fix_bar, int dim_xu, double *xu
     }
     if (fpi_stack_iterator==fpi_stack.end()) {
         fprintf(stderr,"ADOL-C Error! No edf found for fixpoint iteration.\n");
-        exit(-1);
+        adolc_exit(-1,"",__func__,__FILE__,__LINE__);
     }
     double *U = new double[dim_xu];
     double *xi = new double[dim_x];

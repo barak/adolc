@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.h
- Revision: $Id: taping.h 441 2013-12-02 15:44:53Z kulshres $
+ Revision: $Id: taping.h 527 2014-07-15 14:09:31Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 
@@ -104,6 +104,8 @@ ADOLC_DLL_EXPORT int trace_on(short tnum, int keepTaylors,
 ADOLC_DLL_EXPORT void trace_off(int flag = 0);
 
 ADOLC_DLL_EXPORT bool isTaping();
+
+ADOLC_DLL_EXPORT void skip_tracefile_cleanup(short tnum);
 
 #endif
 

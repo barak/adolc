@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     liborser.cpp
- Revision: $Id: liborser.cpp 267 2011-08-09 11:39:06Z kulshres $
+ Revision: $Id: liborser.cpp 527 2014-07-15 14:09:31Z kulshres $
  Contents: example for differentiation of OpemMP parallel programs
            serial version for comparisons
 
@@ -27,7 +27,7 @@ using namespace std;
 #include <ctime>
 #include <cmath>
 
-#include "adolc.h"
+#include <adolc/adolc.h>
 
 /* calculate path values */
 

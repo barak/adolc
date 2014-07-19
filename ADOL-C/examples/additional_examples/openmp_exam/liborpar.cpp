@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     liborpar.cpp
- Revision: $Id: liborpar.cpp 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id: liborpar.cpp 527 2014-07-15 14:09:31Z kulshres $
  Contents: example for differentiation of OpemMP parallel programs
            parallel version 
 
@@ -31,7 +31,7 @@ using namespace std;
 
 #ifdef _OPENMP
 #include <omp.h>
-#include <adolc_openmp.h>
+#include <adolc/adolc_openmp.h>
 #endif
 
 /* calculate path values */

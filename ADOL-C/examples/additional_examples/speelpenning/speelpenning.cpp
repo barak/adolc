@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     speelpenning.cpp
- Revision: $Id: speelpenning.cpp 299 2012-03-21 16:08:40Z kulshres $
+ Revision: $Id: speelpenning.cpp 527 2014-07-15 14:09:31Z kulshres $
  Contents: example for computation of sparse hessians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -80,14 +80,14 @@ int main() {
     /*--------------------------------------------------------------------------*/
     tapestats(TAG,tape_stats);
 
-    fprintf(stdout,"\n    independents            %d\n",tape_stats[NUM_INDEPENDENTS]);
-    fprintf(stdout,"    dependents              %d\n",tape_stats[NUM_DEPENDENTS]);
-    fprintf(stdout,"    operations              %d\n",tape_stats[NUM_OPERATIONS]);
-    fprintf(stdout,"    operations buffer size  %d\n",tape_stats[OP_BUFFER_SIZE]);
-    fprintf(stdout,"    locations buffer size   %d\n",tape_stats[LOC_BUFFER_SIZE]);
-    fprintf(stdout,"    constants buffer size   %d\n",tape_stats[VAL_BUFFER_SIZE]);
-    fprintf(stdout,"    maxlive                 %d\n",tape_stats[NUM_MAX_LIVES]);
-    fprintf(stdout,"    valstack size           %d\n\n",tape_stats[TAY_STACK_SIZE]);
+    fprintf(stdout,"\n    independents            %zu\n",tape_stats[NUM_INDEPENDENTS]);
+    fprintf(stdout,"    dependents              %zu\n",tape_stats[NUM_DEPENDENTS]);
+    fprintf(stdout,"    operations              %zu\n",tape_stats[NUM_OPERATIONS]);
+    fprintf(stdout,"    operations buffer size  %zu\n",tape_stats[OP_BUFFER_SIZE]);
+    fprintf(stdout,"    locations buffer size   %zu\n",tape_stats[LOC_BUFFER_SIZE]);
+    fprintf(stdout,"    constants buffer size   %zu\n",tape_stats[VAL_BUFFER_SIZE]);
+    fprintf(stdout,"    maxlive                 %zu\n",tape_stats[NUM_MAX_LIVES]);
+    fprintf(stdout,"    valstack size           %zu\n\n",tape_stats[TAY_STACK_SIZE]);
 
     /*--------------------------------------------------------------------------*/
     double **r = new double*[1];
