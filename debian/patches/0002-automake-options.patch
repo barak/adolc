@@ -68,7 +68,7 @@ ADOL-C/examples/additional_examples/timing/Makefile.am:52: but option 'subdir-ob
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 27e04ac..e8289fc 100644
+index f43a5fb..b9b0530 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -22,7 +22,7 @@ AC_CONFIG_AUX_DIR([autoconf])
