@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparse_fo_rev.cpp
- Revision: $Id: sparse_fo_rev.cpp 106 2010-06-29 17:19:50Z kulshres $
+ Revision: $Id: sparse_fo_rev.cpp 527 2014-07-15 14:09:31Z kulshres $
  Contents: All "Easy To Use" C++ interfaces of SPARSE package
  
  Copyright (c) Andrea Walther, Christo Mitev
@@ -17,6 +17,8 @@
 #include <math.h>
 
 #if defined(__cplusplus)
+
+extern "C" void adolc_exit(int errorcode, const char *what, const char* function, const char *file, int line);
 
 /****************************************************************************/
 /*                                    Bit pattern propagation; general call */
@@ -39,7 +41,7 @@ int forward( short              tag,
         else {
             fprintf(DIAG_OUT,"ADOL-C error:  no basepoint for bit"
                     " pattern forward tight.\n");
-            exit(-1);
+            adolc_exit(-1,"",__func__,__FILE__,__LINE__);
         }
     else
         if (mode == 0) // safe version
@@ -47,7 +49,7 @@ int forward( short              tag,
         else {
             fprintf(DIAG_OUT,"ADOL-C error:  bad mode parameter to bit"
                     " pattern forward.\n");
-            exit(-1);
+            adolc_exit(-1,"",__func__,__FILE__,__LINE__);
         }
     return (rc);
 }
@@ -68,7 +70,7 @@ int forward( short              tag,
     if (mode != 0) // not safe
     { fprintf(DIAG_OUT,"ADOL-C error:  bad mode parameter to bit"
                   " pattern forward.\n");
-        exit(-1);
+        adolc_exit(-1,"",__func__,__FILE__,__LINE__);
     }
     return int_forward_safe(tag,m,n,p,X,Y);
 }
@@ -99,7 +101,7 @@ int reverse( short             tag,
         else {
             fprintf(DIAG_OUT,"ADOL-C error:  bad mode parameter"
                     " to bit pattern reverse.\n");
-            exit(-1);
+            adolc_exit(-1,"",__func__,__FILE__,__LINE__);
         }
     return rc;
 }

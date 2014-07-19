@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac 490 2014-02-24 14:13:54Z kulshres $
+# Revision: $Id: configure.ac 529 2014-07-17 13:55:19Z kulshres $
 #
 # Copyright (C) Andrea Walther, Andreas Kowarz
 #               
@@ -9,14 +9,14 @@
 ##############################################################################
 define([ADOLC_VER], [2])
 define([ADOLC_SUB], [5])
-define([ADOLC_LVL], [0])
+define([ADOLC_LVL], [1])
 
 AC_PREREQ(2.67)
 AC_INIT(adolc,
         ADOLC_VER.ADOLC_SUB.ADOLC_LVL,
         [adol-c@list.coin-or.org])
 config_flags="$*"
-AC_REVISION($Revision: 490 $)
+AC_REVISION($Revision: 529 $)
 AC_CONFIG_SRCDIR([ADOL-C/src/adouble.cpp])
 AC_CONFIG_AUX_DIR([autoconf])
 AC_CONFIG_MACRO_DIR([autoconf])
@@ -49,6 +49,8 @@ for i in $config_flags ; do
     esac
 done
 
+AM_CONDITIONAL(DARWIN, [test "x${host_os#darwin}" != "x${host_os}"])
+
 AC_MSG_CHECKING(whether to build ADOL-C with adjoinable MPI (AMPI) support)
 AC_ARG_ENABLE(ampi,
               [AS_HELP_STRING([--enable-ampi],[build ADOL-C with adjoinable MPI (AMPI) support [default=disabled]])],
@@ -61,7 +63,9 @@ fi
 
 # checks for programs
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
 AC_PROG_CC
+AC_PROG_CC_C99
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S

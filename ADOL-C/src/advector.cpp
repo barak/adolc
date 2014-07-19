@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: advector.cpp 427 2013-04-03 09:30:24Z kulshres $
+ Revision: $Id: advector.cpp 527 2014-07-15 14:09:31Z kulshres $
  Contents: advector.cpp contains a vector<adouble> implementation
            that is able to trace subscripting operations.
 
@@ -30,7 +30,7 @@ adubref::adubref( locint lo, locint ref ) {
     if (ref != refloc) {
 	fprintf(DIAG_OUT,"ADOL-C error: strange construction of an active"
 		" vector subscript reference\n(passed ref = %d, stored refloc = %d)\n",ref,refloc);
-	exit(-2);
+	adolc_exit(-2,"",__func__,__FILE__,__LINE__);
     }
 }
 
@@ -466,11 +466,11 @@ adubref advector::operator[](const badouble& index) {
 adouble advector::lookupindex(const badouble& x, const badouble& y) const {
     if (!nondecreasing()) {
 	fprintf(DIAG_OUT, "ADOL-C error: can only call lookup index if advector ist nondecreasing\n");
-	exit(-2);
+	adolc_exit(-2,"",__func__,__FILE__,__LINE__);
     }
     if (y.value() < 0) {
 	fprintf(DIAG_OUT, "ADOL-C error: index lookup needs a nonnegative denominator\n");
-	exit(-2);
+	adolc_exit(-2,"",__func__,__FILE__,__LINE__);
     }
     adouble r = 0;
     size_t n = data.size();
