@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 483 2014-02-20 16:51:15Z kulshres $
+## Revision: $Id: Makefile.am 557 2014-08-18 10:37:16Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -46,5 +46,8 @@ pkgconfig_DATA = @adolclib@.pc
 
 test: all
 	cd ADOL-C; $(MAKE) test
+
+distclean-local:
+	rm -f @adolclib@.pc
 
 .PHONY: test
