@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ho_rev.c
- Revision: $Id: ho_rev.c 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: ho_rev.c 553 2014-08-18 10:31:42Z kulshres $
  Contents: Contains the routines :
            hos_reverse (higher-order-scalar reverse mode): 
               define _HOS_
@@ -1066,9 +1066,14 @@ int hov_ti_reverse(
 
                 /* RECOMPUTATION */
                 ASSIGN_T( Tres,  rpp_T[res])
+#if !defined(_HOS_OV_)
                 deconv1(k,Targ1,Targ2,Tres);
+#endif
 
-                FOR_0_LE_l_LT_p
+		FOR_0_LE_l_LT_p {
+#if defined(_HOS_OV_)
+                deconv1(k,Targ1,Targ2,Tres);
+#endif
                 if (0 == ARES) {
                     HOV_INC(Aarg1, k1)
                     HOV_INC(Aarg2, k1)
@@ -1089,7 +1094,9 @@ int hov_ti_reverse(
                     HOV_INC(Aarg2, k)
                     HOS_OV_INC(Targ1, k)
                     HOS_OV_INC(Targ2, k)
+		    HOS_OV_INC(Tres, k)
                 }
+		}
                 break;
 
                 /*--------------------------------------------------------------------------*/
@@ -1109,9 +1116,14 @@ int hov_ti_reverse(
 
                 /* RECOMPUTATION */
                 ASSIGN_T( Tres,  rpp_T[res])
+#if !defined(_HOS_OV_)
                 inconv1(k,Targ1,Targ2,Tres);
+#endif
 
-                FOR_0_LE_l_LT_p
+		FOR_0_LE_l_LT_p {
+#if defined(_HOS_OV_)
+                inconv1(k,Targ1,Targ2,Tres);
+#endif
                 if (0 == ARES) {
                     HOV_INC(Aarg1, k1)
                     HOV_INC(Aarg2, k1)
@@ -1132,7 +1144,9 @@ int hov_ti_reverse(
                     HOV_INC(Aarg2, k)
                     HOS_OV_INC(Targ1, k)
                     HOS_OV_INC(Targ2, k)
+		    HOS_OV_INC(Tres, k)
                 }
+		}
                 break;
 
                 /*--------------------------------------------------------------------------*/
