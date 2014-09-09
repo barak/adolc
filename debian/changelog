@@ -1,3 +1,9 @@
+adolc (2.5.2-1) unstable; urgency=medium
+
+  * New Upstream Version
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 09 Sep 2014 13:30:02 +0100
+
 adolc (2.5.1-1) unstable; urgency=medium
 
   * New Upstream Version
