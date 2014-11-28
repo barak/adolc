@@ -1,2 +1,3 @@
 0001-libdir-okay.patch
 0002-automake-options.patch
+0003-correct-second-deriv-for-log.patch
