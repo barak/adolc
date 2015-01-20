@@ -1139,7 +1139,8 @@ int ADOLC_get_sparse_jacobian( func_ad *const fun,
     setMode(ADTL_INDO);
     {
 #ifdef __GNUC__
-	adouble x[n],y[m];
+	adouble *x = static_cast<adouble *>(alloca(sizeof(adouble) * n));
+	adouble *y = static_cast<adouble *>(alloca(sizeof(adouble) * m));
 #else
 	adouble *x, *y;
 	x = new adouble[n];
@@ -1202,7 +1203,8 @@ int ADOLC_get_sparse_jacobian( func_ad *const fun,
     setMode(ADTL_FOV);
     {
 #ifdef __GNUC__
-	adouble x[n],y[m];
+	adouble *x = static_cast<adouble *>(alloca(sizeof(adouble) * n));
+	adouble *y = static_cast<adouble *>(alloca(sizeof(adouble) * m));
 #else
 	adouble *x, *y;
 	x = new adouble[n];
