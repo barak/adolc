@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.cpp
- Revision: $Id: adouble.cpp 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: adouble.cpp 608 2015-08-10 20:06:55Z kulshres $
  Contents: adouble.C contains that definitions of procedures used to 
            define various badouble, adub, and adouble operations. 
            These operations actually have two purposes.
@@ -21,9 +21,10 @@
    
 ----------------------------------------------------------------------------*/
 
+#include "taping_p.h"
 #include <adolc/adouble.h>
 #include "oplate.h"
-#include "taping_p.h"
+#include "dvlparms.h"
 
 using namespace std;
 
@@ -151,20 +152,30 @@ adouble::adouble( const adouble& a ) {
 adouble::adouble( const adub& a ) {
     location = next_loc();
     isInit = true;
+    locint a_loc = a.loc();
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
-
-    if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
-        put_op(assign_a);
-        ADOLC_PUT_LOCINT(a.loc());  // = arg
-        ADOLC_PUT_LOCINT(location); // = res
-
-        ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
+    int upd = 0;
+    /* 981020 olvo  skip upd_resloc(..) if no tracing performed */
+    if (ADOLC_CURRENT_TAPE_INFOS.traceFlag)
+        upd = upd_resloc(a_loc,loc());
+    if (upd) { /* olvo 980708 new n2l & 980921 changed interface */
+        revreal tempVal = ADOLC_GLOBAL_TAPE_VARS.store[a_loc];
         if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
-            ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[location]);
-    }
+            ADOLC_OVERWRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[loc()],&ADOLC_GLOBAL_TAPE_VARS.store[a_loc]);
+        ADOLC_GLOBAL_TAPE_VARS.store[loc()] = tempVal;
+    } else {
+        if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) { // old: write_assign_a(loc(),a_loc);
+            put_op(assign_a);
+            ADOLC_PUT_LOCINT(a_loc);    // = arg
+            ADOLC_PUT_LOCINT(loc()); // = res
 
-    ADOLC_GLOBAL_TAPE_VARS.store[location] = ADOLC_GLOBAL_TAPE_VARS.store[a.loc()];
+            ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
+            if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
+                ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[loc()]);
+        }
+        ADOLC_GLOBAL_TAPE_VARS.store[loc()] = ADOLC_GLOBAL_TAPE_VARS.store[a_loc];
+    }
 }
 
 /****************************************************************************/
@@ -203,6 +214,24 @@ adub* adubp_from_adub(const adub& a) {
 
 /*--------------------------------------------------------------------------*/
 double badouble::getValue() const {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+    return ADOLC_GLOBAL_TAPE_VARS.store[loc()];
+}
+
+badouble::operator double const&() {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+    return ADOLC_GLOBAL_TAPE_VARS.store[loc()];
+}
+
+badouble::operator double&&() {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+    return (double&&)ADOLC_GLOBAL_TAPE_VARS.store[loc()];
+}
+
+badouble::operator double() {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
     return ADOLC_GLOBAL_TAPE_VARS.store[loc()];

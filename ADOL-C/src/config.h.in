@@ -33,6 +33,18 @@
 /* ADOL-C Version */
 #undef ADOLC_VERSION
 
+/* Boost pool should not assume multithreading */
+#undef BOOST_POOL_NO_MT
+
+/* define if the Boost library is available */
+#undef HAVE_BOOST
+
+/* Define to 1 if you have the <boost/pool/pool_alloc.hpp> header file. */
+#undef HAVE_BOOST_POOL_POOL_ALLOC_HPP
+
+/* define if the Boost::System library is available */
+#undef HAVE_BOOST_SYSTEM
+
 /* Define if the compiler provides __builtin_expect */
 #undef HAVE_BUILTIN_EXPECT
 
@@ -125,6 +137,9 @@
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
 
 /* Name of package */
 #undef PACKAGE

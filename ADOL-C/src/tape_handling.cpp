@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tape_handling.cpp
- Revision: $Id: tape_handling.cpp 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: tape_handling.cpp 608 2015-08-10 20:06:55Z kulshres $
  Contents: management of tape infos
 
  Copyright (c) Andreas Kowarz, Andrea Walther, Kshitij Kulshreshtha,
@@ -14,6 +14,7 @@
 ---------------------------------------------------------------------------*/
 #include "taping_p.h"
 #include "checkpointing_p.h"
+#include "dvlparms.h"
 #include <adolc/revolve.h>
 
 #include <cassert>
@@ -45,13 +46,22 @@ GlobalTapeVarsCL::GlobalTapeVarsCL() {
   storeSize = 0;
   numLives = 0;
   nominmaxFlag = 0;
+  pStore = NULL;
+  numparam = 0;
+  maxparam = 0;
+  initialStoreSize = 0;
   storeManagerPtr = new StoreManagerLocintBlock(store, storeSize, numLives);
+  paramStoreMgrPtr = new StoreManagerLocintBlock(pStore, maxparam, numparam);
 }
 
 GlobalTapeVarsCL::~GlobalTapeVarsCL() {
-  if (storeManagerPtr) {
+  if (storeManagerPtr != NULL) {
     delete storeManagerPtr;
     storeManagerPtr = NULL;
+  }
+  if (paramStoreMgrPtr != NULL) {
+      delete paramStoreMgrPtr;
+      paramStoreMgrPtr = NULL;
   }
 }
 
@@ -68,12 +78,17 @@ const GlobalTapeVarsCL& GlobalTapeVarsCL::operator=(const GlobalTapeVarsCL& gtv)
     newTape = gtv.newTape;
     branchSwitchWarning = gtv.branchSwitchWarning;
     currentTapeInfosPtr = gtv.currentTapeInfosPtr;
+    initialStoreSize = gtv.initialStoreSize;
     store = new double[storeSize];
     memcpy(store, gtv.store, storeSize*sizeof(double));
     storeManagerPtr = new
-	StoreManagerLocintBlock(
-	    dynamic_cast<StoreManagerLocintBlock*>(gtv.storeManagerPtr),
-	    store, storeSize, numLives);
+        StoreManagerLocintBlock(
+            dynamic_cast<StoreManagerLocintBlock*>(gtv.storeManagerPtr),
+            store, storeSize, numLives);
+    paramStoreMgrPtr = new
+        StoreManagerLocintBlock(
+            dynamic_cast<StoreManagerLocintBlock*>(gtv.paramStoreMgrPtr),
+            pStore, maxparam, numparam);
     return *this;
 }
 
@@ -144,10 +159,11 @@ void StoreManagerLocint::free_loc(locint loc) {
 #endif
 }
 
-void StoreManagerLocint::grow() {
+void StoreManagerLocint::grow(size_t mingrow) {
     if (maxsize == 0) maxsize += initialSize;
     size_t const oldMaxsize = maxsize;
     maxsize *= 2;
+    if (maxsize < mingrow) maxsize = mingrow;
 
     if (maxsize > std::numeric_limits<locint>::max()) {
       // encapsulate this error message
@@ -274,11 +290,12 @@ void markNewTape() {
 
 /* inits the struct for the new tape */
 void initTapeInfos(TapeInfos *newTapeInfos) {
-    char *ptr;
+    char *ptr, *end;
 
-    ptr = (char *)newTapeInfos;
-    for (unsigned int i = 0; i < sizeof(TapeInfos) -
-            sizeof(PersistantTapeInfos); ++i) ptr[i] = 0;
+    ptr = (char *)(&newTapeInfos->tapeID);
+    end = (char *)(&newTapeInfos->pTapeInfos);
+    for ( ; ptr != end ; ptr++ )
+        *ptr = 0;
 }
 
 /* as above but keep allocated buffers if possible */
@@ -402,12 +419,12 @@ int initNewTape(short tapeID) {
 
     /* update tapeStack and save tapeInfos */
     if (ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr != NULL) {
-        memcpy(ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr,
-                &ADOLC_CURRENT_TAPE_INFOS, sizeof(TapeInfos));
+        ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr->copy(
+            ADOLC_CURRENT_TAPE_INFOS);
         ADOLC_TAPE_STACK.push(ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr);
     } else {
-        memcpy(&ADOLC_CURRENT_TAPE_INFOS_FALLBACK,
-                &ADOLC_CURRENT_TAPE_INFOS, sizeof(TapeInfos));
+        ADOLC_CURRENT_TAPE_INFOS_FALLBACK.copy(
+                ADOLC_CURRENT_TAPE_INFOS);
         ADOLC_TAPE_STACK.push(&ADOLC_CURRENT_TAPE_INFOS_FALLBACK);
     }
     if (newTI) ADOLC_TAPE_INFOS_BUFFER.push_back(newTapeInfos);
@@ -415,7 +432,7 @@ int initNewTape(short tapeID) {
     newTapeInfos->pTapeInfos.skipFileCleanup=0;
 
     /* set the new tape infos as current */
-    memcpy(&ADOLC_CURRENT_TAPE_INFOS, newTapeInfos, sizeof(TapeInfos));
+    ADOLC_CURRENT_TAPE_INFOS.copy(*newTapeInfos);
     ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr = newTapeInfos;
 
     return retval;
@@ -449,16 +466,16 @@ void openTape(short tapeID, char mode) {
                     read_tape_stats(*tiIter);
                }
                 if (ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr != NULL) {
-                    memcpy(ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr,
-                            &ADOLC_CURRENT_TAPE_INFOS, sizeof(TapeInfos));
+                    ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr->copy(
+                            ADOLC_CURRENT_TAPE_INFOS);
                     ADOLC_TAPE_STACK.push(
                             ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr);
                 } else {
-                    memcpy(&ADOLC_CURRENT_TAPE_INFOS_FALLBACK,
-                            &ADOLC_CURRENT_TAPE_INFOS, sizeof(TapeInfos));
+                    ADOLC_CURRENT_TAPE_INFOS_FALLBACK.copy(
+                            ADOLC_CURRENT_TAPE_INFOS);
                     ADOLC_TAPE_STACK.push(&ADOLC_CURRENT_TAPE_INFOS_FALLBACK);
                 }
-                memcpy(&ADOLC_CURRENT_TAPE_INFOS, *tiIter, sizeof(TapeInfos));
+                ADOLC_CURRENT_TAPE_INFOS.copy(**tiIter);
                 ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr = *tiIter;
                 return;
             }
@@ -481,17 +498,17 @@ void openTape(short tapeID, char mode) {
     read_tape_stats(tempTapeInfos);
     /* update tapeStack and save tapeInfos */
     if (ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr != NULL) {
-        memcpy(ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr,
-                &ADOLC_CURRENT_TAPE_INFOS, sizeof(TapeInfos));
+        ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr->copy(
+                ADOLC_CURRENT_TAPE_INFOS);
         ADOLC_TAPE_STACK.push(ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr);
     } else {
-        memcpy(&ADOLC_CURRENT_TAPE_INFOS_FALLBACK,
-                &ADOLC_CURRENT_TAPE_INFOS, sizeof(TapeInfos));
+        ADOLC_CURRENT_TAPE_INFOS_FALLBACK.copy(
+                ADOLC_CURRENT_TAPE_INFOS);
         ADOLC_TAPE_STACK.push(&ADOLC_CURRENT_TAPE_INFOS_FALLBACK);
     }
 
     /* set the new tape infos as current */
-    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tempTapeInfos, sizeof(TapeInfos));
+    ADOLC_CURRENT_TAPE_INFOS.copy(*tempTapeInfos);
     ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr = tempTapeInfos;
 }
 
@@ -509,11 +526,11 @@ void releaseTape() {
         ADOLC_CURRENT_TAPE_INFOS.inUse = 0;
     }
 
-    memcpy(ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr,
-            &ADOLC_CURRENT_TAPE_INFOS, sizeof(TapeInfos));
+    ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr->copy(
+            ADOLC_CURRENT_TAPE_INFOS);
     ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr = ADOLC_TAPE_STACK.top();
-    memcpy(&ADOLC_CURRENT_TAPE_INFOS,
-            ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr, sizeof(TapeInfos));
+    ADOLC_CURRENT_TAPE_INFOS.copy(
+            *ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr);
     ADOLC_TAPE_STACK.pop();
     if (ADOLC_TAPE_STACK.empty())
         ADOLC_GLOBAL_TAPE_VARS.currentTapeInfosPtr = NULL;
@@ -548,6 +565,27 @@ TapeInfos *getTapeInfos(short tapeID) {
     tapeInfos->tapingComplete = 1;
     read_tape_stats(tapeInfos);
     return tapeInfos;
+}
+
+void set_nested_ctx(short tag, char nested) {
+    TapeInfos* tiInfos = getTapeInfos(tag);
+    tiInfos->in_nested_ctx = nested;
+}
+
+void cachedTraceTags(std::vector<short>& result) {
+    vector<TapeInfos *>::const_iterator tiIter;
+    vector<short>::iterator tIdIter;
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+
+    result.resize(ADOLC_TAPE_INFOS_BUFFER.size());
+    if (!ADOLC_TAPE_INFOS_BUFFER.empty()) {
+        for(tiIter=ADOLC_TAPE_INFOS_BUFFER.begin(), tIdIter=result.begin();
+            tiIter!=ADOLC_TAPE_INFOS_BUFFER.end();
+            ++tiIter, ++tIdIter) {
+            *tIdIter = (*tiIter)->tapeID;
+        }
+    }
 }
 
 #ifdef SPARSE
@@ -674,16 +712,26 @@ void init() {
     ADOLC_EXT_DIFF_FCTS_BUFFER.init(init_CpInfos);
 }
 
+static void clearCurrentTape() {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+    TapeInfos* tmpTapeInfos = new TapeInfos;
+
+    ADOLC_CURRENT_TAPE_INFOS.copy(*tmpTapeInfos);
+    ADOLC_CURRENT_TAPE_INFOS_FALLBACK.copy(*tmpTapeInfos);
+    delete tmpTapeInfos;
+}
+
 /* does things like closing/removing temporary files, ... */
 void cleanUp() {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
 
-    vector<TapeInfos *>::iterator tiIter;
-    if (!ADOLC_TAPE_INFOS_BUFFER.empty()) {
-        for (tiIter=ADOLC_TAPE_INFOS_BUFFER.begin();
-                tiIter!=ADOLC_TAPE_INFOS_BUFFER.end();
-                ++tiIter)
+    TapeInfos** tiIter;
+    clearCurrentTape();
+    while (!ADOLC_TAPE_INFOS_BUFFER.empty()) {
+        tiIter = &ADOLC_TAPE_INFOS_BUFFER.back();
+        ADOLC_TAPE_INFOS_BUFFER.pop_back();
         {
             /* close open files though they may be incomplete */
             if ((*tiIter)->op_file!=NULL)
@@ -791,6 +839,7 @@ void cleanUp() {
             }
 
             delete *tiIter;
+            *tiIter = NULL;
         }
     }
 
@@ -799,6 +848,10 @@ void cleanUp() {
     if (ADOLC_GLOBAL_TAPE_VARS.store != NULL) {
         delete[] ADOLC_GLOBAL_TAPE_VARS.store;
         ADOLC_GLOBAL_TAPE_VARS.store = NULL;
+    }
+    if (ADOLC_GLOBAL_TAPE_VARS.pStore != NULL) {
+        delete[] ADOLC_GLOBAL_TAPE_VARS.pStore;
+        ADOLC_GLOBAL_TAPE_VARS.pStore = NULL;
     }
 
 #if defined(_OPENMP)
@@ -965,6 +1018,10 @@ class Keeper {
             dummy = 0;
             init();
             readConfigFile();
+            if (ADOLC_GLOBAL_TAPE_VARS.initialStoreSize > 
+                ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->initialSize)
+                ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->grow(
+                    ADOLC_GLOBAL_TAPE_VARS.initialStoreSize);
         }
         inline ~Keeper() {
             cleanUp();
@@ -1156,26 +1213,50 @@ void endParallel() {
 
 #endif /* _OPENMP */
 
-static void clearPersistantTapeInfos(TapeInfos* newTapeInfos) {
-    char *ptr;
-    ptr = (char*) &(newTapeInfos->pTapeInfos);
-    for (unsigned int i=0; i < sizeof(PersistantTapeInfos); ++i)
-	ptr[i] = 0;
+TapeInfos::TapeInfos() : pTapeInfos() {
+    initTapeInfos(this);
 }
 
-TapeInfos::TapeInfos() {
+TapeInfos::TapeInfos(short _tapeID) : pTapeInfos() {
     initTapeInfos(this);
-    clearPersistantTapeInfos(this);
-}
-
-TapeInfos::TapeInfos(short _tapeID) {
-    initTapeInfos(this);
-    clearPersistantTapeInfos(this);
     tapeID = _tapeID;
     pTapeInfos.op_fileName = createFileName(tapeID, OPERATIONS_TAPE);
     pTapeInfos.loc_fileName = createFileName(tapeID, LOCATIONS_TAPE);
     pTapeInfos.val_fileName = createFileName(tapeID, VALUES_TAPE);
     pTapeInfos.tay_fileName = NULL;
+}
+
+void TapeInfos::copy(const TapeInfos& tInfos) {
+    char *ptr, *end;
+    char const* tIptr = (char const*)(&tInfos.tapeID);
+
+    ptr = (char *)(&this->tapeID);
+    end = (char *)(&this->pTapeInfos);
+    for ( ; ptr != end ; ptr++, tIptr++ )
+        *ptr = *tIptr;
+    this->pTapeInfos.copy(tInfos.pTapeInfos);
+}
+
+PersistantTapeInfos::PersistantTapeInfos() {
+    char *ptr = (char*)(&forodec_nax), *end = (char*)(&paramstore);
+    for (; ptr != end ; ptr++ )
+        *ptr = 0;
+    paramstore = NULL;
+}
+
+void PersistantTapeInfos::copy(const PersistantTapeInfos& pTInfos) {
+    char *ptr = (char*)(&this->forodec_nax), *end = (char*)(&this->paramstore);
+    char const* pTIptr = (char const*)(&pTInfos.forodec_nax);
+    for (; ptr != end ; ptr++, pTIptr++ )
+        *ptr = *pTIptr;
+    paramstore = pTInfos.paramstore;
+}
+
+PersistantTapeInfos::~PersistantTapeInfos() {
+    if (paramstore != NULL) {
+        free(paramstore);
+        paramstore = NULL;
+    }
 }
 
 StoreManagerLocintBlock::StoreManagerLocintBlock(double * &storePtr, size_t &size, size_t &numlives) :
@@ -1197,9 +1278,9 @@ StoreManagerLocintBlock::~StoreManagerLocintBlock()
 #ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerIntegerBlock::~StoreManagerIntegerBlock()\n";
 #endif
-    if (storePtr) {
+    if (storePtr != NULL) {
      delete[] storePtr;
-     storePtr = 0;
+     storePtr = NULL;
     }
     if (!indexFree.empty() ) {
 	indexFree.clear();
@@ -1222,9 +1303,9 @@ StoreManagerLocintBlock::StoreManagerLocintBlock(
     std::cerr << "StoreManagerInteger::StoreManagerInteger()\n";
 #endif
     indexFree.clear();
-    list<struct FreeBlock>::const_iterator iter = stm->indexFree.begin();
+    forward_list<struct FreeBlock>::const_iterator iter = stm->indexFree.begin();
     for (; iter != stm->indexFree.end(); iter++)
-	indexFree.push_back( *iter );
+	indexFree.emplace_front( *iter );
 }
 
 
@@ -1232,26 +1313,25 @@ locint StoreManagerLocintBlock::next_loc() {
     if ( indexFree.empty() )
 	grow();
 
-    locint const result = indexFree.front().next;
-    indexFree.front().next++;
-    indexFree.front().size--;
+    struct FreeBlock &front = indexFree.front();
+    locint const result = front.next;
+    if (--front.size == 0) {
+	if (next(indexFree.cbegin()) == indexFree.cend()) {
+            front.next++;
+	    grow();
+	} else
+          indexFree.pop_front();
+    } else
+        front.next++;
 
     ++currentfill;
 
 #ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerLocintBlock::next_loc: result: " << result << " fill: " << size() << "max: " << maxSize() << endl;
-    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
-    list<struct FreeBlock>::iterator iter = indexFree.begin();
+    forward_list<struct FreeBlock>::iterator iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
        std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
 #endif
-
-    if (indexFree.front().size == 0) {
-	if (indexFree.size() <= 1)
-	    grow();
-	else
-          indexFree.pop_front();
-    }
 
     return result;
 }
@@ -1271,13 +1351,14 @@ void StoreManagerLocintBlock::ensure_block(size_t n) {
         std::cerr << "ADOLC: GC called consolidateBlocks because " << maxSize() << "/" << size() << ">" << gcTriggerRatio() << " or " << maxSize() << ">" << gcTriggerMaxSize() << " after " << ensure_blockCallsSinceLastConsolidateBlocks << std::endl;
         ensure_blockCallsSinceLastConsolidateBlocks=0;
 #endif
-        list<struct FreeBlock>::iterator iter = indexFree.begin();
-        for (; iter != indexFree.end() ; iter++ ) {
+        forward_list<struct FreeBlock>::iterator 
+            biter = indexFree.before_begin(), 
+            iter = indexFree.begin();
+        for (; iter != indexFree.end() ; biter++, iter++ ) {
           if ( iter->size >= n) {
             if (iter != indexFree.begin() ) {
-              struct FreeBlock tmp(*iter);
-              iter = indexFree.erase(iter);
-              indexFree.push_front(tmp);
+              indexFree.emplace_front(*iter);
+              indexFree.erase_after(biter);
             }
             found = true;
             break;
@@ -1294,8 +1375,7 @@ void StoreManagerLocintBlock::ensure_block(size_t n) {
 
 #ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerLocintBlock::ensure_Block: " << " fill: " << size() << "max: " << maxSize() <<  " ensure_Block (" << n << ")" << endl;
-    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
-    list<struct FreeBlock>::iterator iter = indexFree.begin();
+    forward_list<struct FreeBlock>::iterator iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
 	std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
 #endif
@@ -1354,35 +1434,45 @@ void StoreManagerLocintBlock::grow(size_t minGrow) {
     }
 
     bool foundTail = false;
-    list<struct FreeBlock>::iterator iter = indexFree.begin();
-    for (; iter != indexFree.end() ; iter++ ) {
+    forward_list<struct FreeBlock>::iterator 
+        biter = indexFree.before_begin(),
+        iter = indexFree.begin();
+    for (; iter != indexFree.end() ; biter++,iter++ ) {
          if (iter->next + iter->size == oldMaxsize ) {
 	     iter->size += (maxsize - oldMaxsize);
-	      struct FreeBlock tmp(*iter);
-	      iter = indexFree.erase(iter);
-	      indexFree.push_front(tmp);
+	      indexFree.emplace_front(*iter);
+	      indexFree.erase_after(biter);
 	      foundTail = true;
 	      break;
          }
     }
 
     if (! foundTail) {
-	struct FreeBlock tmp;
-	tmp.next = oldMaxsize;
-	tmp.size = (maxsize - oldMaxsize);
-	indexFree.push_front(tmp);
+	indexFree.emplace_front(
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+		FreeBlock(
+#endif
+		oldMaxsize,(maxsize - oldMaxsize)
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+		)
+#endif
+		);
     }
 
+    biter = indexFree.before_begin();
     iter = indexFree.begin();
     while (iter != indexFree.end()) {
-	 if (iter->size == 0)
-	     iter=indexFree.erase(iter); // don't leave 0 blocks around
-	 else
+         if (iter->size == 0) {
+             indexFree.erase_after(biter); // don't leave 0 blocks around
+             iter = next(biter);
+         }
+	 else {
+             biter++;
 	     iter++;
+         }
     }
 #ifdef ADOLC_LOCDEBUG
     std::cerr << "Growing:" << endl;
-    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
     iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
        std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
@@ -1392,24 +1482,29 @@ void StoreManagerLocintBlock::grow(size_t minGrow) {
 void StoreManagerLocintBlock::free_loc(locint loc) {
     assert( loc < maxsize);
 
-    list<struct FreeBlock>::iterator iter = indexFree.begin();
-    if (loc+1 == iter->next || iter->next + iter->size == loc) {
-	iter->size++;
-	if (loc + 1 == iter->next)
-	    iter->next = loc;
+    struct FreeBlock &front = indexFree.front();
+    if ((loc+1 == front.next)
+        || (front.next + front.size == loc)) {
+	front.size++;
+	if (loc + 1 == front.next)
+	    front.next = loc;
     }
     else {
-         struct FreeBlock tmp;
-         tmp.next = loc;
-         tmp.size = 1;
-         indexFree.push_front(tmp);
+         indexFree.emplace_front(
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+		FreeBlock(
+#endif
+			 loc,1
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+			 )
+#endif
+			 );
     }
 
     --currentfill;
 #ifdef ADOLC_LOCDEBUG
     std::cerr << "free_loc: " << loc << " fill: " << size() << "max: " << maxSize() << endl;
-    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
-    iter = indexFree.begin();
+    forward_list<struct FreeBlock>::iterator iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
        std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
 #endif
@@ -1429,21 +1524,21 @@ void setStoreManagerControl(double gcTriggerRatio, size_t gcTriggerMaxSize) {
 
 void StoreManagerLocintBlock::consolidateBlocks() {
     indexFree.sort();
-    list<struct FreeBlock>::iterator iter = indexFree.begin(), niter = iter++;
+    forward_list<struct FreeBlock>::iterator 
+        iter = indexFree.begin(),
+        niter = iter++;
     while (iter != indexFree.end()) {
 	if (niter->next + niter->size == iter->next) {
 	    niter->size += iter->size;
-	    indexFree.erase(iter);
-	    iter = niter;
-	    iter++;
+	    indexFree.erase_after(niter);
+	    iter = next(niter);
 	} else {
-	    niter = iter;
+	    niter++;
 	    iter++;
 	}
     }
 #ifdef ADOLC_LOCDEBUG
     std::cerr << "StoreManagerLocintBlock::consolidateBlocks: " << " fill: " << size() << "max: " << maxSize() << endl;
-    std::cerr << "Size(INDEXFELD) = " << indexFree.size() << "\n";
     iter = indexFree.begin();
     for( ; iter != indexFree.end(); iter++ )
 	std::cerr << "INDEXFELD ( " << iter->next << " , " << iter->size << ")" << endl;
@@ -1498,4 +1593,15 @@ public:
 
 void adolc_exit(int errorcode, const char *what, const char* function, const char *file, int line) {
     throw FatalError(errorcode, what, function, file, line);
+}
+
+/* Only called during stop_trace() via save_params() */
+void free_all_taping_params() {
+    size_t np;
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+
+    np = ADOLC_CURRENT_TAPE_INFOS.stats[NUM_PARAM];
+    while ( np > 0 )
+        ADOLC_GLOBAL_TAPE_VARS.paramStoreMgrPtr->free_loc(--np);
 }

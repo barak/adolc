@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     oplate.h
- Revision: $Id: oplate.h 439 2013-12-02 13:30:22Z kulshres $
+ Revision: $Id: oplate.h 600 2015-03-12 21:28:32Z kulshres $
  Contents: Numeric values for the various opcodes used by ADOL-C.
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -21,7 +21,7 @@
 /* opcodes */
 
 enum OPCODES {
-  death_not,
+  death_not = 0,
   assign_ind,
   assign_dep,
   assign_a,
@@ -83,6 +83,7 @@ enum OPCODES {
   ext_diff,
   ext_diff_iArr,
   ignore_me,
+  ext_diff_v2,
   subscript = 80,
   subscript_ref,
   ref_assign_d_zero,
@@ -101,13 +102,37 @@ enum OPCODES {
   ref_copyout,
   ref_cond_assign,
   ref_cond_assign_s,
+  assign_p = 98,
+  eq_plus_p,
+  eq_min_p,
+  eq_mult_p,
+  ref_assign_p,
+  ref_eq_plus_p,
+  ref_eq_min_p,
+  ref_eq_mult_p,
+  plus_a_p,
+  min_a_p,
+  mult_a_p,
+  div_p_a,
+  pow_op_p,
+  neg_sign_p,
+  recipr_p,
+  vec_copy,
+  vec_dot,
+  vec_axpy,
+  eq_a_p = 119,
+  neq_a_p,
+  le_a_p,
+  gt_a_p,
+  ge_a_p,
+  lt_a_p,
   eq_a_a = 125,
   neq_a_a,
   le_a_a,
   gt_a_a,
   ge_a_a,
   lt_a_a,
-  ampi_send,
+  ampi_send = 131,
   ampi_recv,
   ampi_isend,
   ampi_irecv,

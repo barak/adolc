@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 354 2012-10-01 11:32:26Z kulshres $
+## Revision: $Id: Makefile.am 639 2015-12-02 10:48:01Z kulshres $
 ##
 ## Copyright (C)  Andrea Walther, Andreas Kowarz, Kshitij Kulshreshta
 ##
@@ -12,5 +12,5 @@
 
 libdriversincludedir      = $(pkgincludedir)/drivers
 
-libdriversinclude_HEADERS = drivers.h odedrivers.h taylor.h
+libdriversinclude_HEADERS = drivers.h odedrivers.h psdrivers.h taylor.h
 

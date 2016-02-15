@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 106 2010-06-29 17:19:50Z kulshres $
+## Revision: $Id: Makefile.am 623 2015-08-19 18:32:29Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -10,6 +10,8 @@
 ## 
 ##############################################################################
 
-EXTRA_DIST           = myclock.h
+noinst_LTLIBRARIES = libclock.la
+
+libclock_la_SOURCES  = myclock.h myclock.cpp
 
 MAINTAINERCLEANFILES = Makefile.in *~ *.orig

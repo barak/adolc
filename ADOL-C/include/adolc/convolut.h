@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     convolut.h
- Revision: $Id: convolut.h 354 2012-10-01 11:32:26Z kulshres $
+ Revision: $Id: convolut.h 537 2014-08-15 14:10:48Z kulshres $
  Contents: Convolution routines (used by ho_rev.mc)
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -16,7 +16,7 @@
 #if !defined(ADOLC_CONVOLUT_H)
 #define ADOLC_CONVOLUT_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 BEGIN_C_DECLS
 

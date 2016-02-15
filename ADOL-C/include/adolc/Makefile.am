@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 429 2013-05-27 09:28:48Z kulshres $
+## Revision: $Id: Makefile.am 608 2015-08-10 20:06:55Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz, Kshitij Kulshreshtha
 ##
@@ -11,16 +11,14 @@
 ##############################################################################
 
 pkginclude_HEADERS   = adolc.h adalloc.h adouble.h adutils.h adutilsc.h \
-                       common.h convolut.h dvlparms.h fortutils.h\
-                       interfaces.h taping.h usrparms.h \
+                       convolut.h fortutils.h \
+                       interfaces.h taping.h \
                        externfcts.h checkpointing.h fixpoint.h\
                        adolc_sparse.h adolc_openmp.h \
-                       revolve.h advector.h adolc_settings.h \
-                       adtl.h adoublecuda.h
+                       revolve.h advector.h \
+                       adtl.h adoublecuda.h param.h externfcts2.h
 
-SUBDIRS = drivers tapedoc
-
-EXTRA_DIST = adolc_settings.h.in
+SUBDIRS = internal drivers tapedoc lie
 
 if SPARSE
 SUBDIRS += sparse

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     externfcts.cpp
- Revision: $Id: externfcts.cpp 439 2013-12-02 13:30:22Z kulshres $
+ Revision: $Id: externfcts.cpp 608 2015-08-10 20:06:55Z kulshres $
  Contents: functions and data types for extern (differentiated) functions.
  
  Copyright (c) Andreas Kowarz, Jean Utke
@@ -12,10 +12,11 @@
          
 ----------------------------------------------------------------------------*/
 
+#include "taping_p.h"
 #include <adolc/externfcts.h>
 #include "externfcts_p.h"
-#include "taping_p.h"
 #include <adolc/adouble.h>
+#include <adolc/adalloc.h>
 #include "oplate.h"
 #include "buffer_temp.h"
 
@@ -26,9 +27,9 @@
 
 #define ADOLC_BUFFER_TYPE \
    Buffer< ext_diff_fct, EDFCTS_BLOCK_SIZE >
-static ADOLC_BUFFER_TYPE buffer(edf_init);
+static ADOLC_BUFFER_TYPE buffer(edf_zero);
 
-void edf_init(ext_diff_fct *edf) {
+void edf_zero(ext_diff_fct *edf) {
   // sanity settings
   edf->function=0;
   edf->function_iArr=0;
@@ -77,6 +78,9 @@ void edf_init(ext_diff_fct *edf) {
   edf->nestedAdolc=true;
   edf->dp_x_changes=true;
   edf->dp_y_priorRequired=true;
+  if (edf->allmem != NULL)
+      free(edf->allmem);
+  edf->allmem=NULL;
 }
 
 ext_diff_fct *reg_ext_fct(ADOLC_ext_fct ext_fct) {
@@ -93,9 +97,60 @@ ext_diff_fct *reg_ext_fct(ADOLC_ext_fct_iArr ext_fct) {
   return edf;
 }
 
+/*
+ * The externfcts.h had a comment previously that said the following:
+ ****
+ * The user has to preallocate the variables and set the pointers for any of the call back functions 
+ * that will be called during trace interpretation.
+ * The dimensions given below correspond to the formal arguments in the call back funtions signatures above. 
+ * If the dimensions n and m change between multiple calls to the same external function, then the variables 
+ * have to be preallocation with the maximum of the respective dimension values. 
+ * The dp_x and dp_y pointers have to be valid during both, the tracing phase and the trace interpretation; 
+ * all the other pointers are required to be valid only for the trace interpretation.
+ ****
+ * Doing this now internally saves the user from doing it, as well as updating
+ * when using multiple problem sizes.
+ */
+static void update_ext_fct_memory(ext_diff_fct *edfct, int n, int m) {
+  if (edfct->max_n<n || edfct->max_m<m) {
+      /* We need memory stored in the edfct dp_x[n], dp_X[n], dp_Z[n], 
+       * dp_y[m], dp_Y[m], dp_U[m], dpp_X[n][n], dpp_Y[m][n], 
+       * dpp_U[m][m], dpp_Z[m][n]. We have no implementation for higher order
+       * so leave it out.
+       */
+      size_t totalmem = (3*n + 3*m /*+ n*n + 2*n*m + m*m*/)*sizeof(double)
+                         + (3*m+n)*sizeof(double*);
+      char *tmp;
+      if (edfct->allmem != NULL) free(edfct->allmem);
+      edfct->allmem = (char*)malloc(totalmem);
+      memset(edfct->allmem,0,totalmem);
+      edfct->dp_x = (double*)edfct->allmem;
+      edfct->dp_y = edfct->dp_x+n;
+      edfct->dp_X = edfct->dp_y+m;
+      edfct->dp_Y = edfct->dp_X+n;
+      edfct->dp_U = edfct->dp_Y+m;
+      edfct->dp_Z = edfct->dp_U+m;
+      tmp = (char*)(edfct->dp_Z+n);
+      edfct->dpp_X = (double**)tmp;
+      edfct->dpp_Y = edfct->dpp_X + n;
+      edfct->dpp_U = edfct->dpp_Y + m;
+      edfct->dpp_Z = edfct->dpp_U + m;
+      /*
+      tmp = populate_dpp(&edfct->dpp_X, tmp, n,n);
+      tmp = populate_dpp(&edfct->dpp_Y, tmp, m,n);
+      tmp = populate_dpp(&edfct->dpp_U, tmp, m,m);
+      tmp = populate_dpp(&edfct->dpp_Z, tmp, m,n);
+      */
+  }
+
+  edfct->max_n=(edfct->max_n<n)?n:edfct->max_n;
+  edfct->max_m=(edfct->max_m<m)?m:edfct->max_m;
+  
+}
+
 void call_ext_fct_commonPrior(ext_diff_fct *edfct,
-                              int n, double *xp, adouble *xa,
-                              int m, double *yp, adouble *ya,
+                              int n, adouble *xa,
+                              int m, adouble *ya,
                               int &numVals,
                               double *&vals,
                               int &oldTraceFlag) {
@@ -121,8 +176,8 @@ void call_ext_fct_commonPrior(ext_diff_fct *edfct,
     memcpy(vals, ADOLC_GLOBAL_TAPE_VARS.store,
            numVals * sizeof(double));
   }
-  edfct->max_n=(edfct->max_n<n)?n:edfct->max_n;
-  edfct->max_m=(edfct->max_m<m)?m:edfct->max_m;
+
+  update_ext_fct_memory(edfct,n,m);
 
   /* update taylor buffer if keep != 0 ; possible double counting as in
    * adouble.cpp => correction in taping.c */
@@ -136,13 +191,13 @@ void call_ext_fct_commonPrior(ext_diff_fct *edfct,
     }
   }
 
-  for (int i=0; i<n; ++i) xp[i]=xa[i].getValue();
-  if (edfct->dp_y_priorRequired) for (int i=0; i<m; ++i) yp[i]=ya[i].getValue();
+  for (int i=0; i<n; ++i) edfct->dp_x[i]=xa[i].getValue();
+  if (edfct->dp_y_priorRequired) for (int i=0; i<m; ++i) edfct->dp_y[i]=ya[i].getValue();
 }
 
 void call_ext_fct_commonPost(ext_diff_fct *edfct,
-                              int n, double *xp, adouble *xa,
-                              int m, double *yp, adouble *ya,
+                              int n, adouble *xa,
+                              int m, adouble *ya,
                               int &numVals,
                               double *&vals,
                               int &oldTraceFlag) {
@@ -155,14 +210,14 @@ void call_ext_fct_commonPost(ext_diff_fct *edfct,
     vals=0;
   }
   /* write back */
-  if (edfct->dp_x_changes) for (int i=0; i<n; ++i) xa[i].setValue(xp[i]);
-  for (int i=0; i<m; ++i) ya[i].setValue(yp[i]);
+  if (edfct->dp_x_changes) for (int i=0; i<n; ++i) xa[i].setValue(edfct->dp_x[i]);
+  for (int i=0; i<m; ++i) ya[i].setValue(edfct->dp_y[i]);
   ADOLC_CURRENT_TAPE_INFOS.traceFlag=oldTraceFlag;
 }
 
 int call_ext_fct(ext_diff_fct *edfct,
-                 int n, double *xp, adouble *xa,
-                 int m, double *yp, adouble *ya) {
+                 int n, adouble *xa,
+                 int m, adouble *ya) {
   int ret;
   int numVals = 0;
   double *vals = NULL;
@@ -170,16 +225,16 @@ int call_ext_fct(ext_diff_fct *edfct,
   ADOLC_OPENMP_THREAD_NUMBER;
   ADOLC_OPENMP_GET_THREAD_NUMBER;
   if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) put_op(ext_diff);
-  call_ext_fct_commonPrior (edfct,n,xp,xa,m,yp,ya,numVals,vals,oldTraceFlag);
-  ret=edfct->function(n, xp, m, yp);
-  call_ext_fct_commonPost (edfct,n,xp,xa,m,yp,ya,numVals,vals,oldTraceFlag);
+  call_ext_fct_commonPrior (edfct,n,xa,m,ya,numVals,vals,oldTraceFlag);
+  ret=edfct->function(n, edfct->dp_x, m, edfct->dp_y);
+  call_ext_fct_commonPost (edfct,n,xa,m,ya,numVals,vals,oldTraceFlag);
   return ret;
 }
 
 int call_ext_fct(ext_diff_fct *edfct,
                  int iArrLength, int *iArr,
-                 int n, double *xp, adouble *xa,
-                 int m, double *yp, adouble *ya) {
+                 int n, adouble *xa,
+                 int m, adouble *ya) {
   int ret;
   int numVals = 0;
   double *vals = NULL;
@@ -192,9 +247,9 @@ int call_ext_fct(ext_diff_fct *edfct,
     for (int i=0; i<iArrLength; ++i) ADOLC_PUT_LOCINT(iArr[i]);
     ADOLC_PUT_LOCINT(iArrLength); // do it again so we can read in either direction
   }
-  call_ext_fct_commonPrior (edfct,n,xp,xa,m,yp,ya,numVals,vals,oldTraceFlag);
-  ret=edfct->function_iArr(iArrLength, iArr, n, xp, m, yp);
-  call_ext_fct_commonPost (edfct,n,xp,xa,m,yp,ya,numVals,vals,oldTraceFlag);
+  call_ext_fct_commonPrior (edfct,n,xa,m,ya,numVals,vals,oldTraceFlag);
+  ret=edfct->function_iArr(iArrLength, iArr, n, edfct->dp_x, m, edfct->dp_y);
+  call_ext_fct_commonPost (edfct,n,xa,m,ya,numVals,vals,oldTraceFlag);
   return ret;
 }
 

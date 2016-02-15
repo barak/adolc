@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     externfcts_p.h
- Revision: $Id: externfcts_p.h 439 2013-12-02 13:30:22Z kulshres $
+ Revision: $Id: externfcts_p.h 608 2015-08-10 20:06:55Z kulshres $
  Contents: private functions and data types for extern (differentiated)
            functions.
  
@@ -16,8 +16,9 @@
 #if !defined(ADOLC_EXTERNFCTS_P_H)
 #define ADOLC_EXTERNFCTS_P_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 #include <adolc/externfcts.h>
+#include <adolc/externfcts2.h>
 
 BEGIN_C_DECLS
 /****************************************************************************/
@@ -26,11 +27,7 @@ BEGIN_C_DECLS
 #define EDFCTS_BLOCK_SIZE 10
 
 ext_diff_fct *get_ext_diff_fct(int index);
-
-/**
- * initialize with defaults
- */
-void edf_init(ext_diff_fct *edfct);
+ext_diff_fct_v2 *get_ext_diff_fct_v2(int index);
 
 END_C_DECLS
 

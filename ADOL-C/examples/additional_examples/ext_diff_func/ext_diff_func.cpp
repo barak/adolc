@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ext_diff_func.cpp
- Revision: $Id: ext_diff_func.cpp 370 2012-11-22 13:18:52Z kulshres $
+ Revision: $Id: ext_diff_func.cpp 608 2015-08-10 20:06:55Z kulshres $
  Contents: example for external differentiated functions
 
  Copyright (c) Andrea Walther
@@ -131,7 +131,7 @@ int main()
   
     for(i=0;i<steps;i++)
       {
-	call_ext_fct(edf, 2, yp, y, 2, ynewp, ynew);
+	call_ext_fct(edf, 2, y, 2, ynew);
 	for(j=0;j<2;j++)
 	  y[j] = ynew[j];
       }
@@ -167,7 +167,9 @@ int zos_for_euler_step(int n, double *yin, int m, double *yout)
 {
   int rc;
 
+  set_nested_ctx(tag_ext_fct,true);
   rc = zos_forward(tag_ext_fct, 2, 2, 0, yin, yout);
+  set_nested_ctx(tag_ext_fct,false);
 
   return rc;
 }
@@ -176,8 +178,10 @@ int fos_rev_euler_step(int n, double *u, int m, double *z, double */* unused */,
 {
   int rc;
 
+  set_nested_ctx(tag_ext_fct,true);
   zos_forward(tag_ext_fct, 2, 2, 1, edf->dp_x, edf->dp_y);
   rc = fos_reverse(tag_ext_fct, 2, 2, u, z);
+  set_nested_ctx(tag_ext_fct,false);
 
   return rc;
 }

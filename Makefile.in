@@ -85,10 +85,10 @@ subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(top_srcdir)/ADOL-C/doc/version.tex.in \
-	$(top_srcdir)/MSVisualStudio/v10/sparse/config.h.in \
-	$(top_srcdir)/MSVisualStudio/v10/nosparse/config.h.in \
-	$(top_srcdir)/MSVisualStudio/v10/x64/sparse/config.h.in \
-	$(top_srcdir)/MSVisualStudio/v10/x64/nosparse/config.h.in \
+	$(top_srcdir)/MSVisualStudio/v14/sparse/config.h.in \
+	$(top_srcdir)/MSVisualStudio/v14/nosparse/config.h.in \
+	$(top_srcdir)/MSVisualStudio/v14/x64/sparse/config.h.in \
+	$(top_srcdir)/MSVisualStudio/v14/x64/nosparse/config.h.in \
 	$(srcdir)/adolc.spec.in $(srcdir)/adolclib.pc.in AUTHORS \
 	ChangeLog INSTALL NEWS README TODO autoconf/config.guess \
 	autoconf/config.sub autoconf/depcomp autoconf/install-sh \
@@ -101,6 +101,8 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/autoconf/acx_builtin.m4 \
 	$(top_srcdir)/autoconf/ampi.m4 \
+	$(top_srcdir)/autoconf/ax_boost_base.m4 \
+	$(top_srcdir)/autoconf/ax_boost_system.m4 \
 	$(top_srcdir)/autoconf/colpack.m4 \
 	$(top_srcdir)/autoconf/libtool.m4 \
 	$(top_srcdir)/autoconf/ltoptions.m4 \
@@ -116,10 +118,10 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/ADOL-C/src/config.h
 CONFIG_CLEAN_FILES = ADOL-C/doc/version.tex \
-	MSVisualStudio/v10/sparse/config.h \
-	MSVisualStudio/v10/nosparse/config.h \
-	MSVisualStudio/v10/x64/sparse/config.h \
-	MSVisualStudio/v10/x64/nosparse/config.h adolc.spec \
+	MSVisualStudio/v14/sparse/config.h \
+	MSVisualStudio/v14/nosparse/config.h \
+	MSVisualStudio/v14/x64/sparse/config.h \
+	MSVisualStudio/v14/x64/nosparse/config.h adolc.spec \
 	adolclib.pc
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -263,6 +265,9 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
+BOOST_LDFLAGS = @BOOST_LDFLAGS@
+BOOST_SYSTEM_LIB = @BOOST_SYSTEM_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -396,15 +401,15 @@ EXTRA_DIST = TODO BUGS LICENSE update_versions.sh \
                        ADOL-C/doc/tapeadv.pdf ADOL-C/doc/tapeadv.eps \
                        ADOL-C/doc/tapebasic.pdf ADOL-C/doc/tapebasic.eps \
                        ADOL-C/doc/tap_point.pdf ADOL-C/doc/tap_point.eps \
-                       MSVisualStudio/v10/adolc.sln MSVisualStudio/v10/adolc.vcxproj \
-                       MSVisualStudio/v10/ColPack_Readme_VC++.txt \
-                       MSVisualStudio/v10/ColPack.vcxproj \
-                       MSVisualStudio/v10/sparse/config.h.in MSVisualStudio/v10/nosparse/config.h.in \
-                       MSVisualStudio/v10/x64/sparse/config.h.in MSVisualStudio/v10/x64/nosparse/config.h.in \
-                       MSVisualStudio/v10/sparse/config.h MSVisualStudio/v10/nosparse/config.h \
-                       MSVisualStudio/v10/x64/sparse/config.h MSVisualStudio/v10/x64/nosparse/config.h \
-                       MSVisualStudio/v10/Readme_VC++.txt \
-                       MSVisualStudio/v10/installer.sh \
+                       MSVisualStudio/v14/adolc.sln MSVisualStudio/v14/adolc.vcxproj \
+                       MSVisualStudio/v14/ColPack_Readme_VC++.txt \
+                       MSVisualStudio/v14/ColPack.vcxproj \
+                       MSVisualStudio/v14/sparse/config.h.in MSVisualStudio/v14/nosparse/config.h.in \
+                       MSVisualStudio/v14/x64/sparse/config.h.in MSVisualStudio/v14/x64/nosparse/config.h.in \
+                       MSVisualStudio/v14/sparse/config.h MSVisualStudio/v14/nosparse/config.h \
+                       MSVisualStudio/v14/x64/sparse/config.h MSVisualStudio/v14/x64/nosparse/config.h \
+                       MSVisualStudio/v14/Readme_VC++.txt \
+                       MSVisualStudio/v14/installer.sh \
                        adolc.spec.in adolc.spec \
                        update_versions.sh
 
@@ -452,13 +457,13 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 $(am__aclocal_m4_deps):
 ADOL-C/doc/version.tex: $(top_builddir)/config.status $(top_srcdir)/ADOL-C/doc/version.tex.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-MSVisualStudio/v10/sparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v10/sparse/config.h.in
+MSVisualStudio/v14/sparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v14/sparse/config.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-MSVisualStudio/v10/nosparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v10/nosparse/config.h.in
+MSVisualStudio/v14/nosparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v14/nosparse/config.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-MSVisualStudio/v10/x64/sparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v10/x64/sparse/config.h.in
+MSVisualStudio/v14/x64/sparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v14/x64/sparse/config.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-MSVisualStudio/v10/x64/nosparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v10/x64/nosparse/config.h.in
+MSVisualStudio/v14/x64/nosparse/config.h: $(top_builddir)/config.status $(top_srcdir)/MSVisualStudio/v14/x64/nosparse/config.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 adolc.spec: $(top_builddir)/config.status $(srcdir)/adolc.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

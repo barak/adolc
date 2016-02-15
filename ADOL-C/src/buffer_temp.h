@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     struct_buf.h
- Revision: $Id: buffer_temp.h 439 2013-12-02 13:30:22Z kulshres $
+ Revision: $Id: buffer_temp.h 607 2015-05-19 09:36:56Z kulshres $
  Contents: - template class for linked list of Type buffers with constant length
              per buffer
            - intended to be used with structs
@@ -17,7 +17,7 @@
 #if !defined(ADOLC_STRUCT_BUF_H)
 #define ADOLC_STRUCT_BUF_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 #include "taping_p.h"
 
 #if defined(__cplusplus)
@@ -40,6 +40,7 @@ BUFFER_TEMPLATE class Buffer {
     typedef struct SubBuffer {
         SubBufferElement elements[_subBufferSize];
         struct SubBuffer *nextSubBuffer;
+        SubBuffer();
     }
     SubBuffer;
 
@@ -77,12 +78,21 @@ void BUFFER::zeroAll(SubBufferElement* subBufferElement) {
 }
 
 BUFFER_TEMPLATE
+BUFFER::SubBuffer::SubBuffer() {
+   memset(elements,0,sizeof(SubBufferElement)*_subBufferSize);
+   nextSubBuffer = NULL;
+}
+
+BUFFER_TEMPLATE
 BUFFER::~Buffer() {
     SubBuffer *tmpSubBuffer = NULL;
 
     while (firstSubBuffer != NULL) {
         tmpSubBuffer = firstSubBuffer;
         firstSubBuffer = firstSubBuffer->nextSubBuffer;
+        for(int i = 0; i < subBufferSize; i++)
+            if (tmpSubBuffer->elements[i].allmem != NULL)
+                free(tmpSubBuffer->elements[i].allmem);
         delete tmpSubBuffer;
     }
 }
@@ -105,6 +115,7 @@ SubBufferElement *BUFFER::append() {
     }
     index=tmp;
 
+    currentSubBuffer->elements[index].allmem=NULL;
     if (initFunction!=NULL)
         initFunction(&(currentSubBuffer->elements[index]));
 

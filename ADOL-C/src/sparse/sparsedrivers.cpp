@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.cpp
- Revision: $Id: sparsedrivers.cpp 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: sparsedrivers.cpp 617 2015-08-18 21:56:38Z kulshres $
  Contents: "Easy To Use" C++ interfaces of SPARSE package
  
 
@@ -12,11 +12,13 @@
  recipient's acceptance of the terms of the accompanying license file.  
   
 ----------------------------------------------------------------------------*/
-#include <adolc/sparse/sparsedrivers.h>
+#include "taping_p.h"
 #include "oplate.h"
+#include "dvlparms.h"
+
+#include <adolc/sparse/sparsedrivers.h>
 #include <adolc/adalloc.h>
 #include <adolc/interfaces.h>
-#include "taping_p.h"
 
 #if defined(ADOLC_INTERNAL)
 #    if HAVE_CONFIG_H
@@ -103,6 +105,25 @@ int jac_pat(
     return(rc);
 }
 
+int absnormal_jac_pat(
+    short          tag,       /* tape identification                       */
+    int            depen,     /* number of dependent variables             */
+    int            indep,     /* number of independent variables           */
+    int            numsw,     /* number of switches                        */
+    const double  *basepoint, /* independant variable values               */
+    unsigned int **crs
+    /* returned compressed row block-index storage                         */
+    ) {
+
+    if (crs == NULL) {
+        fprintf(DIAG_OUT,"ADOL-C user error in jac_pat(...) : "
+                "parameter crs may not be NULL !\n");
+        adolc_exit(-1,"",__func__,__FILE__,__LINE__);
+    } else
+        for (int i=0; i<depen+numsw; i++)
+            crs[i] = NULL;
+    return indopro_forward_absnormal(tag, depen, indep, numsw, basepoint, crs);
+}
 /*--------------------------------------------------------------------------*/
 /*                                                 seed matrix for Jacobian */
 /*--------------------------------------------------------------------------*/
@@ -343,12 +364,12 @@ int sparse_jac(
       sJinfos.jr1d = (void *) jr1d;
       setTapeInfoJacSparse(tag, sJinfos);
       tapeInfos=getTapeInfos(tag);
-      memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+      ADOLC_CURRENT_TAPE_INFOS.copy(*tapeInfos);
     }
     else
       {
 	tapeInfos=getTapeInfos(tag);
-	memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+	ADOLC_CURRENT_TAPE_INFOS.copy(*tapeInfos);
 	sJinfos.depen    = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.depen;
 	sJinfos.nnz_in    = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.nnz_in;
 	sJinfos.JP        = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sJinfos.JP;
@@ -415,6 +436,7 @@ int sparse_jac(
 {
     fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
     adolc_exit(-1,"",__func__,__FILE__,__LINE__);
+	return -1;
 }
 #endif
 
@@ -481,7 +503,7 @@ int sparse_hess(
 	else
 	  {
 	    tapeInfos=getTapeInfos(tag);
-	    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+	    ADOLC_CURRENT_TAPE_INFOS.copy(*tapeInfos);
             if (indep != ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.indep) {
                 fprintf(DIAG_OUT,"ADOL-C Error: wrong number of independents stored in hessian pattern.\n");
                 adolc_exit(-1,"",__func__,__FILE__,__LINE__);
@@ -538,13 +560,13 @@ int sparse_hess(
 	setTapeInfoHessSparse(tag, sHinfos);
 
 	tapeInfos=getTapeInfos(tag);
-	memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+	ADOLC_CURRENT_TAPE_INFOS.copy(*tapeInfos);
 
     }
     else
       {
 	tapeInfos=getTapeInfos(tag);
-	memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+	ADOLC_CURRENT_TAPE_INFOS.copy(*tapeInfos);
 	sHinfos.nnz_in = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.nnz_in;
 	sHinfos.HP     = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP;
     	sHinfos.Hcomp  = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.Hcomp;
@@ -643,6 +665,7 @@ int sparse_hess(
 {
     fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
     adolc_exit(-1,"",__func__,__FILE__,__LINE__);
+	return -1;
 }
 #endif
 
@@ -664,7 +687,7 @@ void set_HP(
     ADOLC_OPENMP_GET_THREAD_NUMBER;
 
     tapeInfos=getTapeInfos(tag);
-    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+    ADOLC_CURRENT_TAPE_INFOS.copy(*tapeInfos);
     sHinfos.nnz_in = 0;
     deepcopy_HP(&sHinfos.HP,HP,indep);
     sHinfos.Hcomp  = NULL;
@@ -697,7 +720,7 @@ void get_HP(
     ADOLC_OPENMP_GET_THREAD_NUMBER;
 
     tapeInfos=getTapeInfos(tag);
-    memcpy(&ADOLC_CURRENT_TAPE_INFOS, tapeInfos, sizeof(TapeInfos));
+    ADOLC_CURRENT_TAPE_INFOS.copy(*tapeInfos);
     deepcopy_HP(HP,ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.sHinfos.HP,indep);
 }
 #else
@@ -1238,6 +1261,7 @@ int ADOLC_get_sparse_jacobian( func_ad *const fun,
 {
     fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
     adolc_exit(-1,"",__func__,__FILE__,__LINE__);
+	return -1;
 }
 #endif
 

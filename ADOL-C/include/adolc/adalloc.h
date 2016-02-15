@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adalloc.h
- Revision: $Id: adalloc.h 364 2012-11-15 11:51:15Z kulshres $
+ Revision: $Id: adalloc.h 608 2015-08-10 20:06:55Z kulshres $
  Contents: Allocation of arrays of doubles in several dimensions 
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -15,7 +15,7 @@
 #if !defined (ADOLC_ADALLOC_H)
 #define ADOLC_ADALLOC_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 /****************************************************************************/
 /*                                                         Now the C THINGS */
@@ -23,6 +23,12 @@ BEGIN_C_DECLS
 
 /*--------------------------------------------------------------------------*/
 /*                                              MEMORY MANAGEMENT UTILITIES */
+ADOLC_DLL_EXPORT char* populate_dpp(double ***const pointer, char *const memory,
+                                    int n, int m);
+ADOLC_DLL_EXPORT char* populate_dppp(double ****const pointer, char *const memory,
+                                     int n, int m, int p);
+ADOLC_DLL_EXPORT char* populate_dppp_nodata(double ****const pointer, char *const memory,
+                                            int n, int m);
 ADOLC_DLL_EXPORT double    *myalloc1(size_t);
 ADOLC_DLL_EXPORT double   **myalloc2(size_t, size_t);
 ADOLC_DLL_EXPORT double  ***myalloc3(size_t, size_t, size_t);

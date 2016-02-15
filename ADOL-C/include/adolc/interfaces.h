@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     interfaces.h
- Revision: $Id: interfaces.h 469 2014-02-04 15:02:07Z kulshres $
+ Revision: $Id: interfaces.h 639 2015-12-02 10:48:01Z kulshres $
  Contents: Declaration of the standard interfaces to ADOL-C forward and
            reverse calls (C++, C and Fortran callable C functions).
  
@@ -46,7 +46,7 @@
 #if !defined(ADOLC_INTERFACES_H)
 #define ADOLC_INTERFACES_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 #if defined(SPARSE)
 #include <adolc/sparse/sparsedrivers.h>
@@ -269,7 +269,7 @@ ADOLC_DLL_EXPORT int hov_forward_partx(
 
 /*--------------------------------------------------------------------------*/
 /*                                                                   HOV_WK */
-/* hov_wk_forward(tag, m, n, d, p, x[n], X[n][p][d], y[m], Y[m][p][d])      */
+/* hov_wk_forward(tag, m, n, d, p, keep, x[n], X[n][p][d], y[m], Y[m][p][d])      */
 /* (defined in uni5_for.mc)                                                 */
 ADOLC_DLL_EXPORT int hov_wk_forward(
     short,int,int,int,int,int,double*,double***,double*,double***);
@@ -434,12 +434,18 @@ ADOLC_DLL_EXPORT int int_reverse_safe
 
 /*--------------------------------------------------------------------------*/
 ADOLC_DLL_EXPORT int get_num_switches(short);
-ADOLC_DLL_EXPORT int zos_an_forward(short,int,int,int,const double*,double*,double*);
-ADOLC_DLL_EXPORT double firstsign(int, double, double*);
-ADOLC_DLL_EXPORT int fos_an_forward(short,int,int,const double*,double*,double*,double*,double*,double*);
-ADOLC_DLL_EXPORT int fov_an_forward(short,int,int,int,const double*,double**,double*,double**,double*,double**);
+ADOLC_DLL_EXPORT int zos_pl_forward(short,int,int,int,const double*,double*,double*);
+ADOLC_DLL_EXPORT short firstsign(int, double*, double*);
+ADOLC_DLL_EXPORT short ext_firstsign(double,double,int,double*,double*);
+ADOLC_DLL_EXPORT short ext_firstsign2(double,int,double*,double*);
+ADOLC_DLL_EXPORT int fos_pl_forward(short,int,int,const double*,double*,double*,double*,double*,double*);
+ADOLC_DLL_EXPORT int fov_pl_forward(short,int,int,int,const double*,double**,double*,double**,double*,double**);
+ADOLC_DLL_EXPORT int fos_pl_sig_forward(short,int,int,const double*,double*,int,short*,short*,double*,double*,double*,double*,short*);
+ADOLC_DLL_EXPORT int fov_pl_sig_forward(short,int,int,int,const double*,double**,int,short*,short*,double*,double**,double*,double**,short*);
+ADOLC_DLL_EXPORT int indopro_forward_absnormal(short,int,int,int,const double*,unsigned int**);
 /*--------------------------------------------------------------------------*/
-ADOLC_DLL_EXPORT int fos_an_reverse(short,int,int,int,int,double*);
+ADOLC_DLL_EXPORT int fos_pl_reverse(short,int,int,int,int,double*);
+ADOLC_DLL_EXPORT int fos_pl_sig_reverse(short,int,int,int,short*,double*,double*);
 
 END_C_DECLS
 

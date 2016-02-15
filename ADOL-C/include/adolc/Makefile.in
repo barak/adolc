@@ -84,10 +84,12 @@ host_triplet = @host@
 @SPARSE_TRUE@am__append_1 = sparse
 subdir = ADOL-C/include/adolc
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(srcdir)/adolc_settings.h.in $(pkginclude_HEADERS)
+	$(pkginclude_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/autoconf/acx_builtin.m4 \
 	$(top_srcdir)/autoconf/ampi.m4 \
+	$(top_srcdir)/autoconf/ax_boost_base.m4 \
+	$(top_srcdir)/autoconf/ax_boost_system.m4 \
 	$(top_srcdir)/autoconf/colpack.m4 \
 	$(top_srcdir)/autoconf/libtool.m4 \
 	$(top_srcdir)/autoconf/ltoptions.m4 \
@@ -100,7 +102,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/ADOL-C/src/config.h
-CONFIG_CLEAN_FILES = adolc_settings.h
+CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -185,7 +187,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = drivers tapedoc sparse
+DIST_SUBDIRS = internal drivers tapedoc lie sparse
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
   dir0=`pwd`; \
@@ -226,6 +228,9 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
+BOOST_LDFLAGS = @BOOST_LDFLAGS@
+BOOST_SYSTEM_LIB = @BOOST_SYSTEM_LIB@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -349,15 +354,14 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 pkginclude_HEADERS = adolc.h adalloc.h adouble.h adutils.h adutilsc.h \
-                       common.h convolut.h dvlparms.h fortutils.h\
-                       interfaces.h taping.h usrparms.h \
+                       convolut.h fortutils.h \
+                       interfaces.h taping.h \
                        externfcts.h checkpointing.h fixpoint.h\
                        adolc_sparse.h adolc_openmp.h \
-                       revolve.h advector.h adolc_settings.h \
-                       adtl.h adoublecuda.h
+                       revolve.h advector.h \
+                       adtl.h adoublecuda.h param.h externfcts2.h
 
-SUBDIRS = drivers tapedoc $(am__append_1)
-EXTRA_DIST = adolc_settings.h.in
+SUBDIRS = internal drivers tapedoc lie $(am__append_1)
 all: all-recursive
 
 .SUFFIXES:
@@ -391,8 +395,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-adolc_settings.h: $(top_builddir)/config.status $(srcdir)/adolc_settings.h.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
 	-rm -f *.lo

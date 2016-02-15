@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 439 2013-12-02 13:30:22Z kulshres $
+## Revision: $Id: Makefile.am 639 2015-12-02 10:48:01Z kulshres $
 ##
 ## Copyright (C)  Andrea Walther, Andreas Kowarz, Kshitij Kulshreshtha
 ##
@@ -20,4 +20,4 @@ MAINTAINERCLEANFILES      = Makefile.in *~ *.orig
 noinst_LTLIBRARIES        = libdrivers.la
 
 libdrivers_la_SOURCES     = drivers.c driversf.c odedrivers.c odedriversf.c \
-                            taylor.c
+                            psdrivers.c psdriversf.c taylor.c
