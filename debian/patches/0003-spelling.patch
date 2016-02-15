@@ -1,0 +1,49 @@
+From: "Barak A. Pearlmutter" <barak+git@pearlmutter.net>
+Date: Mon, 15 Feb 2016 17:15:25 +0000
+Subject: spelling
+
+---
+ ADOL-C/include/adolc/adtl.h  | 2 +-
+ ADOL-C/src/checkpointing.cpp | 2 +-
+ ADOL-C/src/revolve.c         | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ADOL-C/include/adolc/adtl.h b/ADOL-C/include/adolc/adtl.h
+index 2e360f9..73b7e98 100644
+--- a/ADOL-C/include/adolc/adtl.h
++++ b/ADOL-C/include/adolc/adtl.h
+@@ -301,7 +301,7 @@ inline void setNumDir(const size_t p) {
+ 
+ inline void setMode(enum Mode newmode) {
+     if (refcounter::refcnt > 0) {
+-	fprintf(DIAG_OUT, "ADOL-C Warning: Tapeless: Setting mode will the change the mode of\n computation in previously computed variables and may lead to erronious results\n or memory corruption\n Number of currently exisiting adoubles = %zu\n", refcounter::refcnt);
++	fprintf(DIAG_OUT, "ADOL-C Warning: Tapeless: Setting mode will the change the mode of\n computation in previously computed variables and may lead to erronious results\n or memory corruption\n Number of currently existing adoubles = %zu\n", refcounter::refcnt);
+     }
+     adouble::forward_mode = newmode;
+ }
+diff --git a/ADOL-C/src/checkpointing.cpp b/ADOL-C/src/checkpointing.cpp
+index 305eec4..1d0e208 100644
+--- a/ADOL-C/src/checkpointing.cpp
++++ b/ADOL-C/src/checkpointing.cpp
+@@ -605,7 +605,7 @@ void revolveError (CpInfos *cpInfos) {
+                    cpInfos->checkpoints);
+             break;
+         case 12:
+-            printf("   Error occured in numforw!\n");
++            printf("   Error occurred in numforw!\n");
+             break;
+         case 13:
+             printf("   Enhancement of 'fine', 'snaps' checkpoints "
+diff --git a/ADOL-C/src/revolve.c b/ADOL-C/src/revolve.c
+index 1bb01f4..b1dda8f 100644
+--- a/ADOL-C/src/revolve.c
++++ b/ADOL-C/src/revolve.c
+@@ -66,7 +66,7 @@
+ *         FINE      end of subrange currently being processed        *
+ *         SNAPS     upper bound on number of checkpoints taken       *
+ *         INFO      determines how much information will be printed  *
+-*                   and contains information about an error occured  *
++*                   and contains information about an error occurred *
+ *                                                                    *
+ *   Since REVOLVE involves only a few integer operations its         *
+ *   run-time is truly negligible within any nontrivial application.  *
