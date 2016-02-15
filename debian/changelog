@@ -1,3 +1,14 @@
+adolc (2.6.0-1) unstable; urgency=medium
+
+  * New Upstream Version
+  * forward port quilt patches
+  * build dependency on libboost-system-dev, now required
+  * manually enable static library generation, now default disabled upstream
+  * bump standards version, no changes needed
+  * spelling correction patch
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Mon, 15 Feb 2016 17:21:22 +0000
+
 adolc (2.5.2-2) unstable; urgency=medium
 
   * Team upload.
