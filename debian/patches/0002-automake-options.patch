@@ -68,14 +68,14 @@ ADOL-C/examples/additional_examples/timing/Makefile.am:52: but option 'subdir-ob
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index f43a5fb..b9b0530 100644
+index d4ac0d2..6e15e30 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -22,7 +22,7 @@ AC_CONFIG_AUX_DIR([autoconf])
  AC_CONFIG_MACRO_DIR([autoconf])
  AC_CONFIG_HEADERS([ADOL-C/src/config.h])
  AC_PREFIX_DEFAULT(${HOME}/adolc_base)
--AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign])
+-AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign subdir-objects])
 +AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign subdir-objects -Wall])
  AM_MAINTAINER_MODE([disable])
  AM_SILENT_RULES([yes])
