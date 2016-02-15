@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fortutils.h
- Revision: $Id: fortutils.h 354 2012-10-01 11:32:26Z kulshres $
+ Revision: $Id: fortutils.h 537 2014-08-15 14:10:48Z kulshres $
  Contents: Internal tools to handle Fortran arrays
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -16,7 +16,7 @@
 #if !defined(ADOLC_FORTUTILS_H)
 #define ADOLC_FORTUTILS_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 /****************************************************************************/
 /*                                                         Now the C THINGS */

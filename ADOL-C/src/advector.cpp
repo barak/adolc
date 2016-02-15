@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: advector.cpp 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: advector.cpp 659 2015-12-15 10:17:20Z kulshres $
  Contents: advector.cpp contains a vector<adouble> implementation
            that is able to trace subscripting operations.
 
@@ -16,9 +16,10 @@
 #include <limits>
 #include <cmath>
 
-#include <adolc/advector.h>
-#include "oplate.h"
 #include "taping_p.h"
+#include <adolc/adouble.h>
+#include "oplate.h"
+#include "dvlparms.h"
 
 using std::vector;
 
@@ -32,6 +33,14 @@ adubref::adubref( locint lo, locint ref ) {
 		" vector subscript reference\n(passed ref = %d, stored refloc = %d)\n",ref,refloc);
 	adolc_exit(-2,"",__func__,__FILE__,__LINE__);
     }
+    isInit = true;
+}
+
+adubref::~adubref() {
+#ifdef adolc_overwrite
+    if (isInit)
+        free_loc(location);
+#endif
 }
 
 adubref::operator adub() const {
@@ -344,17 +353,7 @@ adubref& adubref::operator *= ( const badouble& y ) {
     return *this;
 }
 
-adubref& adubref::operator /= (double y) {
-    *this *=  (1.0/y);
-    return *this;
-}
-
-adubref& adubref::operator /= (const badouble& y) {
-    *this *=  (1.0/y);
-    return *this;
-}
-
-void condassign( adubref res,         const badouble &cond,
+void condassign( adubref& res,         const badouble &cond,
                  const badouble &arg1, const badouble &arg2 ) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
@@ -378,7 +377,7 @@ void condassign( adubref res,         const badouble &cond,
         ADOLC_GLOBAL_TAPE_VARS.store[res.refloc] = ADOLC_GLOBAL_TAPE_VARS.store[arg2.loc()];
 }
 
-void condassign( adubref res, const badouble &cond, const badouble &arg ) {
+void condassign( adubref& res, const badouble &cond, const badouble &arg ) {
     ADOLC_OPENMP_THREAD_NUMBER;
     ADOLC_OPENMP_GET_THREAD_NUMBER;
     if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) { // old: write_condassign2(res.location,cond.location,arg.location);
@@ -398,7 +397,6 @@ void condassign( adubref res, const badouble &cond, const badouble &arg ) {
 }
 
 advector::blocker::blocker(size_t n) {
-    dflt = new adouble;
     ensureContiguousLocations(n);
 }
 
@@ -477,4 +475,75 @@ adouble advector::lookupindex(const badouble& x, const badouble& y) const {
     for (size_t i = 0; i < n; i++) 
 	condassign(r, x - data[i]*y, (adouble) (i+1));
     return r;
+}
+
+void adolc_vec_copy(adouble *const dest, const adouble *const src, locint n) {
+  ADOLC_OPENMP_THREAD_NUMBER;
+  ADOLC_OPENMP_GET_THREAD_NUMBER;
+  if (dest[n-1].loc() - dest[0].loc()!=(unsigned)n-1 || src[n-1].loc()-src[0].loc()!=(unsigned)n-1) fail(ADOLC_VEC_LOCATIONGAP);
+  if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
+      put_op(vec_copy);
+      ADOLC_PUT_LOCINT(dest[0].loc());
+      ADOLC_PUT_LOCINT(src[0].loc());
+      ADOLC_PUT_LOCINT(n);
+      for (locint i=0; i<n; i++) {
+          ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
+          if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
+              ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[dest[0].loc()+i]);
+      }
+  }
+  for (locint i=0; i<n; i++)
+      ADOLC_GLOBAL_TAPE_VARS.store[dest[0].loc()+i] = 
+          ADOLC_GLOBAL_TAPE_VARS.store[src[0].loc()+i];
+}
+
+adub adolc_vec_dot(const adouble *const x, const adouble *const y, locint n) {
+  ADOLC_OPENMP_THREAD_NUMBER;
+  ADOLC_OPENMP_GET_THREAD_NUMBER;
+  if (x[n-1].loc() - x[0].loc()!=(unsigned)n-1 || y[n-1].loc()-y[0].loc()!=(unsigned)n-1) fail(ADOLC_VEC_LOCATIONGAP);
+  locint res = next_loc();
+  if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
+      put_op(vec_dot);
+      ADOLC_PUT_LOCINT(res);
+      ADOLC_PUT_LOCINT(x[0].loc());
+      ADOLC_PUT_LOCINT(y[0].loc());
+      ADOLC_PUT_LOCINT(n);
+      ADOLC_CURRENT_TAPE_INFOS.num_eq_prod += 2*n;
+      ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
+      if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
+          ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[res]);
+  }
+  ADOLC_GLOBAL_TAPE_VARS.store[res] = 0;
+  for (locint i=0; i<n; i++)
+      ADOLC_GLOBAL_TAPE_VARS.store[res] += 
+          ADOLC_GLOBAL_TAPE_VARS.store[x[0].loc()+i] *
+          ADOLC_GLOBAL_TAPE_VARS.store[y[0].loc()+i];
+  return res;
+}
+
+void adolc_vec_axpy(adouble *const res, const badouble& a, const adouble*const x, const adouble*const y,locint n) {
+  ADOLC_OPENMP_THREAD_NUMBER;
+  ADOLC_OPENMP_GET_THREAD_NUMBER;
+  if (res[n-1].loc() - res[0].loc()!=(unsigned)n-1 || x[n-1].loc() - x[0].loc()!=(unsigned)n-1 || y[n-1].loc()-y[0].loc()!=(unsigned)n-1) fail(ADOLC_VEC_LOCATIONGAP);
+  locint a_loc = a.loc();
+  if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
+      put_op(vec_axpy);
+      ADOLC_PUT_LOCINT(res[0].loc());
+      ADOLC_PUT_LOCINT(a_loc);
+      ADOLC_PUT_LOCINT(x[0].loc());
+      ADOLC_PUT_LOCINT(y[0].loc());
+      ADOLC_PUT_LOCINT(n);
+      ADOLC_CURRENT_TAPE_INFOS.num_eq_prod += 2*n -1;
+      for (locint i=0; i<n; i++) {
+          ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
+          if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
+              ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[res[0].loc()+i]);
+      }
+  }
+  for (locint i=0; i<n; i++)
+      ADOLC_GLOBAL_TAPE_VARS.store[res[0].loc()+i] = 
+          ADOLC_GLOBAL_TAPE_VARS.store[a_loc] *
+          ADOLC_GLOBAL_TAPE_VARS.store[x[0].loc()+i] +
+          ADOLC_GLOBAL_TAPE_VARS.store[y[0].loc()+i];
+
 }

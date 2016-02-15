@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: uni5_for.c 639 2015-12-02 10:48:01Z kulshres $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_
@@ -36,8 +36,10 @@
 #include "oplate.h"
 #include <adolc/externfcts.h>
 #include "externfcts_p.h"
+#include "dvlparms.h"
 
 #include <math.h>
+#include <string.h>
 
 #if defined(ADOLC_DEBUG) || defined(_ZOS_)
 #include <string.h>
@@ -57,7 +59,9 @@
 /*--------------------------------------------------------------------------*/
 #if defined(_ZOS_)
 #if defined(_ABS_NORM_)
-#  define GENERATED_FILENAME "zos_an_forward"
+#  define GENERATED_FILENAME "zos_pl_forward"
+#elif defined(_ABS_NORM_SIG_)
+#  define GENERATED_FILENAME "zos_pl_sig_forward"
 #else
 #  define GENERATED_FILENAME "zos_forward"
 #endif
@@ -65,7 +69,9 @@
 #else
 #if defined(_FOS_)
 #if defined(_ABS_NORM_)
-#define GENERATED_FILENAME "fos_an_forward"
+#define GENERATED_FILENAME "fos_pl_forward"
+#elif defined(_ABS_NORM_SIG_)
+#define GENERATED_FILENAME "fos_pl_sig_forward"
 #else
 #define GENERATED_FILENAME "fos_forward"
 #endif
@@ -77,7 +83,13 @@
 #else
 #if defined(_FOV_)
 #if defined(_ABS_NORM_)
-#define GENERATED_FILENAME "fov_an_forward"
+#define GENERATED_FILENAME "fov_pl_forward"
+#elif defined(_ABS_NORM_SIG_)
+#define GENERATED_FILENAME "fov_pl_sig_forward"
+#if defined(_MSC_VER) && _MSC_VER < 1800
+#define fmin __min
+#define fmax __max
+#endif
 #else
 #define GENERATED_FILENAME "fov_forward"
 #endif
@@ -151,7 +163,11 @@ void merge_3_index_domains(int res, int arg1, int arg2, locint **ind_dom);
 #define GENERATED_FILENAME "indopro_forward_t"
 #endif
 #if defined(_NTIGHT_)
+#if defined(_ABS_NORM_)
+#define GENERATED_FILENAME "indopro_forward_pl"
+#else
 #define GENERATED_FILENAME "indopro_forward_s"
+#endif
 #endif
 #endif
 #if defined(_NONLIND_)
@@ -418,9 +434,11 @@ if (keep){\
 #if defined(_ADOLC_VECTOR_)
 #define FOR_0_LE_l_LT_p for (l=0; l<p; l++)
 #define FOR_p_GT_l_GE_0 for (l=p-1; l>=0; l--)
-#if defined(_ABS_NORM_)
-#define FIRSTSIGN_P(x,y) firstsign(p,x,y)
+#if defined(_ABS_NORM_) || defined(_ABS_NORM_SIG_)
+#define FIRSTSIGN_P(x,y) firstsign(p,&(x),y)
 #define COPYTAYL_P(x,y)  FOR_0_LE_l_LT_p x[l] = y[l]
+#define EXT_FIRSTSIGN_P(sigx,sigd,x,y) ext_firstsign(sigx,sigd,p,&(x),y)
+#define EXT_FIRSTSIGN2_P(sigx,x,y) ext_firstsign2(sigx,p,&(x),y)
 #endif
 #else
 #if defined(_INT_FOR_)
@@ -429,9 +447,11 @@ if (keep){\
 #else
 #define FOR_0_LE_l_LT_p
 #define FOR_p_GT_l_GE_0
-#if defined(_ABS_NORM_)
-#define FIRSTSIGN_P(x,y) firstsign(1,x,y)
+#if defined(_ABS_NORM_) || defined(_ABS_NORM_SIG_)
+#define FIRSTSIGN_P(x,y) firstsign(1,&(x),y)
 #define COPYTAYL_P(x,y)  x = *y
+#define EXT_FIRSTSIGN_P(sigx,sigd,x,y) ext_firstsign(sigx,sigd,1,&(x),y)
+#define EXT_FIRSTSIGN2_P(sigx,x,y) ext_firstsign2(sigx,1,&(x),y)
 #endif
 #endif
 #endif
@@ -500,7 +520,7 @@ BEGIN_C_DECLS
 /* Zero Order Scalar version of the forward mode.                           */
 /****************************************************************************/
 #if defined(_ABS_NORM_)
-int zos_an_forward(short tnum,
+int zos_pl_forward(short tnum,
                   int depcheck,
 		  int indcheck,
 		  int keep,
@@ -530,7 +550,7 @@ int  zos_forward_nk(
 /* First Order Scalar version of the forward mode.                          */
 /****************************************************************************/
 #if defined(_ABS_NORM_)
-int  fos_an_forward(short tnum,
+int  fos_pl_forward(short tnum,
 		    int depcheck,
 		    int indcheck,
 		    const double* basepoint,
@@ -539,6 +559,20 @@ int  fos_an_forward(short tnum,
 		    double *taylors,
 		    double *swargs,
 		    double *swtaylors)
+#elif defined(_ABS_NORM_SIG_)
+int  fos_pl_sig_forward(short tnum,
+                        int depcheck,
+                        int indcheck,
+                        const double* basepoint,
+                        double *argument,
+                        int swcheck,
+                        short *sigbase,
+                        short *sigdir,
+                        double *valuepoint,
+                        double *taylors,
+                        double *swargs,
+                        double *swtaylors,
+                        short *sigsw)
 #else
 #if defined(_KEEP_)
 int  fos_forward(
@@ -630,10 +664,20 @@ int indopro_forward_tight(
 /* indopro_forward_tight( tag, m, n, x[n], *crs[m]),
 
   */
-
-
 #endif
 #if defined (_NTIGHT_)
+#if defined(_ABS_NORM_)
+int indopro_forward_absnormal(
+    short             tnum,        /* tape id                              */
+    int               depcheck,    /* consistency chk on # of dependents   */
+    int               indcheck,    /* consistency chk on # of independents */
+    int               swcheck,     /* consistency chk on # of switches    */
+    const double     *basepoint,  /* independent variable values   (in)   */
+    unsigned int    **crs)        /* returned row index storage (out)     */
+
+/* indopro_forward_absnormal( tag, m, n, s, x[n], *crs[s+m]),
+  */
+#else
 /****************************************************************************/
 /* First Order Vector version of the forward mode, bit pattern, safe        */
 /****************************************************************************/
@@ -647,6 +691,7 @@ int indopro_forward_safe(
 /* indopro_forward_safe( tag, m, n, x[n], *crs[m]),
 
   */
+#endif
 #endif
 #else
 #if defined(_NONLIND_)
@@ -729,7 +774,7 @@ int  fov_offset_forward(
 /* First Order Vector version of the forward mode.                          */
 /****************************************************************************/
 #if defined(_ABS_NORM_)
-int  fov_an_forward(
+int  fov_pl_forward(
     short         tnum,        /* tape id */
     int           depcheck,    /* consistency chk on # of deps */
     int           indcheck,    /* consistency chk on # of indeps */
@@ -741,6 +786,22 @@ int  fov_an_forward(
     double       *swargs,
     double      **swtaylors)
 /* the order of the indices in argument and taylors is [var][taylor] */
+#elif defined(_ABS_NORM_SIG_)
+int  fov_pl_sig_forward(
+    short         tnum,        /* tape id */
+    int           depcheck,    /* consistency chk on # of deps */
+    int           indcheck,    /* consistency chk on # of indeps */
+    int           p,           /* # of taylor series */
+    const double *basepoint,   /* independent variable values */
+    double      **argument,    /* Taylor coefficients (input) */
+    int           swcheck,     /* consistency chk in # of switches */
+    short        *sigbase,     /* Signature of basepoint */
+    short        *sigdir,      /* Signature of direction */
+    double       *valuepoint,  /* Taylor coefficients (output) */
+    double      **taylors,     /* matrix of coifficient vectors */
+    double       *swargs,
+    double      **swtaylors,
+    short        *sigsw)
 #else
 int  fov_forward(
     short         tnum,        /* tape id */
@@ -950,8 +1011,8 @@ int  hov_forward(
 #endif
 #endif
 
-#if !defined(_NTIGHT_)
     locint switchnum = 0;
+#if !defined(_NTIGHT_)
     double* signature = NULL;
 #endif
 
@@ -968,8 +1029,12 @@ int  hov_forward(
     zos_forward(n, edfct->dp_x, m, edfct->dp_y)
 #   define ADOLC_EXT_FCT_IARR_COMPLETE \
     zos_forward_iArr(iArrLength, iArr, n, edfct->dp_x, m, edfct->dp_y)
+#   define ADOLC_EXT_FCT_V2_COMPLETE \
+    zos_forward(iArrLength, iArr, nin, nout, insz, edfct2->x, outsz, edfct2->y, edfct2->context)
 #   define ADOLC_EXT_LOOP
 #   define ADOLC_EXT_SUBSCRIPT
+#   define ADOLC_EXT_SUBSCRIPT_START
+#   define ADOLC_EXT_COPY_TAYLORS(dest,src)
 #endif
     /* FOS_FORWARD */
 #if defined(_FOS_)
@@ -982,8 +1047,14 @@ int  hov_forward(
     fos_forward_iArr(iArrLength, iArr, n, edfct->dp_x, edfct->dp_X, m, edfct->dp_y, edfct->dp_Y)
 #   define ADOLC_EXT_POINTER_X edfct->dp_X
 #   define ADOLC_EXT_POINTER_Y edfct->dp_Y
+#   define ADOLC_EXT_FCT_V2_COMPLETE \
+    fos_forward(iArrLength, iArr, nin, nout, insz, edfct2->x, edfct2->xp, outsz, edfct2->y, edfct2->yp, edfct2->context)
+#   define ADOLC_EXT_V2_POINTER_X edfct2->xp
+#   define ADOLC_EXT_V2_POINTER_Y edfct2->yp
 #   define ADOLC_EXT_LOOP
 #   define ADOLC_EXT_SUBSCRIPT
+#   define ADOLC_EXT_COPY_TAYLORS(dest,src) dest=src
+#   define ADOLC_EXT_COPY_TAYLORS_BACK(dest,src) src=dest
 #endif
     /* FOV_FORWARD */
 #if defined(_FOV_)
@@ -996,20 +1067,29 @@ int  hov_forward(
     fov_forward_iArr(iArrLength, iArr, n, edfct->dp_x,p, edfct->dpp_X, m, edfct->dp_y, edfct->dpp_Y)
 #   define ADOLC_EXT_POINTER_X edfct->dpp_X
 #   define ADOLC_EXT_POINTER_Y edfct->dpp_Y
+#   define ADOLC_EXT_FCT_V2_COMPLETE \
+    fov_forward(iArrLength, iArr, nin, nout, insz, edfct2->x, p, edfct2->Xp, outsz, edfct2->y, edfct2->Yp, edfct2->context)
+#   define ADOLC_EXT_V2_POINTER_X edfct2->Xp
+#   define ADOLC_EXT_V2_POINTER_Y edfct2->Yp
 #   define ADOLC_EXT_LOOP for (loop2 = 0; loop2 < p; ++loop2)
 #   define ADOLC_EXT_SUBSCRIPT [loop2]
+#   define ADOLC_EXT_COPY_TAYLORS(dest,src) dest=src
+#   define ADOLC_EXT_COPY_TAYLORS_BACK(dest,src) 
 #endif
 
 #if defined(_EXTERN_)
     locint n, m;
     ext_diff_fct *edfct;
-    int loop;
+    ext_diff_fct_v2 *edfct2;
+    int loop,oloop;
     int iArrLength;
     int *iArr;
 #   if defined(_FOV_)
         int loop2;
 #   endif
     int ext_retc;
+    int nin, nout;
+    locint *insz, *outsz;
 #endif
 
 #ifdef ADOLC_AMPI_SUPPORT
@@ -1021,9 +1101,10 @@ int  hov_forward(
     int tag;
     enum AMPI_PairedWith_E pairedWith;
     MPI_Comm comm;
-    MPI_Status* status;
+    MPI_Status status;
     struct AMPI_Request_S request;
 #endif
+    locint qq;
 
     ADOLC_OPENMP_THREAD_NUMBER;
 
@@ -1065,13 +1146,24 @@ int  hov_forward(
                 ADOLC_CURRENT_TAPE_INFOS.stats[NUM_INDEPENDENTS]);
         adolc_exit(-1,"",__func__,__FILE__,__LINE__);
     }
-#if defined(_ABS_NORM_)
+#if defined(_ABS_NORM_) || defined(_ABS_NORM_SIG_)
       if (! ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX] ) {
 	  fprintf(DIAG_OUT,"ADOL-C error: tape %d was not created compatible "
 		  "with %s\n              Please call enableMinMaxUsingAbs() "
 		  "before trace_on(%d)\n", tnum, __FUNCTION__, tnum);
 	  adolc_exit(-1,"",__func__,__FILE__,__LINE__);
       }
+#if defined(_ABS_NORM_SIG_) || defined(_INDOPRO_)
+      if (swcheck != ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]) {
+        fprintf(DIAG_OUT,"ADOL-C error: forward sweep on tape %d  aborted!\n"
+                "Number of switches(%u) passed"
+                " to forward is\ninconsistent with number "
+                "recorded on tape (%zu) \n", tnum,
+                swcheck,
+                ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES]);
+        adolc_exit(-1,"",__func__,__FILE__,__LINE__);
+      }
+#endif
 #endif
     /****************************************************************************/
     /*                                                        MEMORY ALLOCATION */
@@ -1155,6 +1247,9 @@ int  hov_forward(
         ind_dom[i][0] = 0;
         ind_dom[i][1] = NUMNNZ;
     }
+#if defined(_ABS_NORM_)
+    indexd = swcheck;
+#endif
 #endif
 #if defined(_NONLIND_)
 	maxopind=ADOLC_CURRENT_TAPE_INFOS.stats[NUM_OPERATIONS]+ADOLC_CURRENT_TAPE_INFOS.stats[NUM_EQ_PROD];
@@ -1473,6 +1568,47 @@ int  hov_forward(
                 break;
 
                 /*--------------------------------------------------------------------------*/
+            case neg_sign_p:
+            case recipr_p:
+            case assign_p:            /* assign an adouble variable a    assign_d */
+                /* double value. (=) */
+                res   = get_locint_f();
+                arg   = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
+#endif
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+#if !defined(_NTIGHT_)
+                if (operation == recipr_p) 
+                    coval = 1.0/coval;
+                else if (operation == neg_sign_p)
+                    coval = - coval;
+                dp_T0[res] = coval;
+#endif /* !_NTIGHT_ */
+
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+		ind_dom[res][0]=0;
+#endif
+#if defined(_NONLIND_)
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = NULL;
+		fod[opind].right = NULL;
+                arg_index[res] = opind++;		
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+
+                FOR_0_LE_l_LT_pk
+                TRES_INC = 0;
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
+                /*--------------------------------------------------------------------------*/
             case assign_d_zero:  /* assign an adouble variable a    assign_d_zero */
                 /* double value. (0) (=) */
                 res   = get_locint_f();
@@ -1640,6 +1776,21 @@ int  hov_forward(
                 break;
 
                 /*--------------------------------------------------------------------------*/
+            case eq_plus_p:            /* Add a floating point to an    eq_plus_p */
+                /* adouble. (+=) */
+                res   = get_locint_f();
+                arg   = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
+#endif
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+#if !defined(_NTIGHT_)
+                dp_T0[res] += coval;
+#endif /* !_NTIGHT_ */
+                break;
+
+                /*--------------------------------------------------------------------------*/
             case eq_plus_a:             /* Add an adouble to another    eq_plus_a */
                 /* adouble. (+=) */
                 arg = get_locint_f();
@@ -1694,6 +1845,22 @@ int  hov_forward(
                 break;
 
                 /*--------------------------------------------------------------------------*/
+            case eq_min_p:       /* Subtract a floating point from an    eq_min_p */
+                /* adouble. (-=) */
+                res = get_locint_f();
+                arg = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
+#endif
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+#if !defined(_NTIGHT_)
+                dp_T0[res] -= coval;
+#endif /* !_NTIGHT_ */
+                break;
+
+                /*--------------------------------------------------------------------------*/
             case eq_min_a:        /* Subtract an adouble from another    eq_min_a */
                 /* adouble. (-=) */
                 arg = get_locint_f();
@@ -1739,6 +1906,35 @@ int  hov_forward(
                 coval = 
 #endif
 		get_val_f();
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+#if !defined(_NTIGHT_)
+                dp_T0[res] *= coval;
+#endif /* !_NTIGHT_ */
+
+#if !defined(_INDO_)
+#if !defined(_ZOS_) /* BREAK_ZOS */
+#if !defined( _INT_FOR_)
+
+                FOR_0_LE_l_LT_pk
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+
+                FOR_0_LE_l_LT_pk
+                TRES_INC *= coval;
+#endif
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
+                /*--------------------------------------------------------------------------*/
+            case eq_mult_p:              /* Multiply an adouble by a    eq_mult_p */
+                /* flaoting point. (*=) */
+                res   = get_locint_f();
+                arg   = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
+#endif
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -1896,6 +2092,44 @@ int  hov_forward(
 
 #if !defined(_NTIGHT_)
                 dp_T0[res] = dp_T0[arg] + coval;
+#endif /* !_NTIGHT_ */
+
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+                copy_index_domain(res, arg, ind_dom);
+#endif
+#if defined(_NONLIND_)
+                arg_index[res] = arg_index[arg];
+#endif               
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ, TAYLOR_BUFFER[arg])
+
+                FOR_0_LE_l_LT_pk
+                TRES_INC = TARG_INC;
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
+                /*--------------------------------------------------------------------------*/
+            case plus_a_p:             /* Add an adouble and a double    plus_a_p */
+            case min_a_p:                /* Subtract an adouble from a    min_a_p */
+                /* (+) */
+                arg   = get_locint_f();
+                res   = get_locint_f();
+                arg1  = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
+#endif
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+#if !defined(_NTIGHT_)
+                if (operation == plus_a_p)
+                    dp_T0[res] = dp_T0[arg] + coval;
+                else if (operation == min_a_p)
+                    dp_T0[res] = dp_T0[arg] - coval;
 #endif /* !_NTIGHT_ */
 
 #if defined(_INDO_)
@@ -2240,6 +2474,45 @@ int  hov_forward(
                 break;
 
                 /*--------------------------------------------------------------------------*/
+            case mult_a_p:         /* Multiply an adouble by a double    mult_a_p */
+                /* (*) */
+                arg   = get_locint_f();
+                res   = get_locint_f();
+                arg1  = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
+#endif
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+#if !defined(_NTIGHT_)
+                dp_T0[res] = dp_T0[arg] * coval;
+#endif /* !_NTIGHT_ */
+
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+                copy_index_domain(res, arg, ind_dom);
+#endif
+#if defined(_NONLIND_)
+                arg_index[res] = arg_index[arg];		
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ, TAYLOR_BUFFER[arg])
+
+#ifdef _INT_FOR_
+                FOR_0_LE_l_LT_pk
+                TRES_INC = TARG_INC;
+#else
+                FOR_0_LE_l_LT_pk
+                TRES_INC = TARG_INC * coval;
+#endif
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
+                /*--------------------------------------------------------------------------*/
             case div_a_a:           /* Divide an adouble by an adouble    div_a_a */
                 /* (/) */
                 arg1 = get_locint_f();
@@ -2315,6 +2588,79 @@ int  hov_forward(
                 coval = 
 #endif
 		get_val_f();
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+                /* olvo 980922 necessary for reverse 
+                   kk 20140508 I don't think so
+                if (arg == res) {
+                    IF_KEEP_WRITE_TAYLOR(arg,keep,k,p)
+                } */
+
+#if !defined(_NTIGHT_)
+#if !defined(_ZOS_) && !defined(_INT_FOR_) && !defined(_INDO_)
+                divs = 1.0 / dp_T0[arg];
+#endif /* ALL_TOGETHER_AGAIN */
+
+                dp_T0[res] = coval / dp_T0[arg];
+#endif /* !_NTIGHT_ */
+
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+                copy_index_domain(res, arg, ind_dom);
+#endif
+#if defined(_NONLIND_)
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = &fod[arg_index[arg]];
+		fod[opind].right = NULL;
+		traverse_unary(&fod[opind], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
+                arg_index[res] = opind++;		
+#endif 
+#if defined(_NONLIND_OLD_)
+                extend_nonlinearity_domain_unary(arg, ind_dom, nonl_dom);
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ, TAYLOR_BUFFER[arg])
+
+#ifdef _INT_FOR_
+                FOR_0_LE_l_LT_p
+                TRES_FOINC = TARG_FOINC;
+#else
+                FOR_0_LE_l_LT_p
+                FOR_0_LE_i_LT_k
+                { /* olvo 980922 changed order to allow x = d/x */
+#if defined(_HIGHER_ORDER_)
+                    zOP      = dp_z+i;
+                    (*zOP--) = -(*Targ) * divs;
+#endif /* _HIGHER_ORDER_ */
+
+                    TRES_FOINC = dp_T0[res] * (-TARG_INC * divs);
+
+#if defined(_HIGHER_ORDER_)
+                    TresOP = Tres-i;
+
+                    for (j=0;j<i;j++)
+                    *Tres += (*TresOP++) * (*zOP--);
+                    Tres++;
+#endif /* _HIGHER_ORDER_ */
+                }
+#endif
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
+
+            /****************************************************************************/
+            /*--------------------------------------------------------------------------*/
+        case div_p_a:             /* Division double - adouble (/)    div_p_a */
+                arg   = get_locint_f();
+                res   = get_locint_f();
+                arg1  = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
+#endif
 
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
 
@@ -3480,6 +3826,166 @@ int  hov_forward(
                 break;
 
                 /*--------------------------------------------------------------------------*/
+            case pow_op_p:                                                /* pow_op_p */
+                arg   = get_locint_f();
+                res   = get_locint_f();
+                arg1  = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
+#endif
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+                /* olvo 980921 necessary for reverse */
+                if (arg == res) {
+                    IF_KEEP_WRITE_TAYLOR(arg,keep,k,p)
+                }
+
+#if !defined(_NTIGHT_)
+
+#ifndef _ZOS_ /* BREAK_ZOS */
+#if !defined(_INT_FOR_) && !defined(_INDO_)
+                T0arg   = dp_T0[arg];
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+
+                dp_T0[res] =
+                    pow(dp_T0[arg], coval);
+#endif /* !_NTIGHT_ */
+
+                ADOLC_OPENMP_RESTORE_THREAD_NUMBER;
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+                copy_index_domain(res, arg, ind_dom);
+#endif
+#if defined(_NONLIND_)
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = &fod[arg_index[arg]];
+		fod[opind].right = NULL;
+		traverse_unary(&fod[opind], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
+                arg_index[res] = opind++;		
+#endif
+#if defined(_NONLIND_OLD_)
+                extend_nonlinearity_domain_unary(arg, ind_dom, nonl_dom);
+#endif
+#else
+#ifndef _ZOS_ /* BREAK_ZOS */
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ, TAYLOR_BUFFER[arg])
+
+#ifdef _INT_FOR_
+                FOR_0_LE_l_LT_p
+                TRES_FOINC = TARG_INC;
+#else
+                if (T0arg == 0.0) {
+                    if (coval <= 0.0)
+                        FOR_0_LE_l_LT_pk
+                        TRES_INC = make_nan();
+                    else {
+                        /* coval not a whole number */
+                        if (coval - floor(coval) != 0) {
+                            FOR_0_LE_l_LT_p
+                            {
+                                i = 0;
+                                FOR_0_LE_i_LT_k
+                                {
+                                    if (coval - i > 1)
+                                    TRES_INC = 0;
+                                    if ((coval - i < 1) && (coval - i > 0))
+                                        TRES_INC = make_inf();
+                                        if (coval - i < 0)
+                                            TRES_INC = make_nan();
+                                        }
+                                    }
+                                } else {
+                        if (coval == 1) {
+                                FOR_0_LE_l_LT_pk
+                                TRES_INC = TARG_INC;
+                            } else
+                                /* coval is an int > 1 */
+                                /* the following is not efficient but at least it works */
+                                /* it reformulates x^n into x* ... *x n times */
+                            {
+                                INC_pk_1(Targ)
+                                INC_pk_1(Tres)
+
+                                FOR_p_GT_l_GE_0
+                                {
+                                    FOR_k_GT_i_GE_0
+                                    {
+                                        *Tres = 0;
+                                        DEC_TRES_FO
+#if defined(_HIGHER_ORDER_)
+                                        if (i == k-1) {
+                                        zOP = dp_z+k-1;
+                                        for(j=k-1;j>=0;j--) {
+                                                (*zOP--) = (*Targ--);
+                                            }
+                                        }
+                                        for (j=0;j<i;j++) {
+                                        *Tres += dp_z[j] *
+                                                     dp_z[i-j-1];
+                                        }
+                                        Tres--;
+#endif /* _HIGHER_ORDER_ */
+                                    }
+                                }
+                                for(ii=3;ii<=coval;ii++) {
+                                    ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+                                    ASSIGN_T(Targ, TAYLOR_BUFFER[arg])
+                                    INC_pk_1(Targ)
+                                    INC_pk_1(Tres)
+
+                                    FOR_p_GT_l_GE_0
+                                    {
+                                        FOR_k_GT_i_GE_0
+                                        {
+                                            *Tres = 0;
+                                            DEC_TRES_FO
+#if defined(_HIGHER_ORDER_)
+                                            TresOP = Tres-i;
+                                            for (j=0;j<i;j++)
+                                            *Tres += TresOP[j] * dp_z[i-j-1];
+                                            Tres--;
+#endif /* _HIGHER_ORDER_ */
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                }
+            } else {
+                r0 = 1.0 / T0arg;
+                FOR_0_LE_l_LT_p
+                FOR_0_LE_i_LT_k
+                { /* olvo 980921 changed order to allow x = pow(x,n) */
+#ifdef _HIGHER_ORDER_
+                    zOP      = dp_z+i;
+                    (*zOP--) = (*Targ) * r0;
+#endif /* _HIGHER_ORDER_ */
+
+                    TRES_FOINC = dp_T0[res] *
+                                 TARG_INC * coval * r0;
+
+#ifdef _HIGHER_ORDER_
+                    TresOP = Tres-i;
+
+                    (*Tres) *= i+1;
+                    y = coval*i -1;
+                    for (j=0;j<i;j++) {
+                        *Tres += (*TresOP++) * (*zOP--) * y;
+                            y -= coval + 1;
+                        }
+                        *Tres++ /= (i+1);
+#endif /* _HIGHER_ORDER_ */
+                    }
+                }
+#endif
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
+                /*--------------------------------------------------------------------------*/
             case sqrt_op:                                              /* sqrt_op */
                 arg = get_locint_f();
                 res = get_locint_f();
@@ -3827,7 +4333,7 @@ int  hov_forward(
                     }
 		if (ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX]) {
 		    signature[switchnum] = dp_T0[arg];
-#if defined(_ABS_NORM_)
+#if defined(_ABS_NORM_) || defined(_ABS_NORM_SIG_)
 		    swargs[switchnum] = dp_T0[arg];
 #endif
 		}
@@ -3835,7 +4341,22 @@ int  hov_forward(
 
 #if defined(_INDO_)
 #if defined(_INDOPRO_)
+#if defined(_ABS_NORM_)
+                if (ind_dom[arg][0] != 0) {
+                    crs[switchnum] = (unsigned int*) malloc(sizeof(unsigned int)* (ind_dom[arg][0]+1));
+                    crs[switchnum][0] = ind_dom[arg][0];
+                    for(l=1;l<crs[switchnum][0];i++) {
+                        crs[switchnum][l] = ind_dom[arg][l+1];
+                    }
+                } else {
+                    crs[switchnum] = (unsigned int*) malloc(sizeof(unsigned int));
+                    crs[switchnum][0] = 0;
+                }
+                ind_dom[res][0] = 1;
+                ind_dom[res][2] = indcheck+switchnum;
+#else
 		copy_index_domain(res, arg, ind_dom);
+#endif
 #endif
 #if defined(_NONLIND_)
                 arg_index[res] = arg_index[arg];		
@@ -3873,6 +4394,15 @@ int  hov_forward(
 		COPYTAYL_P(swtaylors[switchnum],Targ);
 		FOR_0_LE_l_LT_p
 		    TRES_INC = y * TARG_INC;
+#elif defined(_ABS_NORM_SIG_)
+                if (sigdir == NULL)
+                    y = EXT_FIRSTSIGN2_P(sigbase[switchnum],dp_T0[arg],Targ);
+                else
+                    y = EXT_FIRSTSIGN_P(sigbase[switchnum],sigdir[switchnum],dp_T0[arg],Targ);
+		COPYTAYL_P(swtaylors[switchnum],Targ);
+                sigsw[switchnum] = y;
+		FOR_0_LE_l_LT_p
+		    TRES_INC = y * TARG_INC;
 #else
                 y = 0.0;
                 if (dp_T0[arg] != 0.0) {
@@ -3901,9 +4431,9 @@ int  hov_forward(
 #endif /* ALL_TOGETHER_AGAIN */
 #if !defined(_NTIGHT_)
                 dp_T0[res] = fabs(dp_T0[arg]);
+#endif /* !_NTIGHT_ */
 		if (ADOLC_CURRENT_TAPE_INFOS.stats[NO_MIN_MAX])
 		    switchnum++;
-#endif /* !_NTIGHT_ */
                 break;
 
                 /*--------------------------------------------------------------------------*/
@@ -4182,6 +4712,12 @@ int  hov_forward(
             case ge_a_a:
             case lt_a_a:
             case gt_a_a:
+            case neq_a_p:
+            case eq_a_p:
+            case le_a_p:
+            case ge_a_p:
+            case lt_a_p:
+            case gt_a_p:
 #if !defined(_NTIGHT_)
 		coval = 
 #endif
@@ -4217,6 +4753,30 @@ int  hov_forward(
 		    case lt_a_a:
 			retval = (revreal)(dp_T0[arg] < dp_T0[arg1]);
 			opname = "lt_a_a";
+			break;
+		    case neq_a_p:
+			retval = (revreal)(dp_T0[arg] != ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1]);
+			opname = "neq_a_p";
+			break;
+		    case eq_a_p:
+			retval = (revreal)(dp_T0[arg] == ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1]);
+			opname = "eq_a_p";
+			break;
+		    case ge_a_p:
+			retval = (revreal)(dp_T0[arg] >= ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1]);
+			opname = "ge_a_p";
+			break;
+		    case le_a_p:
+			retval = (revreal)(dp_T0[arg] <= ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1]);
+			opname = "le_a_p";
+			break;
+		    case gt_a_p:
+			retval = (revreal)(dp_T0[arg] > ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1]);
+			opname = "gt_a_p";
+			break;
+		    case lt_a_p:
+			retval = (revreal)(dp_T0[arg] < ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1]);
+			opname = "lt_a_p";
 			break;
 		    }
 		    if (retval != coval && ADOLC_GLOBAL_TAPE_VARS.branchSwitchWarning)
@@ -4411,6 +4971,41 @@ int  hov_forward(
 #endif
 		break;
 
+            case ref_assign_p:
+		arg = get_locint_f();
+                res = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[res];
+#endif
+		
+#if !defined(_NTIGHT_)
+		arg1 = (size_t)trunc(fabs(dp_T0[arg]));
+		IF_KEEP_WRITE_TAYLOR(arg1,keep,k,p)
+		dp_T0[arg1] = coval;
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+		ind_dom[arg1][0] = 0;
+#endif
+#if defined(_NONLIND_)
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = NULL;
+		fod[opind].right = NULL;
+                arg_index[arg1] = opind++;
+#endif
+#else
+#if !defined(_ZOS_)
+		ASSIGN_T(Targ1, TAYLOR_BUFFER[arg1])
+
+		FOR_0_LE_l_LT_pk
+		TARG1_INC = 0;
+#endif
+#endif
+#else
+		fprintf(DIAG_OUT, "ADOL-C error: active vector element referencing does not work in safe mode, please use tight mode\n");
+		adolc_exit(-2,"",__func__,__FILE__,__LINE__);
+#endif
+		break;
+
             case ref_assign_d_zero:
 		arg = get_locint_f();
 
@@ -4565,6 +5160,25 @@ int  hov_forward(
                 break;
 
                 /*--------------------------------------------------------------------------*/
+            case ref_eq_plus_p:            /* Add a floating point to an    eq_plus_p */
+                /* adouble. (+=) */
+                arg  = get_locint_f();
+                arg1  = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
+#endif
+
+#if !defined(_NTIGHT_)
+		res = (size_t)trunc(fabs(dp_T0[arg]));
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+                dp_T0[res] += coval;
+#else
+		fprintf(DIAG_OUT, "ADOL-C error: active vector element referencing does not work in safe mode, please use tight mode\n");
+		adolc_exit(-2,"",__func__,__FILE__,__LINE__);
+#endif /* !_NTIGHT_ */
+                break;
+
+                /*--------------------------------------------------------------------------*/
             case ref_eq_plus_a:             /* Add an adouble to another    eq_plus_a */
                 /* adouble. (+=) */
                 arg = get_locint_f();
@@ -4611,6 +5225,24 @@ int  hov_forward(
                 coval = 
 #endif
 		get_val_f();
+
+#if !defined(_NTIGHT_)
+		res = (size_t)trunc(fabs(dp_T0[arg]));
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+                dp_T0[res] -= coval;
+#else
+		fprintf(DIAG_OUT, "ADOL-C error: active vector element referencing does not work in safe mode, please use tight mode\n");
+		adolc_exit(-2,"",__func__,__FILE__,__LINE__);
+#endif /* !_NTIGHT_ */
+                break;
+
+            case ref_eq_min_p:       /* Subtract a floating point from an    eq_min_p */
+                /* adouble. (-=) */
+                arg = get_locint_f();
+                arg1 = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
+#endif
 
 #if !defined(_NTIGHT_)
 		res = (size_t)trunc(fabs(dp_T0[arg]));
@@ -4692,6 +5324,36 @@ int  hov_forward(
 #endif /* ALL_TOGETHER_AGAIN */
                 break;
 
+            case ref_eq_mult_p:              /* Multiply an adouble by a    eq_mult_p */
+                /* flaoting point. (*=) */
+                arg = get_locint_f();
+                arg1 = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
+#endif
+
+#if !defined(_NTIGHT_)
+		res = (size_t)trunc(fabs(dp_T0[arg]));
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+                dp_T0[res] *= coval;
+#if !defined(_INDO_)
+#if !defined(_ZOS_) /* BREAK_ZOS */
+#if !defined( _INT_FOR_)
+
+                FOR_0_LE_l_LT_pk
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+
+                FOR_0_LE_l_LT_pk
+                TRES_INC *= coval;
+#endif
+#endif
+#endif
+#else
+		fprintf(DIAG_OUT, "ADOL-C error: active vector element referencing does not work in safe mode, please use tight mode\n");
+		adolc_exit(-2,"",__func__,__FILE__,__LINE__);
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
             case ref_eq_mult_a:       /* Multiply one adouble by another    eq_mult_a */
                 /* (*=) */
                 arg = get_locint_f();
@@ -4749,6 +5411,200 @@ int  hov_forward(
 		fprintf(DIAG_OUT, "ADOL-C error: active vector element referencing does not work in safe mode, please use tight mode\n");
 		adolc_exit(-2,"",__func__,__FILE__,__LINE__);
 #endif /* !_NTIGHT_ */
+                break;
+
+            case vec_copy:
+                res = get_locint_f();
+                arg = get_locint_f();
+                size = get_locint_f();
+
+                for(qq=0;qq<size;qq++) {
+                    IF_KEEP_WRITE_TAYLOR(res+qq,keep,k,p);
+#if !defined(_NTIGHT_)
+                    dp_T0[res+qq] = dp_T0[arg+qq];
+#endif /* !_NTIGHT_ */
+
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+                    copy_index_domain(res+qq, arg+qq, ind_dom);
+#endif
+#if defined(_NONLIND_)
+                    arg_index[res+qq] = arg_index[arg+qq];
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                    ASSIGN_T(Targ,TAYLOR_BUFFER[arg+qq])
+                    ASSIGN_T(Tres,TAYLOR_BUFFER[res+qq])
+
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG_INC;
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                }
+
+                break;
+
+            case vec_dot:
+                res = get_locint_f();
+                arg1 = get_locint_f();
+                arg2 = get_locint_f();
+                size = get_locint_f();
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p);
+#if !defined(_NTIGHT_)
+                dp_T0[res] = 0;
+#endif
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+		ind_dom[res][0]=0;
+#endif
+#if defined(_NONLIND_)
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = NULL;
+		fod[opind].right = NULL;
+                arg_index[res] = opind++;		
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres, TAYLOR_BUFFER[res])
+
+                FOR_0_LE_l_LT_pk
+                TRES_INC = 0;
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                for(qq=0;qq<size;qq++) {
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+                merge_3_index_domains(res, arg1+qq, arg2+qq, ind_dom);
+#endif
+#if defined(_NONLIND_)
+		// operation: v = v+u*w
+		// first step: z = u*w, index domains
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = &fod[arg_index[arg1+qq]];
+		fod[opind].right = &fod[arg_index[arg2+qq]];
+		// first step: z = u*w,
+		traverse_unary(&fod[arg_index[arg1+qq]], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
+		traverse_unary(&fod[arg_index[arg2+qq]], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
+		opind++;
+		// second step: v = v+z, index domains
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = &fod[arg_index[res]];
+		fod[opind].right = &fod[opind-1];
+		// second step: v = v+z,
+                arg_index[res] = opind++;
+#endif
+#if defined(_NONLIND_OLD_)
+                extend_nonlinearity_domain_binary(arg1+qq, arg2+qq, ind_dom, nonl_dom);
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres,  TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ1, TAYLOR_BUFFER[arg1+qq])
+                ASSIGN_T(Targ2, TAYLOR_BUFFER[arg2+qq])
+
+#ifdef _INT_FOR_
+                FOR_0_LE_l_LT_p
+                TRES_FOINC |= TARG2_INC | TARG1_INC;
+#else
+                /* olvo 980915 now in reverse order to allow x = x*x etc. */
+                INC_pk_1(Tres)
+                INC_pk_1(Targ1)
+                INC_pk_1(Targ2)
+
+                FOR_p_GT_l_GE_0
+                FOR_k_GT_i_GE_0
+                { TRES_FODEC += dp_T0[arg1+qq]*TARG2_DEC +
+                                TARG1_DEC*dp_T0[arg2+qq];
+                  DEC_TRES_FO
+#if defined(_HIGHER_ORDER_)
+                  Targ1OP = Targ1-i+1;
+                  Targ2OP = Targ2;
+
+                  for (j=0;j<i;j++)
+                  *Tres += (*Targ1OP++) * (*Targ2OP--);
+                  Tres--;
+#endif /* _HIGHER_ORDER_ */
+                }
+#endif
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+#if !defined(_NTIGHT_)
+                dp_T0[res] += dp_T0[arg1+qq] *  dp_T0[arg2+qq];
+#endif /* !_NTIGHT_ */
+                }
+                break;
+
+            case vec_axpy:
+                res = get_locint_f();
+                arg = get_locint_f();
+                arg1 = get_locint_f();
+                arg2 = get_locint_f();
+                size = get_locint_f();
+                
+                for(qq=0;qq<size;qq++) {
+                    IF_KEEP_WRITE_TAYLOR(res+qq,keep,k,p);
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+                combine_2_index_domains(res+qq, arg, arg1+qq, ind_dom);
+                merge_2_index_domains(res+qq, arg2+qq, ind_dom);
+#endif
+#if defined(_NONLIND_)
+		// operation: v = u*w + y
+		// first step: z = u*w, index domains
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = &fod[arg_index[arg]];
+		fod[opind].right = &fod[arg_index[arg1+qq]];
+		// first step: z = u*w,
+		traverse_unary(&fod[arg_index[arg]], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
+		traverse_unary(&fod[arg_index[arg1+qq]], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
+                opind++;
+		// second step: v = z+y, index domains
+		fod[opind].entry = maxopind+2;
+		fod[opind].left = &fod[opind-1];
+		fod[opind].right = &fod[arg_index[arg2+qq]];
+		// second step: v = v+z,
+                arg_index[res+qq] = opind++;
+#endif
+#if defined(_NONLIND_OLD_)
+		extend_nonlinearity_domain_binary(arg, arg1+qq, ind_dom, nonl_dom);
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Targ, TAYLOR_BUFFER[arg])
+                ASSIGN_T(Tres,  TAYLOR_BUFFER[res+qq])
+                ASSIGN_T(Targ1, TAYLOR_BUFFER[arg1+qq])
+                ASSIGN_T(Targ2, TAYLOR_BUFFER[arg2+qq])
+#ifdef _INT_FOR_
+                FOR_0_LE_l_LT_p
+                TRES_FOINC = TARG2_INC | TARG1_INC | TARG_INC;
+#else
+                INC_pk_1(Tres)
+                INC_pk_1(Targ)
+                INC_pk_1(Targ1)
+                INC_pk_1(Targ2)
+                FOR_p_GT_l_GE_0
+                FOR_k_GT_i_GE_0
+                {  
+                    TRES_FODEC = dp_T0[arg] * TARG1_DEC + TARG_DEC * dp_T0[arg1+qq] + TARG2_DEC;
+                    DEC_TRES_FO
+#if defined(_HIGHER_ORDER_)
+                    Targ1OP = Targ - i + 1;
+                    Targ2OP = Targ1;
+
+                    for (j=0;j<i;j++) {
+                        *Tres += (*Targ1OP++) * (*Targ2OP--);
+                    }
+                    Tres--;
+#endif /* _HIGHER_ORDER_ */
+                }
+#endif
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+#if !defined(_NTIGHT_)
+                dp_T0[res+qq] = dp_T0[arg] * dp_T0[arg1+qq] + dp_T0[arg2+qq];
+#endif /* !_NTIGHT_ */
+
+                }
                 break;
 
             case ref_cond_assign:                                      /* cond_assign */
@@ -4999,9 +5855,7 @@ int  hov_forward(
                     }
                     edfct->dp_x[loop]=dp_T0[arg];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        ADOLC_EXT_POINTER_X[loop]ADOLC_EXT_SUBSCRIPT =
-                        TAYLOR_BUFFER[arg]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS(ADOLC_EXT_POINTER_X[loop],TAYLOR_BUFFER[arg]);
 #endif
                     ++arg;
                 }
@@ -5012,9 +5866,7 @@ int  hov_forward(
                     }
                     edfct->dp_y[loop]=dp_T0[arg];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        ADOLC_EXT_POINTER_Y[loop]ADOLC_EXT_SUBSCRIPT =
-                        TAYLOR_BUFFER[arg]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS(ADOLC_EXT_POINTER_Y[loop],TAYLOR_BUFFER[arg]);
 #endif
                     ++arg;
                 }
@@ -5026,9 +5878,7 @@ int  hov_forward(
                 for (loop=0; loop<n; ++loop) {
                     dp_T0[res]=edfct->dp_x[loop];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        TAYLOR_BUFFER[res]ADOLC_EXT_SUBSCRIPT =
-                        ADOLC_EXT_POINTER_X[loop]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS_BACK(ADOLC_EXT_POINTER_X[loop],TAYLOR_BUFFER[res]);
 #endif
                     ++res;
                 }
@@ -5036,9 +5886,7 @@ int  hov_forward(
                 for (loop=0; loop<m; ++loop) {
                     dp_T0[res]=edfct->dp_y[loop];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        TAYLOR_BUFFER[res]ADOLC_EXT_SUBSCRIPT =
-                        ADOLC_EXT_POINTER_Y[loop]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS_BACK(ADOLC_EXT_POINTER_Y[loop],TAYLOR_BUFFER[res]);
 #endif
                     ++res;
                 }
@@ -5080,9 +5928,7 @@ int  hov_forward(
                     }
                     edfct->dp_x[loop]=dp_T0[arg];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        ADOLC_EXT_POINTER_X[loop]ADOLC_EXT_SUBSCRIPT =
-                        TAYLOR_BUFFER[arg]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS(ADOLC_EXT_POINTER_X[loop],TAYLOR_BUFFER[arg]);
 #endif
                     ++arg;
                 }
@@ -5093,9 +5939,7 @@ int  hov_forward(
                     }
                     edfct->dp_y[loop]=dp_T0[arg];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        ADOLC_EXT_POINTER_Y[loop]ADOLC_EXT_SUBSCRIPT =
-                        TAYLOR_BUFFER[arg]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS(ADOLC_EXT_POINTER_Y[loop],TAYLOR_BUFFER[arg]);
 #endif
                     ++arg;
                 }
@@ -5107,9 +5951,7 @@ int  hov_forward(
                 for (loop=0; loop<n; ++loop) {
                     dp_T0[res]=edfct->dp_x[loop];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        TAYLOR_BUFFER[res]ADOLC_EXT_SUBSCRIPT =
-                        ADOLC_EXT_POINTER_X[loop]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS_BACK(ADOLC_EXT_POINTER_X[loop],TAYLOR_BUFFER[res]);
 #endif
                     ++res;
                 }
@@ -5117,13 +5959,109 @@ int  hov_forward(
                 for (loop=0; loop<m; ++loop) {
                     dp_T0[res]=edfct->dp_y[loop];
 #if !defined(_ZOS_)
-                    ADOLC_EXT_LOOP
-                        TAYLOR_BUFFER[res]ADOLC_EXT_SUBSCRIPT =
-                        ADOLC_EXT_POINTER_Y[loop]ADOLC_EXT_SUBSCRIPT;
+                    ADOLC_EXT_COPY_TAYLORS_BACK(ADOLC_EXT_POINTER_Y[loop],TAYLOR_BUFFER[res]);
 #endif
                     ++res;
                 }
                 free((void*)iArr); iArr=0;
+                break;
+            case ext_diff_v2:
+                ADOLC_CURRENT_TAPE_INFOS.ext_diff_fct_index=get_locint_f();
+                iArrLength = get_locint_f();
+                iArr = malloc(iArrLength*sizeof(int));
+                for (loop=0;loop<iArrLength;++loop) iArr[loop] = get_locint_f();
+                get_locint_f(); /* iArrLength again */
+                nin = get_locint_f();
+                nout = get_locint_f();
+                insz = malloc(2*(nin+nout)*sizeof(locint));
+                outsz = insz + nin;
+                ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_ext_v2 = outsz + nout;
+                ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_ext_v2 = outsz + nout + nin;
+                for (loop=0;loop<nin;++loop) {
+                    insz[loop] = get_locint_f();
+                    ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_ext_v2[loop] = get_locint_f();
+                }
+                for (loop=0;loop<nout;++loop) {
+                    outsz[loop] = get_locint_f();
+                    ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_ext_v2[loop] = get_locint_f();
+                }
+                get_locint_f(); /* nin again */
+                get_locint_f(); /* nout again */
+                edfct2 = get_ext_diff_fct_v2(ADOLC_CURRENT_TAPE_INFOS.ext_diff_fct_index);
+                if (edfct2->ADOLC_EXT_FCT_POINTER==NULL)
+                    fail(ADOLC_EXT_DIFF_NULLPOINTER_DIFFFUNC);
+                if (nin>0) {
+                    if (edfct2->x == NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#if !defined(_ZOS_)
+                    if (ADOLC_EXT_V2_POINTER_X==NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#endif
+                }
+                if (nout>0) {
+                    if (edfct2->y == NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#if !defined(_ZOS_)
+                    if (ADOLC_EXT_V2_POINTER_Y == NULL) fail(ADOLC_EXT_DIFF_NULLPOINTER_ARGUMENT);
+#endif
+                }
+
+                for(oloop=0;oloop<nin;++oloop) {
+                    arg = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_ext_v2[oloop];
+                    memcpy(&edfct2->x[oloop][0],&dp_T0[arg],insz[oloop]*sizeof(double));
+                    for(loop=0;loop<insz[oloop];++loop) {
+                        if(edfct2->dp_x_changes) {
+                            IF_KEEP_WRITE_TAYLOR(arg,keep,k,p);
+                        }
+#if !defined(_ZOS_)
+                        ADOLC_EXT_COPY_TAYLORS(ADOLC_EXT_V2_POINTER_X[oloop][loop],TAYLOR_BUFFER[arg]);
+#endif
+                        ++arg;
+                    }
+                }
+                for(oloop=0;oloop<nout;++oloop) {
+                    arg=ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_ext_v2[oloop];
+                    memcpy(&edfct2->y[oloop][0],&dp_T0[arg],outsz[oloop]*sizeof(double));
+                    for(loop=0;loop<outsz[oloop];++loop) {
+                        if (edfct2->dp_y_priorRequired) {
+                            IF_KEEP_WRITE_TAYLOR(arg,keep,k,p);
+                        }
+#if !defined(_ZOS_)
+                       ADOLC_EXT_COPY_TAYLORS(ADOLC_EXT_V2_POINTER_Y[oloop][loop],TAYLOR_BUFFER[arg]);
+#endif
+
+                        ++arg;
+                    }
+                }
+                ext_retc = edfct2->ADOLC_EXT_FCT_V2_COMPLETE;
+                MINDEC(ret_c,ext_retc);
+
+                for(oloop=0;oloop<nin;++oloop) {
+                    res = ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_ext_v2[oloop];
+                    memcpy(&dp_T0[res],&edfct2->x[oloop][0],insz[oloop]*sizeof(double));
+#if !defined(_ZOS_)
+                    for(loop=0;loop<insz[oloop];++loop) {
+                        ADOLC_EXT_COPY_TAYLORS_BACK(ADOLC_EXT_V2_POINTER_X[oloop][loop],TAYLOR_BUFFER[res]);
+                        ++res;
+                    }
+#endif
+                }
+
+                for(oloop=0;oloop<nout;++oloop) {
+                    res = ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_ext_v2[oloop];
+                    memcpy(&dp_T0[res],&edfct2->y[oloop][0],outsz[oloop]*sizeof(double));
+#if !defined(_ZOS_)
+                    for(loop=0;loop<outsz[oloop];++loop) {
+                        ADOLC_EXT_COPY_TAYLORS_BACK(ADOLC_EXT_V2_POINTER_Y[oloop][loop],TAYLOR_BUFFER[res]);
+                        ++res;
+                    }
+#endif
+                }
+
+                free(insz);
+                free(iArr);
+                insz = 0;
+                iArr = 0;
+                outsz = 0;
+                ADOLC_CURRENT_TAPE_INFOS.lowestXLoc_ext_v2 = 0;
+                ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_ext_v2 = 0;
                 break;
 #endif
 
@@ -5147,7 +6085,7 @@ int  hov_forward(
                             tag,
                             pairedWith,
                             comm,
-                            status);
+                            &status);
               break;
             }
           case ampi_isend: {
@@ -5174,7 +6112,7 @@ int  hov_forward(
           }
           case ampi_wait: {
             ADOLC_TLM_AMPI_Wait(&request,
-                          status);
+                          &status);
             break;
           }
           case ampi_barrier: {
@@ -5401,15 +6339,37 @@ int get_num_switches(short tapeID) {
 }
 #endif
 #if defined(_ABS_NORM_) && defined(_FOV_)
-double firstsign(int p, double u, double* du) {
+short firstsign(int p, double *u, double* du) {
     int i=0;
-    double tmp;
-    tmp=(u>0.0)?1.0:((u<0.0)?-1.0:0.0);
+    short tmp;
+    tmp=(*u>0.0)?1.0:((*u<0.0)?-1.0:0.0);
     while(i<p && tmp==0.0) {
 	tmp=(du[i]>0.0)?1.0:((du[i]<0.0)?-1.0:0.0);
 	i++;
     }
     return tmp;
+}
+#elif defined(_ABS_NORM_SIG_) && defined(_FOV_)
+short ext_firstsign(double sigbase, double sigdir, int p, double *u, double* du) {
+    if (sigbase == 0 && sigdir > 0) { 
+        du[0] = fmax(0,du[0]);
+        *u = 0;
+    }
+    else if (sigbase == 0 && sigdir < 0) {
+        du[0] = fmin(0,du[0]);
+        *u =0;
+    }
+    else if (sigbase == 0 && sigdir == 0) {
+        du[0] = 0;
+        *u = 0;
+    }
+    return firstsign(p,u,du);
+}
+
+short ext_firstsign2(double sigbase, int p, double *u, double* du) {
+    if (sigbase == 0)
+        *u=0;
+    return firstsign(p,u,du);
 }
 #endif
 /****************************************************************************/

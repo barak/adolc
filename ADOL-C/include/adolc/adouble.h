@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: adouble.h 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: adouble.h 659 2015-12-15 10:17:20Z kulshres $
  Contents: adouble.h contains the basis for the class of adouble
            included here are all the possible functions defined on
            the adouble class.  Notice that, as opposed to ealier versions,
@@ -24,6 +24,11 @@
 /****************************************************************************/
 /*                                                         THIS FILE IS C++ */
 #ifdef __cplusplus
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1900)
+#define COMPILER_HAS_CXX11
+#else
+#error "please use -std=c++11 compiler flag with a C++11 compliant compiler"
+#endif
 
 #include <cstdio>
 #include <cstdlib>
@@ -38,7 +43,7 @@ using std::ostream;
 using std::istream;
 using std::logic_error;
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 /* NOTICE: There are automatic includes at the end of this file! */
 
@@ -49,6 +54,7 @@ using std::logic_error;
 class adouble;
 class adub;
 class badouble;
+class pdouble;
 
 /*--------------------------------------------------------------------------*/
 void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
@@ -69,6 +75,7 @@ void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
    main difference among badoubles, adubs, and adoubles.
 */
 class ADOLC_DLL_EXPORT badouble {
+    friend ADOLC_DLL_EXPORT class pdouble;
 protected:
     locint location;
     badouble( void ) {};
@@ -101,6 +108,9 @@ public:
     inline double value() const {
         return getValue();
     }
+    explicit operator double();
+    explicit operator double const&();
+    explicit operator double&&();
     void setValue ( const double );
     /* badouble& operator = ( const adouble& );
        !!! olvo 991210: was the same as badouble-assignment */
@@ -123,15 +133,14 @@ public:
     badouble& operator -= ( const adub& );
 
     /*--------------------------------------------------------------------------*/
+    badouble& operator = (const pdouble&);
+    badouble& operator += (const pdouble&);
+    badouble& operator -= (const pdouble&);
+    badouble& operator *= (const pdouble&);
+    inline badouble& operator /= (const pdouble&);
+    /*--------------------------------------------------------------------------*/
     /* Comparison (friends) */
-#if defined(ADOLC_ADVANCED_BRANCHING)
-    friend ADOLC_DLL_EXPORT adub operator != ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator == ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator <= ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator >= ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator >  ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator <  ( const badouble&, const badouble& );
-#else
+#if !defined(ADOLC_ADVANCED_BRANCHING)
     inline friend int operator != ( const badouble&, const badouble& );
     inline friend int operator == ( const badouble&, const badouble& );
     inline friend int operator <= ( const badouble&, const badouble& );
@@ -154,74 +163,21 @@ public:
 
 
     /*--------------------------------------------------------------------------*/
-    /* sign operators (friends) */
-    friend ADOLC_DLL_EXPORT adub operator + ( const badouble& x );
-    friend ADOLC_DLL_EXPORT adub operator - ( const badouble& x );
-
-    /*--------------------------------------------------------------------------*/
-    /* binary operators (friends) */
-    friend ADOLC_DLL_EXPORT adub operator + ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator + ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator + ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub operator - ( const badouble&, const badouble& );
-    inline friend adub operator - ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub operator - ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator * ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator * ( double, const badouble& );
-    inline friend adub operator * ( const badouble&, double );
-    inline friend adub operator / ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub operator / ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator / ( double, const badouble& );
-
-    /*--------------------------------------------------------------------------*/
-    /* unary operators (friends) */
-    friend ADOLC_DLL_EXPORT adub exp  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub log  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub sqrt ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub sin  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub cos  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub tan  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub asin ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub acos ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub atan ( const badouble& );
+    /* Functions friends with both badouble and adub */
+#define _IN_CLASS_ 1
+#define _IN_BADOUBLE_ 1
+#include <adolc/internal/adubfunc.h>
+#undef _IN_BADOUBLE_
+#undef _IN_CLASS_
 
     /*--------------------------------------------------------------------------*/
     /* special operators (friends) */
     friend ADOLC_DLL_EXPORT adouble atan2 ( const badouble&, const badouble& );
-    /* no internal use of condassign: */
-    friend ADOLC_DLL_EXPORT adub    pow   ( const badouble&, double );
     /* uses condassign internally */
     friend ADOLC_DLL_EXPORT adouble pow   ( const badouble&, const badouble& );
     friend ADOLC_DLL_EXPORT adouble pow   ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub    log10 ( const badouble& );
     /* User defined version of logarithm to test extend_quad macro */
     friend ADOLC_DLL_EXPORT adouble myquad( const badouble& );
-
-    /*--------------------------------------------------------------------------*/
-    /* Additional ANSI C standard Math functions Added by DWJ on 8/6/90 */
-    friend ADOLC_DLL_EXPORT adub sinh  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub cosh  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub tanh  ( const badouble& );
-#if defined(ATRIG_ERF)
-    friend ADOLC_DLL_EXPORT adub asinh ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub acosh ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub atanh ( const badouble& );
-#endif
-
-    friend ADOLC_DLL_EXPORT adub fabs  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub ceil  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub floor ( const badouble& );
-
-    friend ADOLC_DLL_EXPORT adub fmax ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmax ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmax ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub fmin ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmin ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmin ( const badouble&, double );
-
-    friend ADOLC_DLL_EXPORT adub ldexp ( const badouble&, int );
-    friend ADOLC_DLL_EXPORT adub frexp ( const badouble&, int* );
-    friend ADOLC_DLL_EXPORT adub erf   ( const badouble& );
 
     /*--------------------------------------------------------------------------*/
     /* Conditionals */
@@ -229,6 +185,13 @@ public:
             const badouble &arg1, const badouble &arg2 );
     friend ADOLC_DLL_EXPORT void condassign( adouble &res, const badouble &cond,
             const badouble &arg );
+
+#define _IN_CLASS_ 1
+#define _IN_BADOUBLE_ 1
+#include <adolc/internal/paramfunc.h>
+#undef _IN_BADOUBLE_
+#undef _IN_CLASS_
+
 };
 
 
@@ -243,12 +206,17 @@ public:
         is "freed" when the adub goes out of scope (at destruction time).
    ---- operates just like a badouble, but it has a destructor defined for it.
 */
+ADOLC_DLL_EXPORT adub* adubp_from_adub(const adub&);
+/* s = adolc_vec_dot(x,y,size); <=> s = <x,y>_2 */
+ADOLC_DLL_EXPORT adub adolc_vec_dot(const adouble*const, const adouble*const, locint);
 
 class ADOLC_DLL_EXPORT adub:public badouble {
     friend ADOLC_DLL_EXPORT class adouble;
     friend ADOLC_DLL_EXPORT class advector;
     friend ADOLC_DLL_EXPORT class adubref;
-    friend ADOLC_DLL_EXPORT adub* adubp_from_adub(const adub&);
+    friend ADOLC_DLL_EXPORT class pdouble;
+    friend adub* adubp_from_adub(const adub&);
+private:
     adub( adub const &) {
 	isInit = false;
         fprintf(DIAG_OUT,"ADOL-C error: illegal copy construction of adub"
@@ -275,83 +243,31 @@ protected:
 
 public:
 
+    explicit operator adub*() const { return adubp_from_adub(*this); }
     /*--------------------------------------------------------------------------*/
-    /* Comparison (friends) */
-#if defined(ADOLC_ADVANCED_BRANCHING)
-    friend ADOLC_DLL_EXPORT adub operator != ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator == ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator <= ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator >= ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator < ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator > ( const badouble&, const badouble& );
-#endif
-    /*--------------------------------------------------------------------------*/
-    /* sign operators (friends) */
-    friend ADOLC_DLL_EXPORT adub operator + ( const badouble& x );
-    friend ADOLC_DLL_EXPORT adub operator - ( const badouble& x );
+    /* s = adolc_vec_dot(x,y,size); <=> s = <x,y>_2 */
+    friend adub adolc_vec_dot(const adouble*const, const adouble*const, locint);
+    /* Functions friends with both badouble and adub */
+#define _IN_CLASS_ 1
+#define _IN_ADUB_ 1
+#include <adolc/internal/adubfunc.h>
+#undef _IN_ADUB_
+#undef _IN_CLASS_
 
     /*--------------------------------------------------------------------------*/
-    /* binary operators (friends) */
-    friend ADOLC_DLL_EXPORT adub operator + ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator + ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator + ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub operator - ( const badouble&, const badouble& );
-    inline friend adub operator - ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub operator - ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator * ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator * ( double, const badouble& );
-    inline friend adub operator * ( const badouble&, double );
-    inline friend adub operator / ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub operator / ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub operator / ( double, const badouble& );
-
-    /*--------------------------------------------------------------------------*/
-    /* unary operators (friends) */
-    friend ADOLC_DLL_EXPORT adub exp  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub log  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub sqrt ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub sin  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub cos  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub tan  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub asin ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub acos ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub atan ( const badouble& );
-
-    /*--------------------------------------------------------------------------*/
-    /* special operators (friends) */
-    /* no internal use of condassign: */
-    friend ADOLC_DLL_EXPORT adub    pow   ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub    log10 ( const badouble& );
-
-    /*--------------------------------------------------------------------------*/
-    /* Additional ANSI C standard Math functions Added by DWJ on 8/6/90 */
-    friend ADOLC_DLL_EXPORT adub sinh  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub cosh  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub tanh  ( const badouble& );
-#if defined(ATRIG_ERF)
-    friend ADOLC_DLL_EXPORT adub asinh ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub acosh ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub atanh ( const badouble& );
-#endif
-
-    friend ADOLC_DLL_EXPORT adub fabs  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub ceil  ( const badouble& );
-    friend ADOLC_DLL_EXPORT adub floor ( const badouble& );
-
-    friend ADOLC_DLL_EXPORT adub fmax ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmax ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmax ( const badouble&, double );
-    friend ADOLC_DLL_EXPORT adub fmin ( const badouble&, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmin ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT adub fmin ( const badouble&, double );
-
-    friend ADOLC_DLL_EXPORT adub ldexp ( const badouble&, int );
-    friend ADOLC_DLL_EXPORT adub frexp ( const badouble&, int* );
-    friend ADOLC_DLL_EXPORT adub erf   ( const badouble& );
+    /* Parameter dependent functions (friends) */
+#define _IN_CLASS_ 1
+#define _IN_ADUB_ 1
+#include <adolc/internal/paramfunc.h>
+#undef _IN_ADUB_
+#undef _IN_CLASS_
 
     ~adub();
 };
 
+BEGIN_C_DECLS
+ADOLC_DLL_EXPORT void ensureContiguousLocations(size_t n);
+END_C_DECLS
 
 /****************************************************************************/
 /*                                                            CLASS ADOUBLE */
@@ -363,6 +279,7 @@ public:
 */
 class ADOLC_DLL_EXPORT adouble:public badouble {
     friend ADOLC_DLL_EXPORT class advector;
+    friend ADOLC_DLL_EXPORT class pdouble;
 protected:
     void initInternal(void); // Init for late initialization
 public:
@@ -383,11 +300,29 @@ public:
     adouble& operator = ( const badouble& );
     adouble& operator = ( const adouble& );
     adouble& operator = ( const adub& );
+    adouble& operator = (const pdouble&);
     
     inline locint loc(void) const;
+
+#if defined(ADOLC_DEFAULT_CONTIG_LOC)
+    void *operator new[](size_t sz) {
+        void *p = ::new char[sz];
+        size_t n = (sz - sizeof(size_t))/sizeof(adouble);
+        ensureContiguousLocations(n);
+        return p;
+    }
+    void operator delete[](void* p) {
+        ::delete[] (char*)p;
+    }
+#endif
 };
 
+#endif /* __cplusplus */
 
+#include <adolc/param.h>
+#include <adolc/advector.h>
+
+#ifdef __cplusplus
 /****************************************************************************/
 /*                                                       INLINE DEFINITIONS */
 
@@ -491,6 +426,10 @@ inline adub operator / (const badouble& x, double coval) {
 }
 
 
+inline badouble& badouble::operator /= (const pdouble& p) {
+    *this *= recipr(p);
+    return *this;
+}
 /****************************************************************************/
 /*                                                                THAT'S ALL*/
 #endif /* __cplusplus */

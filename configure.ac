@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac 558 2014-08-18 10:40:15Z kulshres $
+# Revision: $Id: configure.ac 662 2015-12-18 10:58:34Z kulshres $
 #
 # Copyright (C) Andrea Walther, Andreas Kowarz
 #               
@@ -8,21 +8,21 @@
 #
 ##############################################################################
 define([ADOLC_VER], [2])
-define([ADOLC_SUB], [5])
-define([ADOLC_LVL], [2])
+define([ADOLC_SUB], [6])
+define([ADOLC_LVL], [0])
 
 AC_PREREQ(2.67)
 AC_INIT(adolc,
         ADOLC_VER.ADOLC_SUB.ADOLC_LVL,
         [adol-c@list.coin-or.org])
 config_flags="$*"
-AC_REVISION($Revision: 558 $)
+AC_REVISION($Revision: 662 $)
 AC_CONFIG_SRCDIR([ADOL-C/src/adouble.cpp])
 AC_CONFIG_AUX_DIR([autoconf])
 AC_CONFIG_MACRO_DIR([autoconf])
 AC_CONFIG_HEADERS([ADOL-C/src/config.h])
 AC_PREFIX_DEFAULT(${HOME}/adolc_base)
-AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign])
+AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign subdir-objects])
 AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
 
@@ -61,17 +61,18 @@ if test x"${adolc_ampi_support}" = xyes ; then
 AC_DEFINE(ADOLC_AMPI_SUPPORT,1,[defined if adjoinable MPI support is to be compiled in])
 fi
 
+LT_PREREQ([2.2.6])
 # checks for programs
 AC_PROG_CXX
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
 AC_PROG_CC
+AC_PROG_CC_C_O
 AC_PROG_CC_C99
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+LT_INIT([disable-static win32-dll dlopen])
 
 MPI_CONF_PRE
 
@@ -102,16 +103,26 @@ AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_STRUCT_TM
 
-# Checks for library functions
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-if test x$ac_cv_func_malloc_0_nonnull != xyes ; then
-AC_DEFINE_UNQUOTED([calloc],[rpl_calloc],[Define to rpl_calloc if the replacement function should be used.])
-fi
 
 # Checks for libraries and fuctions
 AC_SEARCH_LIBS([pow], [m])
 AC_CHECK_FUNCS([floor fmax fmin ftime pow sqrt strchr strtol trunc])
+
+AX_BOOST_BASE([1.54],[boost_new=yes],[boost_new=no])
+if test x$boost_new = xyes ; then
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+AC_LANG_PUSH([C++])
+AC_CHECK_HEADERS([boost/pool/pool_alloc.hpp])
+AC_LANG_POP([C++])
+AX_BOOST_SYSTEM
+LDFLAGS="$LDFLAGS $BOOST_LDFLAGS $BOOST_SYSTEM_LIB"
+fi
+
+if test "x$want_boost" = xyes -a "x$boost_new" = xyes -a "x$ac_cv_header_boost_pool_pool_alloc_hpp" = xyes -a "x$link_system" = xyes ; then
+    using_boost_pool=yes
+else
+    using_boost_pool=no
+fi
 
 # substitutions
 AC_SUBST(ac_aux_dir)
@@ -126,6 +137,13 @@ ADOLC_PATCHLEVEL=ADOLC_LVL
 AC_SUBST(ADOLC_VERSION)
 AC_SUBST(ADOLC_SUBVERSION)
 AC_SUBST(ADOLC_PATCHLEVEL)
+
+# Checks for library functions
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+if test x$ac_cv_func_malloc_0_nonnull != xyes ; then
+AC_DEFINE_UNQUOTED([calloc],[rpl_calloc],[Define to rpl_calloc if the replacement function should be used.])
+fi
 
 AC_MSG_CHECKING(whether to use calloc or malloc for memory allocation)
 AC_ARG_ENABLE(use-calloc,[AS_HELP_STRING([--disable-use-calloc],
@@ -295,6 +313,9 @@ AC_ARG_WITH(openmp-flag,
             [ac_adolc_openmpflag=""
              AC_MSG_RESULT(none)])
 
+if test "x$using_boost_pool" = xyes -a "x$ac_adolc_openmpflag" = x ; then
+   AC_DEFINE(BOOST_POOL_NO_MT,1,[Boost pool should not assume multithreading])
+fi
 
 # ADOL-C Sparse facility
 AC_MSG_CHECKING(whether to build sparse drivers)
@@ -479,12 +500,15 @@ AC_CONFIG_FILES(Makefile
                 ADOL-C/Makefile
                 ADOL-C/include/Makefile
                 ADOL-C/include/adolc/Makefile
-		ADOL-C/include/adolc/adolc_settings.h
+		ADOL-C/include/adolc/internal/adolc_settings.h
                 ADOL-C/include/adolc/drivers/Makefile 
+                ADOL-C/include/adolc/internal/Makefile
+                ADOL-C/include/adolc/lie/Makefile
                 ADOL-C/include/adolc/sparse/Makefile
                 ADOL-C/include/adolc/tapedoc/Makefile
                 ADOL-C/src/Makefile
                 ADOL-C/src/drivers/Makefile 
+                ADOL-C/src/lie/Makefile
                 ADOL-C/src/sparse/Makefile
                 ADOL-C/src/tapedoc/Makefile
                 ADOL-C/doc/version.tex
@@ -496,6 +520,7 @@ AC_CONFIG_FILES(Makefile
                 ADOL-C/examples/additional_examples/ext_diff_func/Makefile
                 ADOL-C/examples/additional_examples/fixpoint_exam/Makefile
                 ADOL-C/examples/additional_examples/hessmat/Makefile
+                ADOL-C/examples/additional_examples/lie/Makefile
                 ADOL-C/examples/additional_examples/lufact/Makefile
                 ADOL-C/examples/additional_examples/openmp_exam/Makefile
                 ADOL-C/examples/additional_examples/scal/Makefile
@@ -509,11 +534,12 @@ AC_CONFIG_FILES(Makefile
                 ADOL-C/examples/additional_examples/tapesave/Makefile
                 ADOL-C/examples/additional_examples/pow/Makefile
                 ADOL-C/examples/additional_examples/timing/Makefile
+                ADOL-C/examples/additional_examples/param/Makefile
                 ADOL-C/test/Makefile
-                MSVisualStudio/v10/sparse/config.h
-                MSVisualStudio/v10/nosparse/config.h
-                MSVisualStudio/v10/x64/sparse/config.h
-                MSVisualStudio/v10/x64/nosparse/config.h
+                MSVisualStudio/v14/sparse/config.h
+                MSVisualStudio/v14/nosparse/config.h
+                MSVisualStudio/v14/x64/sparse/config.h
+                MSVisualStudio/v14/x64/nosparse/config.h
 		adolc.spec
                 adolclib.pc
 )
@@ -538,6 +564,7 @@ Configuration:
   CFLAGS:                             ${ac_adolc_cflags}
   CXXFLAGS:                           ${ac_adolc_cxxflags}
 
+  Use Boost pool allocator:           ${using_boost_pool}
   Use ADOL-C debug mode:              ${adolc_debug}
   Use ADOL-C hard debug mode:         ${adolc_harddebug}
   Zero value in adouble default ctor: ${adolc_stdczero}"

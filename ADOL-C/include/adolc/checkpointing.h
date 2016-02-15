@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     checkpointing.h
- Revision: $Id: checkpointing.h 354 2012-10-01 11:32:26Z kulshres $
+ Revision: $Id: checkpointing.h 600 2015-03-12 21:28:32Z kulshres $
  Contents: Provides all checkointing interfaces.
  
  Copyright (c) Andreas Kowarz
@@ -15,7 +15,7 @@
 #if !defined(ADOLC_CHECKPOINTING_H)
 #define ADOLC_CHECKPOINTING_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 #include <adolc/adouble.h>
 
 #if defined(__cplusplus)
@@ -53,6 +53,7 @@ typedef struct CpInfos {
     locint index;                            /* please do not change */
     char modeForward;
     char modeReverse;
+    char *allmem; /* this is dummy to get externfcts and checkpointing both use buffer_temp without a problem */
 }
 CpInfos;
 

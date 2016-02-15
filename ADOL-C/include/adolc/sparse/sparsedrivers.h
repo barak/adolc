@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.h
- Revision: $Id: sparsedrivers.h 354 2012-10-01 11:32:26Z kulshres $
+ Revision: $Id: sparsedrivers.h 585 2014-11-07 11:55:22Z kulshres $
  Contents: This file containts some "Easy To Use" interfaces of sparse package.
  
  Copyright (c) Andrea Walther
@@ -14,7 +14,7 @@
 #if !defined (ADOLC_SPARSE_SPARSE_H)
 #define ADOLC_SPARSE_SPARSE_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 
 
@@ -35,6 +35,13 @@ BEGIN_C_DECLS
 ADOLC_DLL_EXPORT int jac_pat
 (short,int,int,const double*,unsigned int**,int*);
 
+/*--------------------------------------------------------------------------*/
+/*                                              abs-normal jacobian pattern */
+/* absnormal_jac_pat(tag, m, n, s, argument,                                */
+/*         crs[] [ crs[][0] = non-zero independent blocks per row ])        */
+/*                                                                          */
+ADOLC_DLL_EXPORT int absnormal_jac_pat
+(short,int,int,int,const double*,unsigned int**);
 /*--------------------------------------------------------------------------*/
 /*                                         seed matrix for sparse jacobian  */
 /* generate_seed_jac(m, n, crs, &seed, &p, option);                         */

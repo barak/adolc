@@ -18,9 +18,15 @@
 #define ADOLC_ADTL_H
 
 #include <ostream>
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 #include <list>
 #include <stdexcept>
+
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1900)
+#define COMPILER_HAS_CXX11
+#else
+#error "please use -std=c++11 compiler flag with a C++11 compliant compiler"
+#endif
 
 using std::ostream;
 using std::istream;
@@ -43,9 +49,9 @@ class adouble;
 
 class refcounter {
 private:
-    static size_t refcnt;
-    friend void setNumDir(const size_t p);
-    friend void setMode(enum Mode newmode);
+    ADOLC_DLL_EXPIMP static size_t refcnt;
+    ADOLC_DLL_EXPORT friend void setNumDir(const size_t p);
+    ADOLC_DLL_EXPORT friend void setMode(enum Mode newmode);
     friend class adouble;
 public:
     refcounter() { ++refcnt; }
@@ -203,6 +209,9 @@ public:
 
     inline double getADValue(const unsigned int p) const;
     inline void setADValue(const unsigned int p, const double v);
+    inline explicit operator double const&();
+    inline explicit operator double&&();
+    inline explicit operator double();
 
 protected:
     inline const list<unsigned int>& get_pattern() const;
@@ -211,15 +220,15 @@ protected:
     inline void delete_pattern();
 
 public:
-    friend int ADOLC_Init_sparse_pattern(adouble *a, int n,unsigned int start_cnt);
-    friend int ADOLC_get_sparse_pattern(const adouble *const b, int m, unsigned int **&pat);
-    friend int ADOLC_get_sparse_jacobian( func_ad *const func, int n, int m, int repeat, double* basepoints, int *nnz, unsigned int **rind, unsigned int **cind, double **values);
+    ADOLC_DLL_EXPORT friend int ADOLC_Init_sparse_pattern(adouble *a, int n,unsigned int start_cnt);
+    ADOLC_DLL_EXPORT friend int ADOLC_get_sparse_pattern(const adouble *const b, int m, unsigned int **&pat);
+    ADOLC_DLL_EXPORT friend int ADOLC_get_sparse_jacobian( func_ad *const func, int n, int m, int repeat, double* basepoints, int *nnz, unsigned int **rind, unsigned int **cind, double **values);
 #if 0
-    friend int ADOLC_get_sparse_jacobian(int n, int m, adouble *x, int *nnz, unsigned int *rind, unsigned int *cind, double *values);
+    ADOLC_DLL_EXPORT friend int ADOLC_get_sparse_jacobian(int n, int m, adouble *x, int *nnz, unsigned int *rind, unsigned int *cind, double *values);
 #endif
     /*******************  i/o operations  *********************************/
-    friend ostream& operator << ( ostream&, const adouble& );
-    friend istream& operator >> ( istream&, adouble& );
+    ADOLC_DLL_EXPORT friend ostream& operator << ( ostream&, const adouble& );
+    ADOLC_DLL_EXPORT friend istream& operator >> ( istream&, adouble& );
 
 private:
     double val;
@@ -229,26 +238,12 @@ private:
     inline static bool _do_val();
     inline static bool _do_adval();
     inline static bool _do_indo();
-    static size_t numDir;
-    static enum Mode forward_mode;
+    ADOLC_DLL_EXPIMP static size_t numDir;
+    ADOLC_DLL_EXPIMP static enum Mode forward_mode;
     inline friend void setNumDir(const size_t p);
     inline friend void setMode(enum Mode newmode);
 };
 
-inline void setNumDir(const size_t p);
-inline void setMode(enum Mode newmode);
-
-int ADOLC_Init_sparse_pattern(adouble *a, int n, unsigned int start_cnt);
-int ADOLC_get_sparse_pattern(const adouble *const b, int m, unsigned int **&pat);
-int ADOLC_get_sparse_jacobian(func_ad *const func,
-			      int n, int m, int repeat, double* basepoints, int *nnz,
-			      unsigned int **rind, unsigned int **cind,
-			      double **values);
-#if 0
-int ADOLC_get_sparse_jacobian(int n, int m, adouble *x, int *nnz,
-			      unsigned int *rind, unsigned int *cind,
-			      double *values);
-#endif
 }
 
 #include <cmath>
@@ -1591,6 +1586,31 @@ inline int operator <  (const double v, const adouble &a) {
 }
 
 /*******************  getter / setter  **************************************/
+inline adouble::operator double const & () {
+    if (no_do_val()) {
+	fprintf(DIAG_OUT, "ADOL-C error: Tapeless: Incorrect mode, call setMode(enum Mode mode)\n");
+	throw logic_error("incorrect function call, errorcode=1");
+    }
+    return val;
+}
+
+inline adouble::operator double && () {
+    if (no_do_val()) {
+	fprintf(DIAG_OUT, "ADOL-C error: Tapeless: Incorrect mode, call setMode(enum Mode mode)\n");
+	throw logic_error("incorrect function call, errorcode=1");
+    }
+    return (double&&)val;
+}
+
+inline adouble::operator double() {
+    if (no_do_val()) {
+	fprintf(DIAG_OUT, "ADOL-C error: Tapeless: Incorrect mode, call setMode(enum Mode mode)\n");
+	throw logic_error("incorrect function call, errorcode=1");
+    }
+    return val;
+}
+
+
 inline double adouble::getValue() const {
     if (no_do_val()) {
 	fprintf(DIAG_OUT, "ADOL-C error: Tapeless: Incorrect mode, call setMode(enum Mode mode)\n");

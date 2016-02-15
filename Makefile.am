@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 557 2014-08-18 10:37:16Z kulshres $
+## Revision: $Id: Makefile.am 623 2015-08-19 18:32:29Z kulshres $
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -23,15 +23,15 @@ EXTRA_DIST           = TODO BUGS LICENSE update_versions.sh \
                        ADOL-C/doc/tapeadv.pdf ADOL-C/doc/tapeadv.eps \
                        ADOL-C/doc/tapebasic.pdf ADOL-C/doc/tapebasic.eps \
                        ADOL-C/doc/tap_point.pdf ADOL-C/doc/tap_point.eps \
-                       MSVisualStudio/v10/adolc.sln MSVisualStudio/v10/adolc.vcxproj \
-                       MSVisualStudio/v10/ColPack_Readme_VC++.txt \
-                       MSVisualStudio/v10/ColPack.vcxproj \
-                       MSVisualStudio/v10/sparse/config.h.in MSVisualStudio/v10/nosparse/config.h.in \
-                       MSVisualStudio/v10/x64/sparse/config.h.in MSVisualStudio/v10/x64/nosparse/config.h.in \
-                       MSVisualStudio/v10/sparse/config.h MSVisualStudio/v10/nosparse/config.h \
-                       MSVisualStudio/v10/x64/sparse/config.h MSVisualStudio/v10/x64/nosparse/config.h \
-                       MSVisualStudio/v10/Readme_VC++.txt \
-                       MSVisualStudio/v10/installer.sh \
+                       MSVisualStudio/v14/adolc.sln MSVisualStudio/v14/adolc.vcxproj \
+                       MSVisualStudio/v14/ColPack_Readme_VC++.txt \
+                       MSVisualStudio/v14/ColPack.vcxproj \
+                       MSVisualStudio/v14/sparse/config.h.in MSVisualStudio/v14/nosparse/config.h.in \
+                       MSVisualStudio/v14/x64/sparse/config.h.in MSVisualStudio/v14/x64/nosparse/config.h.in \
+                       MSVisualStudio/v14/sparse/config.h MSVisualStudio/v14/nosparse/config.h \
+                       MSVisualStudio/v14/x64/sparse/config.h MSVisualStudio/v14/x64/nosparse/config.h \
+                       MSVisualStudio/v14/Readme_VC++.txt \
+                       MSVisualStudio/v14/installer.sh \
                        adolc.spec.in adolc.spec \
                        update_versions.sh
 

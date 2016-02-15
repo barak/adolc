@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     detexam-old.cpp
- Revision: $Id: detexam-old.cpp 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: detexam-old.cpp 511 2014-05-14 13:01:01Z kulshres $
  Contents: computation of determinants
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

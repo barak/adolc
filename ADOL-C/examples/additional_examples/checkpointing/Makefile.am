@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 471 2014-02-19 18:11:34Z kulshres $
+## Revision: $Id: Makefile.am 623 2015-08-19 18:32:29Z kulshres $
 ##
 ## Copyright (C) Andrea Walther
 ##
@@ -14,7 +14,7 @@ AM_CFLAGS             = @ac_adolc_cflags@
 AM_CXXFLAGS           = @ac_adolc_cxxflags@
 AM_CPPFLAGS          = -I$(top_builddir)/ADOL-C/include -I$(top_srcdir)/ADOL-C/include
 
-LDADD                 = -l${adolclib}
+LIBS                 = -l${adolclib}
 AM_LDFLAGS            = -L$(top_builddir)/ADOL-C
 
 MAINTAINERCLEANFILES  = Makefile.in *~ *.orig

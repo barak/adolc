@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping_p.h
- Revision: $Id: taping_p.h 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: taping_p.h 608 2015-08-10 20:06:55Z kulshres $
  Contents: declarations for used by taping routines
  
  Copyright (c) Andreas Kowarz, Jean Utke
@@ -14,12 +14,12 @@
 #if !defined(ADOLC_TAPING_P_H)
 #define ADOLC_TAPING_P_H 1
 
-#include <adolc/common.h>
-#include <adolc/taping.h>
-#include <errno.h>
 #ifdef __cplusplus
 #include "storemanager.h"
 #endif
+#include <adolc/internal/common.h>
+#include <adolc/taping.h>
+#include <errno.h>
 
 BEGIN_C_DECLS
 
@@ -74,6 +74,8 @@ enum ADOLC_ERRORS {
     ADOLC_MALLOC_FAILED,
     ADOLC_INTEGER_TAPE_FOPEN_FAILED,
     ADOLC_INTEGER_TAPE_FREAD_FAILED,
+    ADOLC_VALUE_TAPE_FOPEN_FAILED,
+    ADOLC_VALUE_TAPE_FREAD_FAILED,
     ADOLC_TAPE_TO_OLD,
     ADOLC_WRONG_LOCINT_SIZE,
     ADOLC_MORE_STAT_SPACE_REQUIRED,
@@ -117,7 +119,8 @@ enum ADOLC_ERRORS {
     ADOLC_CHECKPOINTING_UNEXPECTED_REVOLVE_ACTION,
     ADOLC_WRONG_PLATFORM_32,
     ADOLC_WRONG_PLATFORM_64,
-    ADOLC_TAPING_NOT_ACTUALLY_TAPING
+    ADOLC_TAPING_NOT_ACTUALLY_TAPING,
+    ADOLC_VEC_LOCATIONGAP
 };
 /* additional infos fail can work with */
 extern int failAdditionalInfo1;
@@ -197,6 +200,12 @@ typedef struct PersistantTapeInfos { /* survive tape re-usage */
      */
     int skipFileCleanup;
 
+    revreal *paramstore;
+#ifdef __cplusplus
+    PersistantTapeInfos();
+    ~PersistantTapeInfos();
+    void copy(const PersistantTapeInfos&);
+#endif
 } PersistantTapeInfos;
 
 /**
@@ -262,6 +271,9 @@ typedef struct TapeInfos {
     locint cpIndex;               /* index of the curr. cp function <- tape */
     int numDirs_rev;     /* # of directions for **v_reverse (checkpointing) */
 
+    locint *lowestXLoc_ext_v2;
+    locint *lowestYLoc_ext_v2;
+
     /* evaluation forward */
     double *dp_T0;
     int gDegree, numTay;
@@ -281,6 +293,7 @@ typedef struct TapeInfos {
 
     /* extern diff. fcts */
     locint ext_diff_fct_index;    /* set by forward and reverse (from tape) */
+    char in_nested_ctx;
 
     size_t numSwitches;
     locint* switchlocs;
@@ -291,6 +304,8 @@ typedef struct TapeInfos {
 #if defined(__cplusplus)
     TapeInfos();
     TapeInfos(short tapeID);
+    ~TapeInfos() {}
+    void copy(const TapeInfos&);
 #endif
 }
 TapeInfos;
@@ -312,12 +327,18 @@ typedef struct GlobalTapeVarsCL {
     char branchSwitchWarning;
     TapeInfos *currentTapeInfosPtr;
     uint nominmaxFlag;
+    size_t numparam;
+    size_t maxparam;
+    double *pStore;
+    size_t initialStoreSize;
 #ifdef __cplusplus
+    StoreManager *paramStoreMgrPtr;
     StoreManager *storeManagerPtr;
     GlobalTapeVarsCL();
     ~GlobalTapeVarsCL();
     const GlobalTapeVarsCL& operator=(const GlobalTapeVarsCL&);
 #else
+    void *paramStoreMgrPtr;
     void *storeManagerPtr;
 #endif
 }
@@ -666,6 +687,16 @@ void markNewTape();
 /* irrecoverable error                                                      */
 /****************************************************************************/
 void adolc_exit(int errorcode, const char *what, const char *function, const char* file, int line);
+
+/****************************************************************************/
+/* Discards parameters from the end of value tape during reverse mode       */
+/****************************************************************************/
+void discard_params_r();
+
+/****************************************************************************/
+/* Frees parameter indices after taping is complete                         */
+/****************************************************************************/
+void free_all_taping_params();
 
 END_C_DECLS
 

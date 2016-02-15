@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.h
- Revision: $Id: taping.h 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: taping.h 645 2015-12-10 11:33:42Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 
@@ -16,7 +16,7 @@
 #if !defined(ADOLC_TAPING_H)
 #define ADOLC_TAPING_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 BEGIN_C_DECLS
 
@@ -38,6 +38,7 @@ enum StatEntries {
     NUM_EQ_PROD,                      /* # of eq_*_prod for sparsity pattern */
     NO_MIN_MAX,  /* no use of min_op, deferred to abs_op for piecewise stuff */
     NUM_SWITCHES,                   /* # of abs calls that can switch branch */
+    NUM_PARAM, /* no of parameters (doubles) interchangable without retaping */
     STAT_SIZE                     /* represents the size of the stats vector */
 };
 
@@ -46,9 +47,13 @@ enum TapeRemovalType {
     ADOLC_REMOVE_COMPLETELY
 };
 
+ADOLC_DLL_EXPORT void skip_tracefile_cleanup(short tnum);
+
 /* Returns statistics on the tape "tag". Use enumeration StatEntries for
  * accessing the individual elements of the vector "tape_stats"! */
 ADOLC_DLL_EXPORT void tapestats(short tag, size_t *tape_stats);
+
+ADOLC_DLL_EXPORT void set_nested_ctx(short tag, char nested);
 
 /* An all-in-one tape stats printing routine */
 ADOLC_DLL_EXPORT void printTapeStats(FILE *stream, short tag);
@@ -57,8 +62,6 @@ ADOLC_DLL_EXPORT int removeTape(short tapeID, short type);
 
 ADOLC_DLL_EXPORT void enableBranchSwitchWarnings();
 ADOLC_DLL_EXPORT void disableBranchSwitchWarnings();
-
-ADOLC_DLL_EXPORT void ensureContiguousLocations(size_t n);
 
 ADOLC_DLL_EXPORT void enableMinMaxUsingAbs();
 ADOLC_DLL_EXPORT void disableMinMaxUsingAbs();
@@ -105,7 +108,8 @@ ADOLC_DLL_EXPORT void trace_off(int flag = 0);
 
 ADOLC_DLL_EXPORT bool isTaping();
 
-ADOLC_DLL_EXPORT void skip_tracefile_cleanup(short tnum);
+#include <vector>
+ADOLC_DLL_EXPORT void cachedTraceTags(std::vector<short>& result);
 
 #endif
 

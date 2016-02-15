@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adolc.h
- Revision: $Id: adolc.h 354 2012-10-01 11:32:26Z kulshres $
+ Revision: $Id: adolc.h 657 2015-12-14 13:07:47Z kulshres $
  Contents: Provides all C/C++ interfaces of ADOL-C.
            NOTICE: ALL C/C++ headers will be included DEPENDING ON 
            whether the source code is plain C or C/C++ code. 
@@ -18,7 +18,7 @@
 #if !defined(ADOLC_ADOLC_H)
 #define ADOLC_ADOLC_H 1
 
-#include <adolc/common.h>
+#include <adolc/internal/common.h>
 
 /****************************************************************************/
 /*                                                  Now the pure C++ THINGS */
@@ -27,6 +27,7 @@
 /* Operator overloading things (active doubles & vectors) */
 #  include <adolc/adouble.h>
 #  include <adolc/externfcts.h>
+#  include <adolc/externfcts2.h>
 #  include <adolc/checkpointing.h>
 #  include <adolc/fixpoint.h>
 #endif
@@ -43,6 +44,7 @@
 #include <adolc/drivers/drivers.h>    /* optimization & nonlinear equations */
 #include <adolc/drivers/taylor.h>     /* higher order tensors & inverse/implicit functions */
 #include <adolc/drivers/odedrivers.h> /* ordinary differential equations */
+#include <adolc/drivers/psdrivers.h> /* piecewise smooth functions */
 
 /*--------------------------------------------------------------------------*/
 /* interfaces to TAPEDOC package */
@@ -54,6 +56,10 @@
 #include <adolc/sparse/sparsedrivers.h>
 #include <adolc/sparse/sparse_fo_rev.h>
 #endif
+
+/*--------------------------------------------------------------------------*/
+/* parameters */
+#include <adolc/param.h>
 
 /*--------------------------------------------------------------------------*/
 /* tape and value stack utilities */

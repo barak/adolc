@@ -2,7 +2,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fixpoint.c
- Revision: $Id: fixpoint.cpp 527 2014-07-15 14:09:31Z kulshres $
+ Revision: $Id: fixpoint.cpp 608 2015-08-10 20:06:55Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
  
@@ -14,9 +14,10 @@
 
 ----------------------------------------------------------------------------*/
 
+#include "taping_p.h"
 #include <adolc/adolc.h>
 #include <adolc/fixpoint.h>
-#include "taping_p.h"
+#include "dvlparms.h"
 
 #include <vector>
 
@@ -203,25 +204,17 @@ int fp_iteration ( int        sub_tape_num,
     // declare extern differentiated function and data
     ext_diff_fct *edf_iteration = reg_ext_fct(&iteration);
     data->edf_index = edf_iteration->index;
-    edf_iteration->dp_x     = new double[dim_x+dim_u];
-    edf_iteration->dp_y     = new double[dim_x];
-    edf_iteration->dp_X     = new double[dim_x+dim_u];
-    edf_iteration->dp_Y     = new double[dim_x];
-    edf_iteration->dp_U     = new double[dim_x];
-    edf_iteration->dp_Z     = new double[dim_x+dim_u];
     edf_iteration->zos_forward = &fp_zos_forward;
     edf_iteration->fos_forward = &fp_fos_forward;
     edf_iteration->fos_reverse = &fp_fos_reverse;
 
     // put x and u together
-    double    *xu_p    = new double[dim_x+dim_u];
-    double    *x_fix_p = new double[dim_x];
     adouble   *xu      = new adouble[dim_x+dim_u];
     for (i=0; i<dim_x; i++) xu[i] = x_0[i];
     for (i=0; i<dim_u; i++) xu[dim_x+i] = u[i];
 
-    k = call_ext_fct ( edf_iteration, dim_x+dim_u, xu_p, xu,
-                       dim_x, x_fix_p, x_fix );
+    k = call_ext_fct ( edf_iteration, dim_x+dim_u, xu,
+                       dim_x, x_fix );
 
     // tape near solution
     trace_on(sub_tape_num,1);
@@ -232,7 +225,5 @@ int fp_iteration ( int        sub_tape_num,
     trace_off();
 
     delete[] xu;
-    delete[] x_fix_p;
-    delete[] xu_p;
     return k;
 }
