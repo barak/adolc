@@ -8,7 +8,7 @@ Enable automake warnings.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index d4ac0d2..6e15e30 100644
+index 86365ca..7bfcfec 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -22,7 +22,7 @@ AC_CONFIG_AUX_DIR([autoconf])
