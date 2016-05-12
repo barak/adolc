@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tape_handling.cpp
- Revision: $Id: tape_handling.cpp 608 2015-08-10 20:06:55Z kulshres $
+ Revision: $Id: tape_handling.cpp 683 2016-03-17 14:43:44Z kulshres $
  Contents: management of tape infos
 
  Copyright (c) Andreas Kowarz, Andrea Walther, Kshitij Kulshreshtha,
@@ -1007,7 +1007,12 @@ bool isTaping() {
     return ADOLC_CURRENT_TAPE_INFOS.traceFlag != 0;
 }
 
-
+void checkInitialStoreSize(GlobalTapeVars *gtv) {
+    if (gtv->initialStoreSize > 
+        gtv->storeManagerPtr->initialSize)
+        gtv->storeManagerPtr->grow(
+            gtv->initialStoreSize);
+}
 
 /****************************************************************************/
 /* A class for initialization/finalization and OpenMP handling              */
@@ -1018,10 +1023,6 @@ class Keeper {
             dummy = 0;
             init();
             readConfigFile();
-            if (ADOLC_GLOBAL_TAPE_VARS.initialStoreSize > 
-                ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->initialSize)
-                ADOLC_GLOBAL_TAPE_VARS.storeManagerPtr->grow(
-                    ADOLC_GLOBAL_TAPE_VARS.initialStoreSize);
         }
         inline ~Keeper() {
             cleanUp();

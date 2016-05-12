@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping_p.h
- Revision: $Id: taping_p.h 608 2015-08-10 20:06:55Z kulshres $
+ Revision: $Id: taping_p.h 687 2016-03-18 10:49:50Z kulshres $
  Contents: declarations for used by taping routines
  
  Copyright (c) Andreas Kowarz, Jean Utke
@@ -637,6 +637,8 @@ void reset_val_r();
 /* updates */
 int upd_resloc(locint temp, locint lhs);
 
+int upd_resloc_check(locint temp, locint lhs);
+
 int upd_resloc_inc_prod(locint temp, locint newlhs, unsigned char newop);
 
 /* special IEEE values */
@@ -670,6 +672,8 @@ double get_val_r();
 
 /* tries to read a local config file containing, e.g., buffer sizes */
 void readConfigFile();
+
+void checkInitialStoreSize(GlobalTapeVars *gtv);
 
 /* clear the tapeBaseNames that were alocated above in readConfigFile() */
 void clearTapeBaseNames();

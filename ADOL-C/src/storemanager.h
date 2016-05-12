@@ -2,7 +2,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C--  Automatic Differentiation by Overloading in C++ - simplified
  File:     storemanager.h
- Revision: $Id: storemanager.h 635 2015-08-20 18:09:58Z kulshres $
+ Revision: $Id: storemanager.h 683 2016-03-17 14:43:44Z kulshres $
  Contents: storemanager.h contains definitions of abstract interface 
            class StoreManager and some derived classes implementing the
            desired functionality.
@@ -78,10 +78,11 @@
 #endif
 #include <adolc/internal/common.h>
 
-class Keeper;
+class GlobalTapeVarsCL;
+extern "C" void checkInitialStoreSize(GlobalTapeVarsCL* gtv);
 
 class StoreManager {
-  friend class Keeper;
+  friend void checkInitialStoreSize(GlobalTapeVarsCL* gtv);
 protected:
   static size_t const initialSize = 4;
   double myGcTriggerRatio;

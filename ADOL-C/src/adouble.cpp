@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adouble.cpp
- Revision: $Id: adouble.cpp 608 2015-08-10 20:06:55Z kulshres $
+ Revision: $Id: adouble.cpp 687 2016-03-18 10:49:50Z kulshres $
  Contents: adouble.C contains that definitions of procedures used to 
            define various badouble, adub, and adouble operations. 
            These operations actually have two purposes.
@@ -158,12 +158,11 @@ adouble::adouble( const adub& a ) {
     int upd = 0;
     /* 981020 olvo  skip upd_resloc(..) if no tracing performed */
     if (ADOLC_CURRENT_TAPE_INFOS.traceFlag)
-        upd = upd_resloc(a_loc,loc());
+        upd = upd_resloc_check(a_loc,loc());
     if (upd) { /* olvo 980708 new n2l & 980921 changed interface */
-        revreal tempVal = ADOLC_GLOBAL_TAPE_VARS.store[a_loc];
-        if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
-            ADOLC_OVERWRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[loc()],&ADOLC_GLOBAL_TAPE_VARS.store[a_loc]);
-        ADOLC_GLOBAL_TAPE_VARS.store[loc()] = tempVal;
+        free_loc(location);
+        location = a_loc;
+        const_cast<adub&>(a).isInit = false;
     } else {
         if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) { // old: write_assign_a(loc(),a_loc);
             put_op(assign_a);
