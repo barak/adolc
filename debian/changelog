@@ -1,3 +1,14 @@
+adolc (2.6.1-1) unstable; urgency=medium
+
+  * New Upstream Version
+  * Harden
+  * Bump standards version
+  * Dep-5 debian/copyright
+  * Patch another misspelled word
+  * Use more secure URLs where appropriate
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 12 May 2016 14:25:50 +0100
+
 adolc (2.6.0-1) unstable; urgency=medium
 
   * New Upstream Version
