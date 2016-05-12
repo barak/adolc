@@ -6,7 +6,8 @@ Subject: spelling
  ADOL-C/include/adolc/adtl.h  | 2 +-
  ADOL-C/src/checkpointing.cpp | 2 +-
  ADOL-C/src/revolve.c         | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ ADOL-C/src/taping.c          | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/ADOL-C/include/adolc/adtl.h b/ADOL-C/include/adolc/adtl.h
 index 2e360f9..73b7e98 100644
@@ -47,3 +48,16 @@ index 1bb01f4..b1dda8f 100644
  *                                                                    *
  *   Since REVOLVE involves only a few integer operations its         *
  *   run-time is truly negligible within any nontrivial application.  *
+diff --git a/ADOL-C/src/taping.c b/ADOL-C/src/taping.c
+index 2a594ed..02b7ccc 100644
+--- a/ADOL-C/src/taping.c
++++ b/ADOL-C/src/taping.c
+@@ -286,7 +286,7 @@ void fail( int error ) {
+             break;
+ 	case ADOLC_WRONG_PLATFORM_32:
+ 	    fprintf(DIAG_OUT,
+-		    "ADOL-C error: Trace was created on a 64-bit platfrom, cannot be opened on 32-bit platform!\n"
++		    "ADOL-C error: Trace was created on a 64-bit platform, cannot be opened on 32-bit platform!\n"
+ 		);
+ 	    break;
+ 	case ADOLC_WRONG_PLATFORM_64:
