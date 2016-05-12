@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.c
- Revision: $Id: taping.c 595 2015-02-16 11:08:54Z kulshres $
+ Revision: $Id: taping.c 687 2016-03-18 10:49:50Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 
@@ -598,6 +598,7 @@ void readConfigFile() {
                         ADOLC_GLOBAL_TAPE_VARS.initialStoreSize = (locint)number;
                         fprintf(DIAG_OUT, "Found initial live variable store size : %u\n",
                                 (locint)number);
+                        checkInitialStoreSize(&ADOLC_GLOBAL_TAPE_VARS);
                     } else {
                         fprintf(DIAG_OUT, "ADOL-C warning: Unable to parse "
                                 "parameter name in .adolcrc!\n");
@@ -2327,6 +2328,15 @@ int upd_resloc(locint temp, locint lhs) {
     return 0;
 }
 
+int upd_resloc_check(locint temp, locint lhs) {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+    if (ADOLC_CURRENT_TAPE_INFOS.currLoc - ADOLC_CURRENT_TAPE_INFOS.locBuffer < 1) return 0;
+    if (temp == *(ADOLC_CURRENT_TAPE_INFOS.currLoc - 1)) {
+        return 1;
+    }
+    return 0;
+}
 /****************************************************************************/
 /* Update locations and operations tape to remove special operations inv.   */
 /* temporary variables. e.g.  t = a * b ; y += t  =>  y += a * b            */
