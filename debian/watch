@@ -1,2 +1,5 @@
 version=3
 http://www.coin-or.org/download/source/ADOL-C/ ADOL-C-(.*).tgz
+
+# Upstream development repo:
+#  https://gitlab.com/adol-c/adol-c.git
