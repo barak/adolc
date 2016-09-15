@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.c
- Revision: $Id: taping.c 687 2016-03-18 10:49:50Z kulshres $
+ Revision: $Id: taping.c 723 2016-08-31 11:38:01Z kulshres $
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 
@@ -286,7 +286,7 @@ void fail( int error ) {
             break;
 	case ADOLC_WRONG_PLATFORM_32:
 	    fprintf(DIAG_OUT,
-		    "ADOL-C error: Trace was created on a 64-bit platfrom, cannot be opened on 32-bit platform!\n"
+		    "ADOL-C error: Trace was created on a 64-bit platform, cannot be opened on 32-bit platform!\n"
 		);
 	    break;
 	case ADOLC_WRONG_PLATFORM_64:
@@ -1129,8 +1129,10 @@ static void save_params() {
 
     ADOLC_CURRENT_TAPE_INFOS.stats[NUM_PARAM] =
         ADOLC_GLOBAL_TAPE_VARS.numparam;
-    if (ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore == NULL)
-        ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore =
+    if (ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore != NULL)
+	free(ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore);
+
+    ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore =
             malloc(ADOLC_CURRENT_TAPE_INFOS.stats[NUM_PARAM]*sizeof(double));
     memcpy(ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore,
            ADOLC_GLOBAL_TAPE_VARS.pStore,
@@ -1178,7 +1180,11 @@ void stop_trace(int flag) {
     ADOLC_CURRENT_TAPE_INFOS.stats[NUM_SWITCHES] =
 	ADOLC_CURRENT_TAPE_INFOS.numSwitches;
 
-    taylor_close(ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE]);
+    if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
+	taylor_close(ADOLC_CURRENT_TAPE_INFOS.stats[TAY_BUFFER_SIZE]);
+
+    ADOLC_CURRENT_TAPE_INFOS.stats[TAY_STACK_SIZE] =
+        ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
 
     /* The taylor stack size base estimation results in a doubled taylor count
      * if we tape with keep (taylors counted in adouble.cpp/avector.cpp and
