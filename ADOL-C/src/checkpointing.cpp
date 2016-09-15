@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     checkpointing.cpp
- Revision: $Id: checkpointing.cpp 605 2015-05-11 09:55:32Z kulshres $
+ Revision: $Id: checkpointing.cpp 711 2016-08-31 11:37:06Z kulshres $
  Contents: checkpointing algorithms
  
  Copyright (c) Andreas Kowarz, Jean Utke
@@ -605,7 +605,7 @@ void revolveError (CpInfos *cpInfos) {
                    cpInfos->checkpoints);
             break;
         case 12:
-            printf("   Error occured in numforw!\n");
+            printf("   Error occurred in numforw!\n");
             break;
         case 13:
             printf("   Enhancement of 'fine', 'snaps' checkpoints "

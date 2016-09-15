@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 684 2016-03-17 14:43:49Z kulshres $
+ Revision: $Id: uni5_for.c 721 2016-08-31 11:37:52Z kulshres $
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_
@@ -2313,8 +2313,8 @@ int  hov_forward(
 		fod[opind].left = &fod[arg_index[arg1]];
 		fod[opind].right = &fod[arg_index[arg2]];
 		// first step: z = u*w, 
-		traverse_unary(&fod[arg_index[arg1]], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
-		traverse_unary(&fod[arg_index[arg2]], nonl_dom, &fod[opind], indcheck+1,maxopind+2);
+		traverse_unary(&fod[arg_index[arg1]], nonl_dom, &fod[arg_index[arg2]], indcheck+1,maxopind+2);
+		traverse_unary(&fod[arg_index[arg2]], nonl_dom, &fod[arg_index[arg1]], indcheck+1,maxopind+2);
 		opind++;
 		// second step: v = v+z, index domains
 		fod[opind].entry = maxopind+2;
