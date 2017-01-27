@@ -1,3 +1,10 @@
+adolc (2.6.3-1) unstable; urgency=medium
+
+  * New Upstream Version
+  * Bump to debhelper 10
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 27 Jan 2017 09:05:21 +0000
+
 adolc (2.6.2-1) unstable; urgency=medium
 
   * New Upstream Version
