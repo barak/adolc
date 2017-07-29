@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 10),
 	libcolpack-dev, libboost-system-dev
 Standards-Version: 3.9.8
 Section: libs
-Homepage: https://www.coin-or.org/projects/ADOL-C.xml
+Homepage: https://projects.coin-or.org/ADOL-C
 Vcs-Git: git://anonscm.debian.org/debian-science/packages/adolc.git
 Vcs-Browser: https://anonscm.debian.org/gitweb/?p=debian-science/packages/adolc.git
 
