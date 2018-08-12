@@ -1,3 +1,13 @@
+adolc (2.6.3-2) unstable; urgency=medium
+
+  * Bump to debhelper 11
+  * Bump policy
+  * Swizzle packaging repo to salsa
+  * Update upstream homepage in debian/control
+  * Use ax_boost_* from autoconf-archive instead of autoconf/* (closes: #896479)
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 12 Aug 2018 16:11:52 +0200
+
 adolc (2.6.3-1) unstable; urgency=medium
 
   * New Upstream Version
