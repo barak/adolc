@@ -1,3 +1,9 @@
+adolc (2.6.3-3) UNRELEASED; urgency=medium
+
+  * Trim trailing whitespace.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 08 Oct 2018 08:18:57 +0100
+
 adolc (2.6.3-2) unstable; urgency=medium
 
   * Bump to debhelper 11
@@ -95,7 +101,7 @@ adolc (2.4.1-2) unstable; urgency=medium
 
 adolc (2.4.1-1) unstable; urgency=low
 
-  * New Upstream Version (closes: #700937) 
+  * New Upstream Version (closes: #700937)
 
  -- Barak A. Pearlmutter <bap@debian.org>  Thu, 14 Mar 2013 10:21:32 +0000
 
