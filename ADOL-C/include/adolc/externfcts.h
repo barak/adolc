@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     externfcts.h
- Revision: $Id: externfcts.h 600 2015-03-12 21:28:32Z kulshres $
+ Revision: $Id$
  Contents: public functions and data types for extern (differentiated)
            functions.
  
@@ -56,7 +56,7 @@ typedef int (ADOLC_ext_fct_iArr_hov_reverse) (int iArrLength, int *iArr, int m, 
  * returned. Within reg_ext_fct the memberse function and index are properly set. 
  * is likely to be wrong in this case. Use pointers instead. 
  */
-typedef struct {
+typedef struct ext_diff_fct {
 
   /**
    * DO NOT touch - the function pointer is set through reg_ext_fct
@@ -250,10 +250,24 @@ typedef struct {
    * all other pointers can point to memory within here.
    */
   char* allmem;
+
+  /**
+   * This is a reference to an object for the C++ object-oriented
+   * implementation of the external function ** do not touch **
+   */
+  void* obj;
+
+  /**
+   * This flag indicates that user allocates memory and internally no 
+   * memory should be allocated
+   */
+  char user_allocated_mem;
 }
 ext_diff_fct;
 
 END_C_DECLS
+
+#include <adolc/externfcts2.h>
 
 #if defined(__cplusplus)
 /****************************************************************************/
@@ -274,6 +288,8 @@ ADOLC_DLL_EXPORT int call_ext_fct (ext_diff_fct *edfct,
  * zeros out the edf pointers and sets bools to defaults
  */
 ADOLC_DLL_EXPORT void edf_zero(ext_diff_fct *edfct);
+
+#include <adolc/edfclasses.h>
 
 #endif /* __CPLUSPLUS */
 

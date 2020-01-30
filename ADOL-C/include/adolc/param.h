@@ -19,12 +19,16 @@
 #include <cstdio>
 #include <stdexcept>
 
+#if !defined(SWIGPRE)
 using std::logic_error;
+#endif
 
 class pdouble;
 
+#if !defined(SWIGPRE)
 ADOLC_DLL_EXPORT pdouble mkparam(double pval);
 ADOLC_DLL_EXPORT pdouble getparam(locint index);
+#endif
 ADOLC_DLL_EXPORT locint mkparam_idx(double pval);
 
 class ADOLC_DLL_EXPORT pdouble {
@@ -48,8 +52,11 @@ protected:
     pdouble(double pval);
     pdouble(locint index);
 public:
+#if !defined(SWIGPRE)
     friend pdouble mkparam(double pval);
     friend pdouble getparam(locint index);
+    explicit operator pdouble*() const;
+#endif
     friend locint mkparam_idx(double pval);
     operator adub() const;
 
@@ -102,6 +109,7 @@ inline int operator <  ( const pdouble& a, const badouble& b)
 { return (b > a); }
 #endif
 
+#if !defined(SWIGPRE)
 inline adub operator + ( const pdouble& a, const badouble& b)
 { return (b + a); }
 
@@ -155,6 +163,7 @@ inline adub fmin( const badouble& a, const pdouble& b)
 inline adub exp  ( const pdouble& p)  { return exp(adub(p));   }
 inline adub log  ( const pdouble& p)  { return log(adub(p));   }
 inline adub sqrt ( const pdouble& p)  { return sqrt(adub(p));  }
+inline adub cbrt ( const pdouble& p)  { return cbrt(adub(p));  }
 inline adub sin  ( const pdouble& p)  { return sin(adub(p));   }
 inline adub cos  ( const pdouble& p)  { return cos(adub(p));   }
 inline adub tan  ( const pdouble& p)  { return tan(adub(p));   }
@@ -200,6 +209,7 @@ inline adub ldexp ( const pdouble& p, int n)
 { return ldexp(adub(p),n); }
 inline adub frexp ( const pdouble& p, int* n)
 { return frexp(adub(p),n); }
+#endif
 
 /*--------------------------------------------------------------------------*/
 #endif

@@ -1,6 +1,6 @@
 ##############################################################################
 # configure.ac -- Process this file with autoconf to produce configure
-# Revision: $Id: configure.ac 732 2017-01-17 08:27:18Z kulshres $
+# Revision: $Id$
 #
 # Copyright (C) Andrea Walther, Andreas Kowarz
 #               
@@ -8,22 +8,21 @@
 #
 ##############################################################################
 define([ADOLC_VER], [2])
-define([ADOLC_SUB], [6])
-define([ADOLC_LVL], [3])
+define([ADOLC_SUB], [7])
+define([ADOLC_LVL], [1])
 
 AC_PREREQ(2.67)
 AC_INIT(adolc,
         ADOLC_VER.ADOLC_SUB.ADOLC_LVL,
         [adol-c@list.coin-or.org])
 config_flags="$*"
-AC_REVISION($Revision: 732 $)
+AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([ADOL-C/src/adouble.cpp])
 AC_CONFIG_AUX_DIR([autoconf])
 AC_CONFIG_MACRO_DIR([autoconf])
 AC_CONFIG_HEADERS([ADOL-C/src/config.h])
 AC_PREFIX_DEFAULT(${HOME}/adolc_base)
 AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign subdir-objects])
-AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
 
 
@@ -59,6 +58,16 @@ AC_MSG_RESULT($adolc_ampi_support)
 AM_CONDITIONAL(BUILD_ADOLC_AMPI_SUPPORT,[test x${adolc_ampi_support} = xyes])
 if test x"${adolc_ampi_support}" = xyes ; then
 AC_DEFINE(ADOLC_AMPI_SUPPORT,1,[defined if adjoinable MPI support is to be compiled in])
+fi
+
+AC_MSG_CHECKING(whether to build ADOL-C with MeDiPack (MPI) support)
+AC_ARG_ENABLE(medipack,
+              [AS_HELP_STRING([--enable-medipack],[build ADOL-C with MeDiPack (MPI) support [default=disabled]])],
+	      [adolc_medipack_support=$enableval],[adolc_medipack_support=no])
+AC_MSG_RESULT($adolc_medipack_support)
+AM_CONDITIONAL(BUILD_ADOLC_MEDIPACK_SUPPORT,[test x${adolc_medipack_support} = xyes])
+if test x"${adolc_medipack_support}" = xyes ; then
+AC_DEFINE(ADOLC_MEDIPACK_SUPPORT,1,[defined if MeDiPack support is to be compiled in])
 fi
 
 LT_PREREQ([2.2.6])
@@ -110,7 +119,7 @@ AC_STRUCT_TM
 
 # Checks for libraries and fuctions
 AC_SEARCH_LIBS([pow], [m])
-AC_CHECK_FUNCS([floor fmax fmin ftime pow sqrt strchr strtol trunc])
+AC_CHECK_FUNCS([floor fmax fmin ftime pow sqrt cbrt strchr strtol trunc])
 
 # substitutions
 AC_SUBST(ac_aux_dir)
@@ -202,7 +211,37 @@ else
   ADVBRANCH="#undef ADOLC_ADVANCED_BRANCHING"
 fi
 AC_SUBST(ADVBRANCH)
-AC_SUBST(ADVBRANCH)
+
+AC_MSG_CHECKING(whether to enable reference counting for tapeless numbers)
+AC_ARG_ENABLE(traceless-refcounting, [AS_HELP_STRING([--enable-traceless-refcounting],
+  [enable reference counting for tapeless numbers [default=no].
+With this enabled some additional checks will be conducted when setting the
+number of directional derivatives for tapeless numbers using the SetNumDir()
+function. ])],
+  [use_adtl_refcnt=$enableval],[use_adtl_refcnt=no])
+AC_MSG_RESULT($use_adtl_refcnt)
+
+if test x$use_adtl_refcnt = xyes ; then
+  ADTL_REFCNT="#define USE_ADTL_REFCOUNTING 1"
+else
+  ADTL_REFCNT="#undef USE_ADTL_REFCOUNTING"
+fi
+AC_SUBST(ADTL_REFCNT)
+
+AC_MSG_CHECKING(whether to enable activity tracking)
+AC_ARG_ENABLE(activity-tracking, [AS_HELP_STRING([--enable-activity-tracking],
+  [enable activity tracking to reduce trace size but increased tracing time [default=no].
+Only the operations involving actual dependency relationships from the
+independent variables will be recorded on the trace, this however
+requires more checks to be performed during the tracing and increases
+tracing time. Useful only if memory is a constraint and tracing is
+done fewer times than derivative computations.])],
+  [use_activities=$enableval],[use_activities=no])
+AC_MSG_RESULT($use_activities)
+
+if test x$use_activities = xyes ; then
+AC_DEFINE(ADOLC_TRACK_ACTIVITY,1,[ADOL-C activity tracking in live variables])
+fi
 
 AC_MSG_CHECKING(whether to use ADOL-C debug mode)
 AC_ARG_ENABLE(debug,
@@ -313,9 +352,12 @@ fi
 
 if test "x$want_boost" = xyes -a "x$boost_new" = xyes -a "x$ac_cv_header_boost_pool_pool_alloc_hpp" = xyes -a "x$link_system" = xyes ; then
     using_boost_pool=yes
+    USE_BOOST_POOL="#define USE_BOOST_POOL 1"
 else
     using_boost_pool=no
+    USE_BOOST_POOL="#define USE_BOOST_POOL 0"
 fi
+AC_SUBST(USE_BOOST_POOL)
 
 if test "x$using_boost_pool" = xyes -a "x$ac_adolc_openmpflag" = x ; then
    AC_DEFINE(BOOST_POOL_NO_MT,1,[Boost pool should not assume multithreading])
@@ -335,9 +377,14 @@ COLPACK_CONF
 
 AM_CONDITIONAL(SPARSE,[test x${sparse} = xyes])
 
+SPARSE_DRIVERS="#undef SPARSE_DRIVERS"
+
 if test x$sparse = xyes ; then
    AC_DEFINE(SPARSE,[1],[Define 1 if sparse derivative propagation is to be enabled])
+   SPARSE_DRIVERS="#define SPARSE_DRIVERS 1"
 fi
+
+AC_SUBST(SPARSE_DRIVERS)
 
 # ADOL-C Examples
 AC_MSG_CHECKING(whether to build documented examples)
@@ -424,6 +471,7 @@ AC_ARG_WITH(cxxflags,
 
 MPI_CONF_POST
 AMPI_CONF
+MEDIPACK_CONF
 
 AC_ARG_WITH(soname,
             [AS_HELP_STRING([--with-soname=NAME],
@@ -449,6 +497,8 @@ if test x$tapedoc_values == xyes; then
 AC_DEFINE(ADOLC_TAPE_DOC_VALUES,1,[ADOL-C tape_doc routine computes values])
 fi
 
+AM_PATH_PYTHON([2.7],[python_found=yes],[python_found=no])
+AM_CONDITIONAL(PYTHONFOUND, [test x$python_found = xyes])
 ###########################################################################
 #                      COIN_PATCH_LIBTOOL_CYGWIN                          #
 ###########################################################################
@@ -504,14 +554,14 @@ AC_CONFIG_FILES(Makefile
                 ADOL-C/Makefile
                 ADOL-C/include/Makefile
                 ADOL-C/include/adolc/Makefile
-		ADOL-C/include/adolc/internal/adolc_settings.h
+                ADOL-C/include/adolc/internal/adolc_settings.h
                 ADOL-C/include/adolc/drivers/Makefile 
                 ADOL-C/include/adolc/internal/Makefile
                 ADOL-C/include/adolc/lie/Makefile
                 ADOL-C/include/adolc/sparse/Makefile
                 ADOL-C/include/adolc/tapedoc/Makefile
                 ADOL-C/src/Makefile
-                ADOL-C/src/drivers/Makefile 
+                ADOL-C/src/drivers/Makefile
                 ADOL-C/src/lie/Makefile
                 ADOL-C/src/sparse/Makefile
                 ADOL-C/src/tapedoc/Makefile
@@ -540,11 +590,12 @@ AC_CONFIG_FILES(Makefile
                 ADOL-C/examples/additional_examples/timing/Makefile
                 ADOL-C/examples/additional_examples/param/Makefile
                 ADOL-C/test/Makefile
+                ADOL-C/swig/Makefile
                 MSVisualStudio/v14/sparse/config.h
                 MSVisualStudio/v14/nosparse/config.h
                 MSVisualStudio/v14/x64/sparse/config.h
                 MSVisualStudio/v14/x64/nosparse/config.h
-		adolc.spec
+                adolc.spec
                 adolclib.pc
 )
 
@@ -579,17 +630,25 @@ if [[ "x${ac_adolc_openmpflag}" != "x" ]] ; then
 fi
 
 echo \
-"  Use ADOL-C safe extern mode:        ${adolc_safe_extern}
+"  Use ADOL-C activity tracking:       ${use_activities}
   Use ADOL-C late init mode:          ${adolc_late_init}
 
   Build sparse drivers:               ${sparse}
   Build with adjoinable MPI support:  ${adolc_ampi_support}
+  Build with MediPack support:        ${adolc_medipack_support}
   Build with ColPack:		      ${have_colpack}"
 if test x$sparse = xyes && test x$have_colpack = xno; then
     echo -e \
 "  \033@<:@1;31mCompressed sparse structures will not be available
   Only sparsity patterns can be computed\033@<:@0m"
     warn=true
+fi
+if test x$sparse = xyes && test x$python_found = xyes; then
+   echo \
+"  Build with python swig module:      yes"
+else
+   echo \
+"  Build with python swig module:      no"
 fi
 echo
 

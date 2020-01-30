@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     dvlparms.h
- Revision: $Id: dvlparms.h 564 2014-08-22 10:33:56Z kulshres $
+ Revision: $Id$
  Contents: Developer parameters:
            These parameters are intended for use by the developers and 
            maintainers of ADOL-C to specify library wide definitions.

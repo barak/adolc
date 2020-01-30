@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vfunc_pargear.cpp
- Revision: $Id: vfunc_pargear.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id$
  Contents: Example of function module containing the machine tool example
            of gearing (parametrized version)
  

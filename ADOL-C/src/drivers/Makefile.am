@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 639 2015-12-02 10:48:01Z kulshres $
+## Revision: $Id$
 ##
 ## Copyright (C)  Andrea Walther, Andreas Kowarz, Kshitij Kulshreshtha
 ##

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adalloc.c
- Revision: $Id: adalloc.c 613 2015-08-11 21:11:54Z kulshres $
+ Revision: $Id$
  Contents: C allocation of arrays of doubles in several dimensions 
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

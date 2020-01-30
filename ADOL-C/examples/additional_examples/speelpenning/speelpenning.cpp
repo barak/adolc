@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     speelpenning.cpp
- Revision: $Id: speelpenning.cpp 511 2014-05-14 13:01:01Z kulshres $
+ Revision: $Id$
  Contents: example for computation of sparse hessians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

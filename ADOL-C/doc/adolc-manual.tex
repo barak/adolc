@@ -152,7 +152,7 @@ Advanced differentiation techniques as the optimal checkpointing for
 time integrations, the exploitation of fixed point iterations, the usages
 of external differentiated functions and the differentiation of OpenMP
 parallel programs are described in \autoref{adv_ad}. 
-The tapeless forward mode is presented in \autoref{tapeless}.
+The traceless forward mode is presented in \autoref{traceless}.
 \autoref{install} details the installation and 
 use of the ADOL-C package. Finally, \autoref{example} 
 furnishes some example programs that incorporate the ADOL-C package to 
@@ -726,7 +726,7 @@ Several tapes may be generated and kept simultaneously.
 A tape array is used as a triplet of buffers or a tape file is generated if
 the length of any of the buffers exceeds the maximal array lengths of 
 {\sf OBUFSIZE}, {\sf VBUFSIZE} or {\sf LBUFSIZE}. These parameters are
-defined in the header file \verb=<adolc/usrparms.h>=
+defined in the header file \verb=<adolc/internal/usrparms.h>=
 and may be adjusted by the user in the header file before compiling
 the ADOL-C library, or on runtime using a file named \verb=.adolcrc=. 
 Lines in this file must have the form
@@ -752,7 +752,7 @@ This option takes effect if
 gradient evaluation by a call to a routine implementing the reverse mode
 as described in the \autoref{forw_rev_ad} and \autoref{forw_rev}. A
 file is used instead of an array if the size exceeds the maximal array
-length of {\sf TBUFSIZE} defined in \verb=<adolc/usrparms.h>= and may
+length of {\sf TBUFSIZE} defined in \verb=<adolc/internal/usrparms.h>= and may
 be adjusted in the same way like the other buffer sizes mentioned above.
 Alternatively, gradients may be evaluated by a call
 to {\sf gradient}, which includes a preparatory forward sweep
@@ -841,7 +841,7 @@ option {\sf keep} $>$ 0. Here
 the type {\sf revreal} is defined as {\sf double} or {\sf float}. The latter choice halves the storage
 requirement for the sequential data set, which stays in core if
 its length is less than {\sf TBUFSIZE} bytes and is otherwise written
-out to a temporary file. The parameter {\sf TBUFSIZE} is defined in the header file \verb=<adolc/usrparms.h>=.
+out to a temporary file. The parameter {\sf TBUFSIZE} is defined in the header file \verb=<adolc/internal/usrparms.h>=.
 The drawback of the economical 
 {\sf revreal} = {\sf float} choice is that subsequent calls to reverse mode implementations
 yield gradients and other adjoint vectors only in single-precision
@@ -859,7 +859,7 @@ the vector length.
 \label{Customizing}
 %
 Based on the information provided by the routine {\sf tapestats}, the user may alter the
-following types and constant dimensions in the header file \verb=<adolc/usrparms.h>=
+following types and constant dimensions in the header file \verb=<adolc/internal/usrparms.h>=
 to suit his problem and environment.
 
 \begin{description}
@@ -872,7 +872,7 @@ size. Primarily these values occur as an argument
 to {\sf malloc}, so that setting it unnecessarily large may have no
 ill effects, unless the operating system prohibits or penalizes large
 array allocations. It is however recommended to leave the values in
-\texttt{<adolc/usrparms.h>} unchanged and set them using the
+\texttt{<adolc/internal/usrparms.h>} unchanged and set them using the
 \texttt{.adolcrc} file in the current working directory at runtime.
 
 \item[{\sf TBUFSIZE}{\rm :}] This integer determines the length of the 
@@ -979,7 +979,7 @@ fashion.
 Whenever an {\sf adouble} is declared, the constructor for the type
 {\sf adouble} assigns it a nominal address, which we will refer to as
 its  {\em location}.  The location is of the type {\sf locint} defined
-in the header file \verb=<adolc/usrparms.h>=. Active vectors occupy
+in the header file \verb=<adolc/internal/usrparms.h>=. Active vectors occupy
 a range of contiguous locations. As long as the program execution
 never involves more than 65$\,$536 active variables, the type {\sf locint}
 may be defined as {\sf unsigned short}. Otherwise, the range may be
@@ -2924,7 +2924,6 @@ be coded in a different programming language or may a call to
 an external library. 
 In the former case one may want to differentiate the parts in 
 question with a different AD tool or provide hand written derivatives. 
-To integrate these 
 In practice, however, sophisticated projects usually evolve over a long period of time.
 Within this process, a heterogeneous code base for the project
 develops, which may include the incorporation of external solutions,
@@ -2932,35 +2931,35 @@ changes in programming paradigms or even of programming languages.
 Equally heterogeneous, the computation of derivative values appears.
 Hence, different \mbox{AD-tools} may be combined with hand-derived
 codes based on the same or different programming languages. 
-ADOL-C supports such settings  by  the concept of externally
+ADOL-C supports such settings by the concept of externally
 differentiated functions, that is, a function
 not differentiated by ADOL-C itself. The required derivatives
 have to be provided by the user.
 
 For this purpose, it is required that the externally differentiated
-function (for example named {\sf\em euler\_step} ) has the following signature.
+function (for example named {\sf\em euler\_step} ) has the following signature
 \smallskip
 
 \noindent
-\hspace*{2cm}{\sf int euler\_step(int n, double *x, int m, double *y);}
+\hspace*{2cm}{\sf int euler\_step(int n, double *x, int m, double *y);} .
 \medskip
 
 \noindent
-Note that the formal paraemters in the signature have {\sf double} type, that is, 
+Note that the formal paramters in the signature have {\sf double} type, that is, 
 they are not active as in the original program before the ADOL-C type change.
 The externally differentiated function has to
-be {\em registered}\footnote{we record the function pointer} using an \mbox{ADOL-C} method as follows. 
+be {\em registered}\footnote{we record the function pointer} using an \mbox{ADOL-C} method as follows
 \smallskip
 
 \noindent
-\hspace*{2cm}{\sf ext\_diff\_fct *edf = reg\_ext\_fct(euler\_step);}.
+\hspace*{2cm}{\sf ext\_diff\_fct *edf = reg\_ext\_fct(euler\_step);} .
 \smallskip
 
 \noindent
 This returns a pointer to an {\sf ext\_diff\_fct} instance specific to the registered function. 
-Then, the user has to supply the function pointers for the call back methods (for example here 
+Then, the user has to supply the function pointers for the callback methods (for example here 
 {\sf zos\_for\_euler\_step} and {\sf  fos\_rev\_euler\_step}) the user implemented 
-to compute the derivatives as follows.
+to compute the derivatives as follows:
 \begin{tabbing}
 \hspace*{2cm}\= {\sf edf-$>$zos\_forward = {\em zos\_for\_euler\_step};}\\
              \> {\sf // function pointer for computing
@@ -2976,17 +2975,21 @@ to compute the derivatives as follows.
 \end{tabbing}
 To facilitate the switch between active and passive versions of the parameters {\sf x} and {\sf y}
 one has to provide (allocate) both variants. I.e. if the call to {\sf euler\_step} was originally
+\smallskip
+
 \noindent
 \hspace*{2cm}{\sf rc=euler\_step(n, sOld, m, sNew);}
 \medskip
+
+\noindent
 then the ADOL-C typechange for the calling context will turn  {\sf sOld} and {\sf sNew} in {\sf adouble} pointers.
 To trigger the appropriate action for the derivative computation (i.e. creating an external differentiation entry on the trace) 
 the original call to the externally differentiated function 
 must be substituted by 
-\medskip
+\smallskip
 
 \noindent
-\hspace*{2cm}{\sf rc=call\_ext\_fct(edf, n, sOldPassive, sOld, m, sNewPassive, sNew);}
+\hspace*{2cm}{\sf rc=call\_ext\_fct(edf, n, sOldPassive, sOld, m, sNewPassive, sNew);} .
 \medskip
 
 \noindent
@@ -2995,8 +2998,8 @@ to the active arguments {\sf sNew} in {\sf adouble}.
 The usage of the external function facility is illustrated by the
 example \verb=ext_diff_func= contained in
 \verb=examples/additional_examples/ext_diff_func=.
-There,the external differentiated function is also a C code, but the
-handling as external differentiated functions also a decrease of the
+There, the external differentiated function is also a C code, but the
+handling as external differentiated function decreases the
 overall required tape size.
 
 %
@@ -3285,7 +3288,7 @@ by the example program \verb=openmp_exam.cpp= contained in \verb=examples/additi
 %++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 %
 \section{Traceless forward differentiation in ADOL-C}
-\label{tapeless}
+\label{traceless}
 %
 Up to version 1.9.0, the development of the ADOL-C software package
 was based on the decision to store all data necessary for derivative
@@ -3895,7 +3898,7 @@ well. In the example the following indices are used.
 
 For the calculation of derivatives the function evaluation has to be performed
 with {\sf adouble}s. Therefore the dependent and the independent variables
-have to be declared as {\sf adouble}s as in the other versions of ADOL-C (see, e.g., \autoref{tapeless}). 
+have to be declared as {\sf adouble}s as in the other versions of ADOL-C (see, e.g., \autoref{traceless}). 
 Similar to the traceless version without Cuda the namespace \verb#adtlc# is used. 
 Now each thread has to read out the point at which the function evaluation is 
 then performed. This is determined by the blockindex and the x-dimension of 
@@ -3915,7 +3918,7 @@ the derivatives is given by {\sf index1}.
 \end{center} 
 The functions for setting and getting the value and the derivative value of an 
 {\sf adouble} are the same as in the traceless version of ADOL-C for first 
-order derivatives (see \autoref{tapeless}).
+order derivatives (see \autoref{traceless}).
 The function evaluation is then performed with {\sf adouble x} on GPU and the results
 are saved in {\sf adouble y}. The function evaluation itself remains unchanged
 (see \autoref{fig:cudacode3}). Then we store the values of the function
@@ -4098,7 +4101,7 @@ of the source.
                    whether the users source is C++ or C code.
 \end{tabular*}
 \\ \hline
-\verb=<adolc/usrparms.h>= &
+\verb=<adolc/internal/usrparms.h>= &
 \begin{tabular*}{10.5cm}{cp{9.5cm}}
   \boldmath $\rightarrow$ \unboldmath
                  & user customization of ADOL-C package (see
@@ -4262,6 +4265,29 @@ on the chosen programming language the header files provide
 the right ADOL-C prototypes. 
 For linking the resulting object codes the library \verb=libadolc.*= 
 must be used (see \autoref{genlib}). 
+\subsection{Interfacing with Python and R}
+For generating the SWIG based interface to Python and R programming
+languages the prerequisite is an installation of the SWIG tool (at
+least newer than vesion 3.0.8). Furthermore, for installing and using
+the R interface please refer to the documentation and software at
+\verb=https://github.com/sriharikrishna/radolc=.
+Installation of the Python interface can be done by changung into the
+\verb=ADOL-C/swig= subdirectory of the ADOL-C source code and calling
+the command
+\begin{center}
+\verb=python setup.py install --user=
+\end{center}
+This will internally cause the compilation and installtion of the
+ADOL-C library and header files using default configuration options as
+described in \autoref{genlib}.
+
+For a description on the working of these interfaces refer to the
+following article.\\[1ex]
+K. Kulshreshtha, S.H.K. Narayanan, J. Bessac and K. MacIntyre:
+Efficient computation of derivatives for solving optimizaiton problems
+in R and Python using SWIG generated interfaces to
+ADOL-C. \emph{Optimisation Methods and Software}, 33(4-6),
+pp1173-1191. 2018.
 %
 \subsection{Adding Quadratures as Special Functions}
 %

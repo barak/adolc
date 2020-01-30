@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     interfaces.cpp
- Revision: $Id: interfaces.cpp 542 2014-08-15 14:11:25Z kulshres $
+ Revision: $Id$
  Contents: Genuine C++ Interfaces to ADOL-C forward & reverse calls.
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

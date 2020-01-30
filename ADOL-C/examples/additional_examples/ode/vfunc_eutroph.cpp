@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     vfunc_eutroph.cpp
- Revision: $Id: vfunc_eutroph.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id$
  Contents: example for function module containing the eutroph example
            (based on eutroph.C of version 1.7)
  

@@ -3,15 +3,15 @@
  File:     drivers/psdrivers.c
  Revision: $Id$
  Contents: Easy to use drivers for piecewise smooth functions
-           (with C and C++ callable interfaces including Fortran
+           (with C and C++ callable interfaces including Fortran 
             callable versions).
 
- Copyright (c) Andrea Walther, Sabrina Fiege, Kshitij Kulshreshtha
+ Copyright (c) Andrea Walther, Sabrina Fiege, Kshitij Kulshreshtha 
 
  This file is part of ADOL-C. This software is provided as open source.
- Any use, reproduct ion, or distribution of the software constitutes
+ Any use, reproduct ion, or distribution of the software constitutes 
  recipient's acceptance of the terms of the accompanying license file.
-
+  
 ----------------------------------------------------------------------------*/
 
 #include <adolc/drivers/psdrivers.h>
@@ -51,7 +51,6 @@ fint abs_normal_(fint* ftag,
                  fint* findep,
                  fint* fswchk,
                  fdouble* fx,
-                 fint* fsigma,
                  fdouble* fy,
                  fdouble* fz,
                  fdouble* fcz,
@@ -60,16 +59,11 @@ fint abs_normal_(fint* ftag,
                  fdouble* fY,
                  fdouble* fZ,
                  fdouble* fL) {
-    int rc = -1;
+    int rc = -1; 
     short tag = (short)*ftag;
     int m = (int)*fdepen, n = (int)*findep, s=(int)*fswchk;
     double **J, **Y, **Z, **L;
     double *cy, *cz, *x, *y, *z;
-    short *sig = (short*)ADOLC_MALLOC(s,sizeof(short));
-    int i;
-    for (i=0;i<s; i++) {
-        sig[i] = (short)*fsigma++;
-    }
     J = myalloc2(m,n);
     Y = myalloc2(m,s);
     Z = myalloc2(s,n);
@@ -80,7 +74,7 @@ fint abs_normal_(fint* ftag,
     y = myalloc1(m);
     z = myalloc1(s);
     spread1(n,fx,x);
-    rc = abs_normal(tag,m,n,s,x,sig,y,z,cz,cy,J,Y,Z,L);
+    rc = abs_normal(tag,m,n,s,x,y,z,cz,cy,J,Y,Z,L);
     pack1(m,y,fy);
     pack1(s,z,fz);
     pack1(s,cz,fcz);
@@ -96,7 +90,6 @@ fint abs_normal_(fint* ftag,
     myfree1(x);
     myfree1(y);
     myfree1(z);
-    free((char*)sig);
     myfree1(cz);
     myfree1(cy);
     return rc;

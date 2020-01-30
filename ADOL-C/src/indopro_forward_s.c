@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     int_forward_s.c
- Revision: $Id: indopro_forward_s.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id$
  Contents: int_forward (integer forward mode for bit pattern propagation)
  
  Copyright (c) Andrea Walther

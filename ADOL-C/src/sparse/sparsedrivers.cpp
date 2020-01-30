@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse/sparsedrivers.cpp
- Revision: $Id: sparsedrivers.cpp 617 2015-08-18 21:56:38Z kulshres $
+ Revision: $Id$
  Contents: "Easy To Use" C++ interfaces of SPARSE package
  
 
@@ -595,39 +595,39 @@ int sparse_hess(
     if (repeat == -1)
       return ret_val;
 
-//     this is the most efficient variant. However, there is somewhere a bug in hos_ov_reverse
-//     ret_val = hov_wk_forward(tag,1,indep,1,2,sHinfos.p,basepoint,sHinfos.Xppp,&y,sHinfos.Yppp);
-//     MINDEC(ret_val,hos_ov_reverse(tag,1,indep,1,sHinfos.p,sHinfos.Upp,sHinfos.Zppp));
-
-//     for (i = 0; i < sHinfos.p; ++i)
-//       for (l = 0; l < indep; ++l)
-// 	sHinfos.Hcomp[l][i] = sHinfos.Zppp[i][l][1];
-
-//
-//     therefore, we use hess_vec isntead of hess_mat
-
-    v    = (double*) malloc(indep*sizeof(double));
-    w    = (double*) malloc(indep*sizeof(double));
-    X = myalloc2(indep,2);
-//         sHinfos.Xppp = myalloc3(indep,sHinfos.p,1);
+//     this is the most efficient variant. However, there was somewhere a bug in hos_ov_reverse
+    ret_val = hov_wk_forward(tag,1,indep,1,2,sHinfos.p,basepoint,sHinfos.Xppp,&y,sHinfos.Yppp);
+    MINDEC(ret_val,hos_ov_reverse(tag,1,indep,1,sHinfos.p,sHinfos.Upp,sHinfos.Zppp));
 
     for (i = 0; i < sHinfos.p; ++i)
-      {
-	for (l = 0; l < indep; ++l)
-	  {
-	    v[l] = sHinfos.Xppp[l][i][0];
-	  }
-	ret_val = fos_forward(tag, 1, indep, 2, basepoint, v, &y, &yt);
-	MINDEC(ret_val, hos_reverse(tag, 1, indep, 1, &lag, X));
-	for (l = 0; l < indep; ++l)
-	  {
-	    sHinfos.Hcomp[l][i] = X[l][1];
-	  }
-      }
+      for (l = 0; l < indep; ++l)
+	sHinfos.Hcomp[l][i] = sHinfos.Zppp[i][l][1];
 
-    myfree1(v);
-    myfree1(w);
-    myfree2(X);   
+//     there used to be a bug in hos_ov_reverse
+//     therefore, we used hess_vec isntead of hess_mat before
+
+    // v    = (double*) malloc(indep*sizeof(double));
+    // w    = (double*) malloc(indep*sizeof(double));
+    // X = myalloc2(indep,2);
+//         sHinfos.Xppp = myalloc3(indep,sHinfos.p,1);
+
+    // for (i = 0; i < sHinfos.p; ++i)
+    //   {
+    //     for (l = 0; l < indep; ++l)
+    //       {
+    //         v[l] = sHinfos.Xppp[l][i][0];
+    //       }
+    //     ret_val = fos_forward(tag, 1, indep, 2, basepoint, v, &y, &yt);
+    //     MINDEC(ret_val, hos_reverse(tag, 1, indep, 1, &lag, X));
+    //     for (l = 0; l < indep; ++l)
+    //       {
+    //         sHinfos.Hcomp[l][i] = X[l][1];
+    //       }
+    //   }
+
+    // myfree1(v);
+    // myfree1(w);
+    // myfree2(X);   
 
 
     /* recover compressed Hessian => ColPack library */
@@ -1137,16 +1137,16 @@ void freeSparseHessInfos(double **Hcomp, double ***Xppp, double ***Yppp, double 
 
 END_C_DECLS
 
-#include <adolc/adtl.h>
+#include <adolc/adtl_indo.h>
 
-namespace adtl {
+//namespace adtl {
 
 #ifdef SPARSE
 SparseJacInfos sJinfos
      = { NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0 };
 #endif
 
-int ADOLC_get_sparse_jacobian( func_ad *const fun,
+int ADOLC_get_sparse_jacobian( func_ad<adtl::adouble> *const fun, func_ad<adtl_indo::adouble> *const fun_indo,
 			       int n, int m, int repeat, double* basepoints,
 			       int *nnz, unsigned int **rind,
 			       unsigned int **cind, double **values)
@@ -1159,25 +1159,25 @@ int ADOLC_get_sparse_jacobian( func_ad *const fun,
     if (!repeat) {
     freeSparseJacInfos(sJinfos.y, sJinfos.B, sJinfos.JP, sJinfos.g, sJinfos.jr1d, sJinfos.seed_rows, sJinfos.seed_clms, sJinfos.depen);
     //setNumDir(n);
-    setMode(ADTL_INDO);
+    //setMode(ADTL_INDO);
     {
-	adouble *x, *y;
-	x = new adouble[n];
-	y = new adouble[m];
+    adtl_indo::adouble *x, *y;
+	x = new adtl_indo::adouble[n];
+	y = new adtl_indo::adouble[m];
     for (i=0; i < n ; i++){
       x[i] = basepoints[i];
       //x[i].setADValue(i,1);
     }
-    ret_val = ADOLC_Init_sparse_pattern(x,n,0);
+    ret_val = adtl_indo::ADOLC_Init_sparse_pattern(x,n,0);
 
-    ret_val = (*fun)(n,x,m,y);
+    ret_val = (*fun_indo)(n,x,m,y);
 
     if (ret_val < 0) {
        printf(" ADOL-C error in tapeless sparse_jac() \n");
        return ret_val;
     }
 
-    ret_val = ADOLC_get_sparse_pattern(y, m, sJinfos.JP );
+    ret_val = adtl_indo::ADOLC_get_sparse_pattern(y, m, sJinfos.JP );
 	delete[] x;
 	delete[] y;
     }
@@ -1215,12 +1215,12 @@ int ADOLC_get_sparse_jacobian( func_ad *const fun,
 
     }
 //  ret_val = fov_forward(tag, depen, indep, sJinfos.seed_clms, basepoint, sJinfos.Seed, sJinfos.y, sJinfos.B);
-    setNumDir(sJinfos.seed_clms);
-    setMode(ADTL_FOV);
+    adtl::setNumDir(sJinfos.seed_clms);
+    //setMode(ADTL_FOV);
     {
-	adouble *x, *y;
-	x = new adouble[n];
-	y = new adouble[m];
+    adtl::adouble *x, *y;
+	x = new adtl::adouble[n];
+	y = new adtl::adouble[m];
 
     for (i=0; i < n ; i++){
       x[i] = basepoints[i];
@@ -1265,80 +1265,8 @@ int ADOLC_get_sparse_jacobian( func_ad *const fun,
 }
 #endif
 
-#if 0
-int ADOLC_get_sparse_jacobian(int n, int m, adouble *x, int *nnz, unsigned int *rind, unsigned int *cind, double *values)
-#if HAVE_LIBCOLPACK
-{
-    int i;
-    unsigned int j;
-    SparseJacInfos sJinfos;
-    int dummy;
-    int ret_val = -1;
-    BipartiteGraphPartialColoringInterface *g;
-    JacobianRecovery1D *jr1d;
 
-    ret_val = ADOLC_get_sparse_pattern(x, m, sJinfos.JP );
-
-    sJinfos.depen = m;
-    sJinfos.nnz_in = 0;
-    for (i=0;i<m;i++) {
-       for (j=1;j<=sJinfos.JP[i][0];j++)
-          sJinfos.nnz_in++;
-    }
-      *nnz = sJinfos.nnz_in;
-      /* sJinfos.Seed is memory managed by ColPack and will be deleted
-       * along with g. We only keep it in sJinfos for the repeat != 0 case */
-
-      g = new BipartiteGraphPartialColoringInterface(SRC_MEM_ADOLC, sJinfos.JP, m, n);
-      jr1d = new JacobianRecovery1D;
-
-      g->GenerateSeedJacobian(&(sJinfos.Seed), &(sJinfos.seed_rows),
-                                &(sJinfos.seed_clms), "SMALLEST_LAST","COLUMN_PARTIAL_DISTANCE_TWO");
-      sJinfos.seed_rows = m;
-
-      sJinfos.B = myalloc2(sJinfos.seed_rows,sJinfos.seed_clms);
-      sJinfos.y = myalloc1(m);
-
-      sJinfos.g = (void *) g;
-      sJinfos.jr1d = (void *) jr1d;
-
-    if (sJinfos.nnz_in != *nnz) {
-        printf(" ADOL-C error in sparse_jac():"
-               " Number of nonzeros not consistent,"
-               " repeat call with repeat = 0 \n");
-        return -3;
-    }
-
-//  ret_val = fov_forward(tag, depen, indep, sJinfos.seed_clms, basepoint, sJinfos.Seed, sJinfos.y, sJinfos.B);
-    for (i=0;i<m;i++)
-       for (j=0; j< sJinfos.seed_clms;j++)
-          sJinfos.B[i][j] = x[i].getADValue(j);
-
-    /* recover compressed Jacobian => ColPack library */
-
-      if (values != NULL)
-       free(values);
-      if (rind != NULL)
-       free(rind);
-      if (cind != NULL)
-       free(cind);
-     jr1d->RecoverD2Cln_CoordinateFormat_unmanaged(g, sJinfos.B, sJinfos.JP, &rind, &cind, &values);
-
-    delete g;
-    delete jr1d;
-
-    return ret_val;
-
-}
-#else
-{
-    fprintf(DIAG_OUT, "ADOL-C error: function %s can only be used if linked with ColPack\n", __FUNCTION__);
-    adolc_exit(-1,"",__func__,__FILE__,__LINE__);
-}
-#endif
-#endif
-
-}
+//}
 
 /****************************************************************************/
 /*                                                               THAT'S ALL */

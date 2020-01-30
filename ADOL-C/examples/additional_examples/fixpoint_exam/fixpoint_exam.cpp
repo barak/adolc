@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     fixpoint_exam.cpp
- Revision: $Id: fixpoint_exam.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id$
  Contents: example for differentiation of fixpoint iterations
 
  Copyright (c) Andrea Walther

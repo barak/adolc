@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     traceless_cuda.cu
- Revision: $Id: traceless_cuda.cu 408 2013-02-12 16:19:10Z kulshres $
+ Revision: $Id$
  Contents: computation of coordinate transform, 
            cuda example described in the manual
 

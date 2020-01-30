@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.h
- Revision: $Id: taping.h 645 2015-12-10 11:33:42Z kulshres $
+ Revision: $Id$
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 
@@ -47,6 +47,11 @@ enum TapeRemovalType {
     ADOLC_REMOVE_COMPLETELY
 };
 
+enum LocationMgrType {
+    ADOLC_LOCATION_BLOCKS,     /* can allocate contiguous location blocks */
+    ADOLC_LOCATION_SINGLETONS  /* only singleton locations, no blocks */
+};
+
 ADOLC_DLL_EXPORT void skip_tracefile_cleanup(short tnum);
 
 /* Returns statistics on the tape "tag". Use enumeration StatEntries for
@@ -55,8 +60,11 @@ ADOLC_DLL_EXPORT void tapestats(short tag, size_t *tape_stats);
 
 ADOLC_DLL_EXPORT void set_nested_ctx(short tag, char nested);
 
+ADOLC_DLL_EXPORT char currently_nested(short tag);
 /* An all-in-one tape stats printing routine */
 ADOLC_DLL_EXPORT void printTapeStats(FILE *stream, short tag);
+
+ADOLC_DLL_EXPORT void cleanUp();
 
 ADOLC_DLL_EXPORT int removeTape(short tapeID, short type);
 
@@ -70,6 +78,8 @@ ADOLC_DLL_EXPORT void disableMinMaxUsingAbs();
  * happens when  the ratio between allocated and used locations exceeds gcTriggerRatio or
  * the allocated locations exceed gcTriggerMaxSize
  */
+ADOLC_DLL_EXPORT void setStoreManagerType(unsigned char loctypes);
+
 ADOLC_DLL_EXPORT void setStoreManagerControl(double gcTriggerRatio, size_t gcTriggerMaxSize);
 
 END_C_DECLS

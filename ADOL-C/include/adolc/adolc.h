@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     adolc.h
- Revision: $Id: adolc.h 657 2015-12-14 13:07:47Z kulshres $
+ Revision: $Id$
  Contents: Provides all C/C++ interfaces of ADOL-C.
            NOTICE: ALL C/C++ headers will be included DEPENDING ON 
            whether the source code is plain C or C/C++ code. 
@@ -28,6 +28,7 @@
 #  include <adolc/adouble.h>
 #  include <adolc/externfcts.h>
 #  include <adolc/externfcts2.h>
+#  include <adolc/edfclasses.h>
 #  include <adolc/checkpointing.h>
 #  include <adolc/fixpoint.h>
 #endif
@@ -52,7 +53,7 @@
 
 /*--------------------------------------------------------------------------*/
 /* interfaces to SPARSE package */
-#if defined(SPARSE)
+#if defined(SPARSE_DRIVERS)
 #include <adolc/sparse/sparsedrivers.h>
 #include <adolc/sparse/sparse_fo_rev.h>
 #endif

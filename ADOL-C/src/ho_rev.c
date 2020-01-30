@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ho_rev.c
- Revision: $Id: ho_rev.c 720 2016-08-31 11:37:48Z kulshres $
+ Revision: $Id$
  Contents: Contains the routines :
            hos_reverse (higher-order-scalar reverse mode): 
               define _HOS_
@@ -698,8 +698,8 @@ int hov_ti_reverse(
             case recipr_p:
             case assign_p:      /* assign an adouble variable a    assign_d */
                 /* double value. (=) */
-                arg   = get_locint_r();
                 res   = get_locint_r();
+                arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 
                 ASSIGN_A(Ares, rpp_A[res])
@@ -782,8 +782,8 @@ int hov_ti_reverse(
                 /*--------------------------------------------------------------------------*/
         case eq_plus_p:            /* Add a floating point to an    eq_plus_p */
             /* adouble. (+=) */
-           arg   = get_locint_r();
            res   = get_locint_r();
+           arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 
                 GET_TAYL(res,k,p)
@@ -825,8 +825,8 @@ int hov_ti_reverse(
                 /*--------------------------------------------------------------------------*/
             case eq_min_p:       /* Subtract a floating point from an    eq_min_p */
                 /* adouble. (-=) */
-                arg   = get_locint_r();
                 res   = get_locint_r();
+                arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 
                 GET_TAYL(res,k,p)
@@ -877,8 +877,8 @@ int hov_ti_reverse(
                 /*--------------------------------------------------------------------------*/
             case eq_mult_p:              /* Multiply an adouble by a    eq_mult_p */
                 /* flaoting point. (*=) */
-                arg   = get_locint_r();
                 res   = get_locint_r();
+                arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 
                 ASSIGN_A(Ares, rpp_A[res])
@@ -981,8 +981,8 @@ int hov_ti_reverse(
             case plus_a_p:             /* Add an adouble and a double    plus_a_p */
             case min_a_p:                /* Subtract an adouble from a    min_a_p */
                 /* (+) */
-                arg1  = get_locint_r();
                 res   = get_locint_r();
+                arg1  = get_locint_r();
                 arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 
@@ -1271,8 +1271,8 @@ int hov_ti_reverse(
                 /*--------------------------------------------------------------------------*/
             case mult_a_p:         /* Multiply an adouble by a double    mult_a_p */
                 /* (*) */
-                arg1  = get_locint_r();
                 res   = get_locint_r();
+                arg1  = get_locint_r();
                 arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 
@@ -1410,8 +1410,8 @@ int hov_ti_reverse(
 
                 /****************************************************************************/
             case div_p_a:             /* Division double - adouble (/)    div_p_a */
-                arg1  = get_locint_r();
                 res   = get_locint_r();
+                arg1  = get_locint_r();
                 arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 
@@ -1795,8 +1795,8 @@ int hov_ti_reverse(
 
                 /*--------------------------------------------------------------------------*/
             case pow_op_p:                                                /* pow_op_p */
-                arg1  = get_locint_r();
                 res   = get_locint_r();
+                arg1  = get_locint_r();
                 arg   = get_locint_r();
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 
@@ -2280,6 +2280,78 @@ int hov_ti_reverse(
                 }
                 break;
 
+            case cond_eq_assign:                                      /* cond_eq_assign */
+                res   = get_locint_r();
+                arg2  = get_locint_r();
+                arg1  = get_locint_r();
+                arg   = get_locint_r();
+                coval = get_val_r();
+
+                GET_TAYL(res,k,p)
+
+                ASSIGN_A(Aarg1, rpp_A[arg1])
+                ASSIGN_A(Ares,  rpp_A[res])
+                ASSIGN_A(Aarg2, rpp_A[arg2])
+                ASSIGN_T(Targ,  rpp_T[arg])
+
+                /* olvo 980925 changed code a little bit */
+                if (TARG >= 0.0) {
+                    if (res != arg1)
+                        FOR_0_LE_l_LT_p
+                        { if (0 == ARES) {
+                          HOV_INC(Ares,  k1)
+                              HOV_INC(Aarg1, k1)
+                          } else {
+                              if (coval < 0.0)
+                                  MINDEC(ret_c,2);
+                              MAXDEC(AARG1,ARES);
+                              ARES_INC = 0.0;
+                              AARG1_INC_O;
+                              FOR_0_LE_i_LT_k
+                              { AARG1_INC += ARES;
+                                ARES_INC = 0;
+                              }
+                          }
+                    }
+                    else
+                        FOR_0_LE_l_LT_p {
+                            if ((coval < 0.0) && (ARES))
+                            MINDEC(ret_c,2);
+                            HOV_INC(Ares,  k1)
+                        }
+                    } else /* TARG < 0.0 */
+            {
+                if (res != arg2)
+                        FOR_0_LE_l_LT_p
+                        { if (0 == ARES) {
+                          HOV_INC(Ares,  k1)
+                              HOV_INC(Aarg2, k1)
+                          } else {
+                                  if (coval < 0.0)
+                                      MINDEC(ret_c,2);
+                                  MAXDEC(AARG2,ARES);
+                                  AARG2_INC_O;
+                              ARES_INC = 0.0;
+
+                              FOR_0_LE_i_LT_k
+                              { AARG2_INC += ARES;
+                                ARES_INC = 0;
+                              }
+                          }
+                      HOV_INC(Aarg1, k1)
+                    } else
+                        FOR_0_LE_l_LT_p {
+                            if (ARES) {
+                                    if (coval < 0.0)
+                                        MINDEC(ret_c,2);
+                            }
+                        HOV_INC(Ares,  k1)
+                        HOV_INC(Aarg1, k1)
+                        HOV_INC(Aarg2, k1)
+                    }
+                }
+                break;
+
                 /*--------------------------------------------------------------------------*/
             case cond_assign_s:                                  /* cond_assign_s */
                 res   = get_locint_r();
@@ -2329,6 +2401,45 @@ int hov_ti_reverse(
                             }
                         }
             break;
+            case cond_eq_assign_s:                                  /* cond_eq_assign_s */
+                res   = get_locint_r();
+                arg1  = get_locint_r();
+                arg   = get_locint_r();
+                coval = get_val_r();
+
+                GET_TAYL(res,k,p)
+
+                ASSIGN_A(Aarg1, rpp_A[arg1])
+                ASSIGN_A(Ares,  rpp_A[res])
+                ASSIGN_T(Targ,  rpp_T[arg])
+
+                /* olvo 980925 changed code a little bit */
+                    if (TARG >= 0.0) {
+                        if (res != arg1)
+                            FOR_0_LE_l_LT_p
+                            { if  (0 == ARES) {
+                              HOV_INC(Ares,  k1)
+                                  HOV_INC(Aarg1, k1)
+                              } else {
+                                  if (coval < 0.0)
+                                      MINDEC(ret_c,2);
+                                  MAXDEC(AARG1,ARES);
+                                  ARES_INC = 0.0;
+                                  AARG1_INC_O;
+                                  FOR_0_LE_i_LT_k
+                                  { (AARG1_INC) += ARES;
+                                    ARES_INC = 0;
+                                  }
+                              }
+                        }
+                        else
+                            FOR_0_LE_l_LT_p {
+                                if ((coval < 0.0) && (ARES))
+                                MINDEC(ret_c,2);
+                                HOV_INC(Ares,  k1)
+                            }
+                        }
+            break;
                 /*--------------------------------------------------------------------------*/
 		/* NEW CONDITIONALS */
                 /*--------------------------------------------------------------------------*/
@@ -2364,8 +2475,8 @@ int hov_ti_reverse(
 		{
 		    size_t idx, numval = (size_t)trunc(fabs(coval));
 		    locint vectorloc;
-		    vectorloc = get_locint_r();
 		    res = get_locint_r();
+		    vectorloc = get_locint_r();
 		    arg = get_locint_r();
 		    ASSIGN_T(Targ, rpp_T[arg])
 		    idx = (size_t)trunc(fabs(TARG));
@@ -2398,8 +2509,8 @@ int hov_ti_reverse(
 		{
 		    size_t idx, numval = (size_t)trunc(fabs(coval));
 		    locint vectorloc;
-		    vectorloc = get_locint_r();
 		    res = get_locint_r();
+		    vectorloc = get_locint_r();
 		    arg = get_locint_r();
 		    ASSIGN_T(Targ, rpp_T[arg])
 		    ASSIGN_T(Tres, rpp_T[res])
@@ -2555,8 +2666,8 @@ int hov_ti_reverse(
 
         case ref_eq_plus_p:            /* Add a floating point to an    eq_plus_d */
             /* adouble. (+=) */
-                arg    = get_locint_r();
                 arg1   = get_locint_r();
+                arg    = get_locint_r();
 		ASSIGN_T(Targ1, rpp_T[arg1])
 		res = (size_t)trunc(fabs(TARG1));
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
@@ -2716,9 +2827,9 @@ int hov_ti_reverse(
 
             case vec_copy:
 
+                res = get_locint_r();
                 size = get_locint_r();
                 arg = get_locint_r();
-                res = get_locint_r();
 
                 for(qq=0;qq<size;qq++) {
 
@@ -2747,10 +2858,10 @@ int hov_ti_reverse(
                 break;
 
         case vec_dot:
+                res = get_locint_r();
                 size = get_locint_r();
                 arg2 = get_locint_r();
                 arg1 = get_locint_r();
-                res = get_locint_r();
                 for (qq=0;qq<size;qq++) {
                 ASSIGN_A(Ares,  rpp_A[res])
                 ASSIGN_A(Aarg2, rpp_A[arg2+qq])
@@ -2786,11 +2897,11 @@ int hov_ti_reverse(
                 break;
 
         case vec_axpy:
+                res = get_locint_r();
                 size = get_locint_r();
                 arg2 = get_locint_r();
                 arg1 = get_locint_r();
                 arg = get_locint_r();
-                res = get_locint_r();
                 for (qq=0;qq<size;qq++) {
                 ASSIGN_A(Ares,  rpp_A[res+qq])
                 ASSIGN_A(Aarg,  rpp_A[arg])
@@ -2923,6 +3034,90 @@ int hov_ti_reverse(
                 }
 	    }
                 break;
+            case ref_cond_eq_assign:                                      /* cond_eq_assign */
+	    {   
+		revreal *Tref;
+		locint ref   = get_locint_r();
+                arg2  = get_locint_r();
+                arg1  = get_locint_r();
+                arg   = get_locint_r();
+                coval = get_val_r();
+		
+		ASSIGN_T(Tref, rpp_T[ref])
+
+#ifdef _HIGHER_ORDER_
+#define TREF  *Tref
+#else
+#define TREF   rpp_T[ref]
+#endif   
+
+		res = (size_t)trunc(fabs(TREF));
+#undef TREF
+                GET_TAYL(res,k,p)
+
+                ASSIGN_A(Aarg1, rpp_A[arg1])
+                ASSIGN_A(Ares,  rpp_A[res])
+                ASSIGN_A(Aarg2, rpp_A[arg2])
+                ASSIGN_T(Targ,  rpp_T[arg])
+
+                /* olvo 980925 changed code a little bit */
+                if (TARG >= 0.0) {
+                    if (res != arg1)
+                        FOR_0_LE_l_LT_p
+                        { if (0 == ARES) {
+                          HOV_INC(Ares,  k1)
+                              HOV_INC(Aarg1, k1)
+                          } else {
+                              if (coval < 0.0)
+                                  MINDEC(ret_c,2);
+                              MAXDEC(AARG1,ARES);
+                              ARES_INC = 0.0;
+                              AARG1_INC_O;
+                              FOR_0_LE_i_LT_k
+                              { AARG1_INC += ARES;
+                                ARES_INC = 0;
+                              }
+                          }
+                    }
+                    else
+                        FOR_0_LE_l_LT_p {
+                            if ((coval < 0.0) && (ARES))
+                            MINDEC(ret_c,2);
+                            HOV_INC(Ares,  k1)
+                        }
+                    } else /* TARG < 0.0 */
+            {
+                if (res != arg2)
+                        FOR_0_LE_l_LT_p
+                        { if (0 == ARES) {
+                          HOV_INC(Ares,  k1)
+                              HOV_INC(Aarg2, k1)
+                          } else {
+                                  if (coval < 0.0)
+                                      MINDEC(ret_c,2);
+                                  MAXDEC(AARG2,ARES);
+                                  AARG2_INC_O;
+                              ARES_INC = 0.0;
+
+                              FOR_0_LE_i_LT_k
+                              { AARG2_INC += ARES;
+                                ARES_INC = 0;
+                              }
+                          }
+                      HOV_INC(Aarg1, k1)
+                    } else
+                        FOR_0_LE_l_LT_p {
+                            if (ARES) {
+                                    if (coval < 0.0)
+                                        MINDEC(ret_c,2);
+                            }
+                        HOV_INC(Ares,  k1)
+                        HOV_INC(Aarg1, k1)
+                        HOV_INC(Aarg2, k1)
+                    }
+                }
+	    }
+                break;
 
             case ref_cond_assign_s:                                  /* cond_assign_s */
                 arg2   = get_locint_r();
@@ -2970,6 +3165,49 @@ int hov_ti_reverse(
                         else
                             FOR_0_LE_l_LT_p {
                                 if ((coval <= 0.0) && (ARES))
+                                MINDEC(ret_c,2);
+                                HOV_INC(Ares,  k1)
+                            }
+                        }
+            break;
+
+            case ref_cond_eq_assign_s:                                  /* cond_eq_assign_s */
+                arg2   = get_locint_r();
+                arg1  = get_locint_r();
+                arg   = get_locint_r();
+                coval = get_val_r();
+		
+		ASSIGN_T(Targ2, rpp_T[arg2])
+		res = (size_t)trunc(fabs(TARG2));
+
+                GET_TAYL(res,k,p)
+
+                ASSIGN_A(Aarg1, rpp_A[arg1])
+                ASSIGN_A(Ares,  rpp_A[res])
+                ASSIGN_T(Targ,  rpp_T[arg])
+
+                /* olvo 980925 changed code a little bit */
+                    if (TARG >= 0.0) {
+                        if (res != arg1)
+                            FOR_0_LE_l_LT_p
+                            { if  (0 == ARES) {
+                              HOV_INC(Ares,  k1)
+                                  HOV_INC(Aarg1, k1)
+                              } else {
+                                  if (coval < 0.0)
+                                      MINDEC(ret_c,2);
+                                  MAXDEC(AARG1,ARES);
+                                  ARES_INC = 0.0;
+                                  AARG1_INC_O;
+                                  FOR_0_LE_i_LT_k
+                                  { (AARG1_INC) += ARES;
+                                    ARES_INC = 0;
+                                  }
+                              }
+                        }
+                        else
+                            FOR_0_LE_l_LT_p {
+                                if ((coval < 0.0) && (ARES))
                                 MINDEC(ret_c,2);
                                 HOV_INC(Ares,  k1)
                             }

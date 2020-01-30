@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     coordinates.cpp
- Revision: $Id: coordinates.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id$
  Contents: Test driver 'inverse_tensor_eval' using transformation between 
            Cartesian coordinates and polar coordinates
  

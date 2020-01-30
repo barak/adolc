@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     helm-auto-exam.cpp
- Revision: $Id: helm-auto-exam.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id$
  Contents: example for  Helmholtz energy example 
            Computes gradient using AD driver reverse(..)
 

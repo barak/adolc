@@ -26,12 +26,12 @@ endif
 endif
 endif
 
-SUBDIRS += include
+SUBDIRS += include swig
 
 MAINTAINERCLEANFILES = Makefile.in 
 
 lib_LTLIBRARIES = lib@adolclib@.la
-lib@adolclib@_la_LDFLAGS  = -version-info 3:0:1 -no-undefined
+lib@adolclib@_la_LDFLAGS  = -version-info 4:0:2 -no-undefined
 lib@adolclib@_la_SOURCES  = dummy.cpp
 
 lib@adolclib@_la_LIBADD = src/libadolcsrc.la
@@ -41,6 +41,10 @@ lib@adolclib@_la_LIBADD  += src/libadolcampi.la
 if DARWIN
 lib@adolclib@_la_LDFLAGS += -Wl,-undefined,dynamic_lookup
 endif
+endif
+
+if BUILD_ADOLC_MEDIPACK_SUPPORT
+lib@adolclib@_la_LIBADD  += src/libadolcmedipack.la
 endif
 
 lib@adolclib@_la_LIBADD  += src/drivers/libdrivers.la src/tapedoc/libtapedoc.la src/lie/liblie.la

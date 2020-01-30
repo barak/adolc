@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sfunc_speelpenning.cpp
- Revision: $Id: sfunc_speelpenning.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id$
  Contents: function module containing Speepennings product
 
    Each << function module >> contains:

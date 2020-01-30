@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     ext_diff_func.cpp
- Revision: $Id: ext_diff_func.cpp 608 2015-08-10 20:06:55Z kulshres $
+ Revision: $Id$
  Contents: example for external differentiated functions
 
  Copyright (c) Andrea Walther

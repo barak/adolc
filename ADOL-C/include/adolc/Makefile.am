@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 608 2015-08-10 20:06:55Z kulshres $
+## Revision: $Id$
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz, Kshitij Kulshreshtha
 ##
@@ -16,7 +16,15 @@ pkginclude_HEADERS   = adolc.h adalloc.h adouble.h adutils.h adutilsc.h \
                        externfcts.h checkpointing.h fixpoint.h\
                        adolc_sparse.h adolc_openmp.h \
                        revolve.h advector.h \
-                       adtl.h adoublecuda.h param.h externfcts2.h
+                       adolc_fatalerror.h \
+                       adtl.h adtl_indo.h adtl_hov.h \
+                       adoublecuda.h \
+                       param.h externfcts2.h \
+                       edfclasses.h
+
+if BUILD_ADOLC_MEDIPACK_SUPPORT
+pkginclude_HEADERS   += medipacksupport.h
+endif
 
 SUBDIRS = internal drivers tapedoc lie
 

@@ -17,6 +17,8 @@
 
 #if !defined(ADOLC_ADOLC_SETTINGS_H)
 #define ADOLC_ADOLC_SETTINGS_H 1
+
+#include <stdint.h>
 /*--------------------------------------------------------------------------*/
 /* ADOL-C data types */
 typedef uint32_t locint;                /* ensure locint is unsigned */
@@ -29,5 +31,17 @@ typedef double revreal;
 /*--------------------------------------------------------------------------*/
 /* Enable/disable advanced branching */
 #undef ADOLC_ADVANCED_BRANCHING
+
+/*--------------------------------------------------------------------------*/
+/* Use reference counting for tapeless numbers */
+#undef USE_ADTL_REFCOUNTING
+
+/*--------------------------------------------------------------------------*/
+/* Sparse drivers have been compiled */
+#define SPARSE_DRIVERS 1
+
+/*--------------------------------------------------------------------------*/
+/* Use Boost Library Pool allocator */
+#define USE_BOOST_POOL 1
 
 #endif

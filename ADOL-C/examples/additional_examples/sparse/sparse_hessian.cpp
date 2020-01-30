@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sparse_hessian.cpp
- Revision: $Id: sparse_hessian.cpp 299 2012-03-21 16:08:40Z kulshres $
+ Revision: $Id$
  Contents: example for computation of sparse hessians
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 
@@ -228,7 +228,7 @@ double feval(double *x) {
     res = 0.5*(x[0] - 1)*(x[0] -1) + 0.8*(x[1] - 2)*(x[1] -2)  + 0.9*(x[2] - 3)*(x[2] -3);
     res += 5*x[0]*x[1];
     res += cos(x[3]);
-    res += sin(x[4])*x[1]*x[1];
+    res += sin(x[4])*pow(x[1],2);
     res += exp(x[5])*x[2];
     res += sin(x[4]*x[5]);
 

@@ -2,7 +2,7 @@
 /*---------------------------------------------------------------------------- 
  ADOL-C--  Automatic Differentiation by Overloading in C++ - simplified
  File:     storemanager.h
- Revision: $Id: storemanager.h 683 2016-03-17 14:43:44Z kulshres $
+ Revision: $Id$
  Contents: storemanager.h contains definitions of abstract interface 
            class StoreManager and some derived classes implementing the
            desired functionality.
@@ -69,14 +69,15 @@
 #        include "config.h"
 #    endif
 #endif
+#include <adolc/internal/adolc_settings.h>
 #include <forward_list>
-#if defined(HAVE_BOOST_POOL_POOL_ALLOC_HPP) && defined(HAVE_BOOST_SYSTEM)
+
+#if USE_BOOST_POOL 
 #include <boost/pool/pool_alloc.hpp>
-#define USE_BOOST_POOL 1
-#else
-#define USE_BOOST_POOL 0
 #endif
+
 #include <adolc/internal/common.h>
+#include <adolc/taping.h>
 
 class GlobalTapeVarsCL;
 extern "C" void checkInitialStoreSize(GlobalTapeVarsCL* gtv);
@@ -97,17 +98,22 @@ public:
   void setStoreManagerControl(double gcTriggerRatio, size_t gcTriggerMaxSize) { myGcTriggerRatio=gcTriggerRatio; myGcTriggerMaxSize=gcTriggerMaxSize;}
   double gcTriggerRatio() const {return myGcTriggerRatio;}
   size_t gcTriggerMaxSize() const {return myGcTriggerMaxSize;}
-
 //   // effectively the current size of the store array
   virtual size_t maxSize() const = 0;
 
 //   // the number of slots currently in use
   virtual size_t size() const = 0;
+  virtual unsigned char storeType() const = 0;
 };
 
 class StoreManagerLocint : public StoreManager {
 protected:
   double * &storePtr;
+#if defined(ADOLC_TRACK_ACTIVITY)
+  char activityTracking;
+  static char const* const nowhere;
+  char * &actStorePtr;
+#endif
   locint * indexFree;
   locint head;
   size_t &maxsize;
@@ -115,6 +121,10 @@ protected:
   virtual void grow(size_t mingrow = 0);
 public:
 
+#if defined(ADOLC_TRACK_ACTIVITY)
+  StoreManagerLocint(double * &storePtr, char* &actStorePtr, size_t &size, size_t &numlives);
+  StoreManagerLocint(const StoreManagerLocint *const stm, double * &storePtr, char* &actStorePtr, size_t &size, size_t &numLives);
+#endif
   StoreManagerLocint(double * &storePtr, size_t &size, size_t &numlives);
   StoreManagerLocint(const StoreManagerLocint *const stm, double * &storePtr, size_t &size, size_t &numLives);
 
@@ -122,6 +132,7 @@ public:
   virtual inline size_t size() const { return currentfill; }
 
   virtual inline size_t maxSize() const { return maxsize; }
+  virtual inline unsigned char storeType() const { return ADOLC_LOCATION_SINGLETONS; }
 
   virtual inline bool realloc_on_next_loc() const { 
       return (head == 0);
@@ -129,12 +140,17 @@ public:
 
   virtual locint next_loc();
   virtual void free_loc(locint loc); 
-  virtual void ensure_block(size_t n) {}
+  virtual void ensure_block(size_t n);
 };
 
 class StoreManagerLocintBlock : public StoreManager {
 protected:
     double * &storePtr;
+#if defined(ADOLC_TRACK_ACTIVITY)
+    char activityTracking;
+    static char const* const nowhere;
+    char * &actStorePtr;
+#endif
     struct FreeBlock {
 	locint next; // next location
 	size_t size; // number of following free locations
@@ -166,6 +182,10 @@ protected:
      */
     virtual void grow(size_t minGrow=0 );
 public:
+#if defined(ADOLC_TRACK_ACTIVITY)
+    StoreManagerLocintBlock(double * &storePtr, char* &actStorePtr, size_t &size, size_t &numlives);
+    StoreManagerLocintBlock(const StoreManagerLocintBlock *const stm, double * &storePtr, char* &actStorePtr, size_t &size, size_t &numLives);
+#endif
     StoreManagerLocintBlock(double * &storePtr, size_t &size, size_t &numlives);
     StoreManagerLocintBlock(const StoreManagerLocintBlock *const stm, double * &storePtr, size_t &size, size_t &numLives);
 
@@ -173,6 +193,7 @@ public:
     virtual inline size_t size() const { return currentfill; }
 
     virtual inline size_t maxSize() const { return maxsize; }
+    virtual inline unsigned char storeType() const { return ADOLC_LOCATION_BLOCKS; }
 
     virtual locint next_loc();
     virtual void free_loc(locint loc);

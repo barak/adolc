@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     trigger.cpp
- Revision: $Id: trigger.cpp 450 2014-01-21 10:16:57Z awalther $
+ Revision: $Id$
  Contents:  Test driver 'inverse_tensor_eval(..)' that allows to 
             compute higher order derivatives of inverse functions
            

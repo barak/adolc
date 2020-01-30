@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     cubic-iter-2.cpp
- Revision: $Id: cubic-iter-2.cpp 511 2014-05-14 13:01:01Z kulshres $
+ Revision: $Id$
  Contents: example for cubic lighthouse example of Griewank's Book
            using iterative solvers
            (output of z_k and dz_k for fixed t)

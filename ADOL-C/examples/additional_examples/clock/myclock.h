@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     myclock.h
- Revision: $Id: myclock.h 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id$
  Contents: timing utilities
 
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

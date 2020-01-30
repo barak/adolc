@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     luexam.cpp
- Revision: $Id: luexam.cpp 431 2013-06-18 20:14:07Z kulshres $
+ Revision: $Id$
  Contents: computation of LU factorization with pivoting
 
  Copyright (c) Kshitij Kulshreshtha

@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: adouble.h 659 2015-12-15 10:17:20Z kulshres $
+ Revision: $Id$
  Contents: adouble.h contains the basis for the class of adouble
            included here are all the possible functions defined on
            the adouble class.  Notice that, as opposed to ealier versions,
@@ -36,12 +36,14 @@
 #include <cmath>
 #include <stdexcept>
 
+#if !defined(SWIGPRE)
 using std::cout;
 using std::cin;
 using std::cerr;
 using std::ostream;
 using std::istream;
 using std::logic_error;
+#endif
 
 #include <adolc/internal/common.h>
 
@@ -62,6 +64,10 @@ void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
 void ADOLC_DLL_EXPORT condassign( double &res, const double &cond,
                                   const double &arg );
 
+void ADOLC_DLL_EXPORT condeqassign( double &res, const double &cond,
+                                    const double &arg1, const double &arg2 );
+void ADOLC_DLL_EXPORT condeqassign( double &res, const double &cond,
+                                    const double &arg );
 
 /****************************************************************************/
 /*                                                           CLASS BADOUBLE */
@@ -79,10 +85,11 @@ class ADOLC_DLL_EXPORT badouble {
 protected:
     locint location;
     badouble( void ) {};
-    // must be public when using gcc >= 3.4 ( problems with value() )
+    // Copy constructor:
+    // must be public when using gcc >= 3.4 and gcc <= 4.3.0
     // (see GCC 3.4 Release Series - Changes, New Features, and Fixes)
-    //
-    // badouble( const badouble& a ) {location = a.location;};
+    // so we make it protected for newer compilers again.
+    badouble( const badouble& a ) {};           /* ctor */
     explicit badouble( locint lo ) {
         location = lo;
         isInit = true;
@@ -91,9 +98,7 @@ protected:
     bool isInit;  // marker if the badouble is properly initialized
 
 public:
-    /*--------------------------------------------------------------------------*/
-    badouble( const badouble& a ) {};           /* ctor */
-
+    /*--------------------------------------------------------------------------*/    
     inline locint loc( void ) const;                         /* Helpful stuff */
 
     /*------------------------------------------------------------------------*/
@@ -109,7 +114,7 @@ public:
         return getValue();
     }
     explicit operator double();
-    explicit operator double const&();
+    explicit operator double const&() const;
     explicit operator double&&();
     void setValue ( const double );
     /* badouble& operator = ( const adouble& );
@@ -141,25 +146,25 @@ public:
     /*--------------------------------------------------------------------------*/
     /* Comparison (friends) */
 #if !defined(ADOLC_ADVANCED_BRANCHING)
-    inline friend int operator != ( const badouble&, const badouble& );
-    inline friend int operator == ( const badouble&, const badouble& );
-    inline friend int operator <= ( const badouble&, const badouble& );
-    inline friend int operator >= ( const badouble&, const badouble& );
-    inline friend int operator >  ( const badouble&, const badouble& );
-    inline friend int operator <  ( const badouble&, const badouble& );
+    inline friend bool operator != ( const badouble&, const badouble& );
+    inline friend bool operator == ( const badouble&, const badouble& );
+    inline friend bool operator <= ( const badouble&, const badouble& );
+    inline friend bool operator >= ( const badouble&, const badouble& );
+    inline friend bool operator >  ( const badouble&, const badouble& );
+    inline friend bool operator <  ( const badouble&, const badouble& );
 #endif
-    inline friend int operator != ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT int operator != ( const badouble&, double );
-    inline friend int operator == ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT int operator == ( const badouble&, double );
-    inline friend int operator <= ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT int operator <= ( const badouble&, double );
-    inline friend int operator >= ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT int operator >= ( const badouble&, double );
-    inline friend int operator >  ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT int operator >  ( const badouble&, double );
-    inline friend int operator <  ( double, const badouble& );
-    friend ADOLC_DLL_EXPORT int operator <  ( const badouble&, double );
+    inline friend bool operator != ( double, const badouble& );
+    friend ADOLC_DLL_EXPORT bool operator != ( const badouble&, double );
+    inline friend bool operator == ( double, const badouble& );
+    friend ADOLC_DLL_EXPORT bool operator == ( const badouble&, double );
+    inline friend bool operator <= ( double, const badouble& );
+    friend ADOLC_DLL_EXPORT bool operator <= ( const badouble&, double );
+    inline friend bool operator >= ( double, const badouble& );
+    friend ADOLC_DLL_EXPORT bool operator >= ( const badouble&, double );
+    inline friend bool operator >  ( double, const badouble& );
+    friend ADOLC_DLL_EXPORT bool operator >  ( const badouble&, double );
+    inline friend bool operator <  ( double, const badouble& );
+    friend ADOLC_DLL_EXPORT bool operator <  ( const badouble&, double );
 
 
     /*--------------------------------------------------------------------------*/
@@ -185,6 +190,10 @@ public:
             const badouble &arg1, const badouble &arg2 );
     friend ADOLC_DLL_EXPORT void condassign( adouble &res, const badouble &cond,
             const badouble &arg );
+    friend ADOLC_DLL_EXPORT void condeqassign( adouble &res, const badouble &cond,
+            const badouble &arg1, const badouble &arg2 );
+    friend ADOLC_DLL_EXPORT void condeqassign( adouble &res, const badouble &cond,
+            const badouble &arg );
 
 #define _IN_CLASS_ 1
 #define _IN_BADOUBLE_ 1
@@ -206,16 +215,21 @@ public:
         is "freed" when the adub goes out of scope (at destruction time).
    ---- operates just like a badouble, but it has a destructor defined for it.
 */
+#if !defined(SWIGPRE)
 ADOLC_DLL_EXPORT adub* adubp_from_adub(const adub&);
 /* s = adolc_vec_dot(x,y,size); <=> s = <x,y>_2 */
 ADOLC_DLL_EXPORT adub adolc_vec_dot(const adouble*const, const adouble*const, locint);
+#endif
 
 class ADOLC_DLL_EXPORT adub:public badouble {
     friend ADOLC_DLL_EXPORT class adouble;
     friend ADOLC_DLL_EXPORT class advector;
     friend ADOLC_DLL_EXPORT class adubref;
     friend ADOLC_DLL_EXPORT class pdouble;
+
+#if !defined(SWIGPRE)
     friend adub* adubp_from_adub(const adub&);
+#endif
 private:
     adub( adub const &) {
 	isInit = false;
@@ -242,11 +256,14 @@ protected:
    adub( locint lo ) : badouble(lo) {} 
 
 public:
-
+#if !defined(SWIGPRE)
     explicit operator adub*() const { return adubp_from_adub(*this); }
+#endif 
     /*--------------------------------------------------------------------------*/
+#if !defined(SWIGPRE)
     /* s = adolc_vec_dot(x,y,size); <=> s = <x,y>_2 */
     friend adub adolc_vec_dot(const adouble*const, const adouble*const, locint);
+#endif
     /* Functions friends with both badouble and adub */
 #define _IN_CLASS_ 1
 #define _IN_ADUB_ 1
@@ -289,8 +306,13 @@ public:
     adouble( double );
     /* adub prevents postfix operators to occur on the left
        side of an assignment which would not work  */
+#if !defined(SWIGPRE)
     adub operator++( int );
     adub operator--( int );
+#else
+    adub* operator++( int );
+    adub* operator--( int );
+#endif
     badouble& operator++( void );
     badouble& operator--( void );
     /*   inline double value(); */
@@ -340,74 +362,80 @@ inline locint adouble::loc( void ) const {
 /* Comparison */
 
 #if !defined(ADOLC_ADVANCED_BRANCHING)
-inline int operator != ( const badouble& u, const badouble& v ) {
+inline bool operator != ( const badouble& u, const badouble& v ) {
     return (u-v != 0);
 }
 
-inline int operator == ( const badouble& u, const badouble& v ) {
+inline bool operator == ( const badouble& u, const badouble& v ) {
     return (u-v == 0);
 }
 
-inline int operator <= ( const badouble& u, const badouble& v ) {
+inline bool operator <= ( const badouble& u, const badouble& v ) {
     return (u-v <= 0);
 }
 
-inline int operator >= ( const badouble& u, const badouble& v ) {
+inline bool operator >= ( const badouble& u, const badouble& v ) {
     return (u-v >= 0);
 }
 
-inline int operator > ( const badouble& u, const badouble& v ) {
+inline bool operator > ( const badouble& u, const badouble& v ) {
     return (u-v > 0);
 }
 
-inline int operator < ( const badouble& u, const badouble& v ) {
+inline bool operator < ( const badouble& u, const badouble& v ) {
     return (u-v < 0);
 }
 #endif
 
-inline int operator != ( double coval, const badouble& v) {
+inline bool operator != ( double coval, const badouble& v) {
     if (coval)
         return (-coval+v != 0);
     else
         return (v != 0);
 }
 
-inline int operator == ( double coval, const badouble& v) {
+inline bool operator == ( double coval, const badouble& v) {
     if (coval)
         return (-coval+v == 0);
     else
         return (v == 0);
 }
 
-inline int operator <= ( double coval, const badouble& v ) {
+inline bool operator <= ( double coval, const badouble& v ) {
     if (coval)
         return (-coval+v >= 0);
     else
         return (v >= 0);
 }
 
-inline int operator >= ( double coval, const badouble& v ) {
+inline bool operator >= ( double coval, const badouble& v ) {
     if (coval)
         return (-coval+v <= 0);
     else
         return (v <= 0);
 }
 
-inline int operator > ( double coval, const badouble& v ) {
+inline bool operator > ( double coval, const badouble& v ) {
     if (coval)
         return (-coval+v < 0);
     else
         return (v < 0);
 }
 
-inline int operator < ( double coval, const badouble& v ) {
+inline bool operator < ( double coval, const badouble& v ) {
     if (coval)
         return (-coval+v > 0);
     else
         return (v > 0);
 }
 
+#if !defined(SWIGPRE)
 /*--------------------------------------------------------------------------*/
+/* Adding a floating point from an adouble  */
+inline adub operator + ( const badouble& x , double coval ) {
+    return coval + x;
+}
+
 /* Subtract a floating point from an adouble  */
 inline adub operator - ( const badouble& x , double coval ) {
     return (-coval) + x;
@@ -424,12 +452,14 @@ inline adub operator * (const badouble& x, double coval) {
 inline adub operator / (const badouble& x, double coval) {
     return (1.0/coval) * x;
 }
+#endif
 
 
 inline badouble& badouble::operator /= (const pdouble& p) {
     *this *= recipr(p);
     return *this;
 }
+
 /****************************************************************************/
 /*                                                                THAT'S ALL*/
 #endif /* __cplusplus */

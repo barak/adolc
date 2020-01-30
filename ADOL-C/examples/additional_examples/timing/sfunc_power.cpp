@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     sfunc_power.cpp
- Revision: $Id: sfunc_power.cpp 171 2010-10-04 13:57:19Z kulshres $
+ Revision: $Id$
  Contents: function module containing the power example
 
    Each << function module >> contains:

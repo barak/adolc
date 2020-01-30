@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping.c
- Revision: $Id: taping.c 723 2016-08-31 11:38:01Z kulshres $
+ Revision: $Id$
  Contents: all C functions directly accessing at least one of the four tapes
            (operations, locations, constants, value stack)
 

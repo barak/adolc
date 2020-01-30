@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     tapeless_vector.cpp
- Revision: $Id: tapeless_vector.cpp 429 2013-05-27 09:28:48Z kulshres $
+ Revision: $Id$
  Contents: computation of coordinate transform, 
            vector tapeless forward mode
            described in the manual

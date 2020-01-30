@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     taping_p.h
- Revision: $Id: taping_p.h 687 2016-03-18 10:49:50Z kulshres $
+ Revision: $Id$
  Contents: declarations for used by taping routines
  
  Copyright (c) Andreas Kowarz, Jean Utke
@@ -312,6 +312,9 @@ TapeInfos;
 
 typedef struct GlobalTapeVarsCL {
     double* store;              /* double store for calc. while taping */
+#if defined(ADOLC_TRACK_ACTIVITY)
+    char* actStore;              /* activity store for tracking while taping */
+#endif
     size_t storeSize;
     size_t numLives;
     locint maxLoc;
@@ -337,6 +340,7 @@ typedef struct GlobalTapeVarsCL {
     GlobalTapeVarsCL();
     ~GlobalTapeVarsCL();
     const GlobalTapeVarsCL& operator=(const GlobalTapeVarsCL&);
+    void reallocStore(unsigned char type);
 #else
     void *paramStoreMgrPtr;
     void *storeManagerPtr;

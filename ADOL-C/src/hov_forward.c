@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     hov_forward.c
- Revision: $Id: hov_forward.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id$
  Contents: hov_forward (higher-order-vector forward mode)
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

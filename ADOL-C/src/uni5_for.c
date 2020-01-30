@@ -4,7 +4,7 @@
  File:     uni5_for.c
 
 
- Revision: $Id: uni5_for.c 731 2017-01-17 08:11:40Z kulshres $
+ Revision: $Id$
 
  Contents: Contains the routines :
            zos_forward (zero-order-scalar forward mode):      define _ZOS_
@@ -45,6 +45,9 @@
 #include <string.h>
 #endif /* ADOLC_DEBUG */
 
+#ifdef ADOLC_MEDIPACK_SUPPORT
+#include "medipacksupport_p.h"
+#endif
 #ifdef ADOLC_AMPI_SUPPORT
 #include "ampisupportAdolc.h"
 #endif
@@ -1577,8 +1580,8 @@ int  hov_forward(
             case recipr_p:
             case assign_p:            /* assign an adouble variable a    assign_d */
                 /* double value. (=) */
-                res   = get_locint_f();
                 arg   = get_locint_f();
+                res   = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 #endif
@@ -1783,8 +1786,8 @@ int  hov_forward(
                 /*--------------------------------------------------------------------------*/
             case eq_plus_p:            /* Add a floating point to an    eq_plus_p */
                 /* adouble. (+=) */
-                res   = get_locint_f();
                 arg   = get_locint_f();
+                res   = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 #endif
@@ -1852,8 +1855,8 @@ int  hov_forward(
                 /*--------------------------------------------------------------------------*/
             case eq_min_p:       /* Subtract a floating point from an    eq_min_p */
                 /* adouble. (-=) */
-                res = get_locint_f();
                 arg = get_locint_f();
+                res = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 #endif
@@ -1935,8 +1938,8 @@ int  hov_forward(
                 /*--------------------------------------------------------------------------*/
             case eq_mult_p:              /* Multiply an adouble by a    eq_mult_p */
                 /* flaoting point. (*=) */
-                res   = get_locint_f();
                 arg   = get_locint_f();
+                res   = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg];
 #endif
@@ -2123,8 +2126,8 @@ int  hov_forward(
             case min_a_p:                /* Subtract an adouble from a    min_a_p */
                 /* (+) */
                 arg   = get_locint_f();
-                res   = get_locint_f();
                 arg1  = get_locint_f();
+                res   = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 #endif
@@ -2483,8 +2486,8 @@ int  hov_forward(
             case mult_a_p:         /* Multiply an adouble by a double    mult_a_p */
                 /* (*) */
                 arg   = get_locint_f();
-                res   = get_locint_f();
                 arg1  = get_locint_f();
+                res   = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 #endif
@@ -2662,8 +2665,8 @@ int  hov_forward(
             /*--------------------------------------------------------------------------*/
         case div_p_a:             /* Division double - adouble (/)    div_p_a */
                 arg   = get_locint_f();
-                res   = get_locint_f();
                 arg1  = get_locint_f();
+                res   = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 #endif
@@ -3834,8 +3837,8 @@ int  hov_forward(
                 /*--------------------------------------------------------------------------*/
             case pow_op_p:                                                /* pow_op_p */
                 arg   = get_locint_f();
-                res   = get_locint_f();
                 arg1  = get_locint_f();
+                res   = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 #endif
@@ -4644,6 +4647,114 @@ int  hov_forward(
 #endif /* ALL_TOGETHER_AGAIN */
                 break;
 
+            case cond_eq_assign:                                      /* cond_eq_assign */
+                arg   = get_locint_f();
+                arg1  = get_locint_f();
+                arg2  = get_locint_f();
+                res   = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+                /* olvo 980924 changed order to allow reflexive ops */
+#if defined (_INDO_)
+#if defined (_INDOPRO_)
+#if defined (_TIGHT_)
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+
+		    copy_index_domain(res, arg1, ind_dom);
+
+                } else {
+                    if (coval >= 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg2];
+		    copy_index_domain(res, arg2, ind_dom);
+                }
+#else
+		    combine_2_index_domains(res, arg1, arg2, ind_dom);
+#endif
+#endif
+#if defined (_NONLIND_)
+#ifdef _TIGHT_
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+
+		    arg_index[res] = arg_index[arg1];		
+                } else {
+                    if (coval >= 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg2];
+
+		    arg_index[res] = arg_index[arg2];		
+                }
+
+#else
+               arg_index[res] = opind++;		
+#endif
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres,  TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ1, TAYLOR_BUFFER[arg1])
+                ASSIGN_T(Targ2, TAYLOR_BUFFER[arg2])
+#endif /* ALL_TOGETHER_AGAIN */
+
+#ifdef _INT_FOR_
+#ifdef _TIGHT_
+                coval = get_val_f();
+
+                if (dp_T0[arg] >= 0)
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+                else
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG2_INC;
+
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                } else {
+                    if (coval >= 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg2];
+                }
+#endif /* _TIGHT_ */
+#ifdef _NTIGHT_
+                FOR_0_LE_l_LT_pk
+                TRES_INC = TARG1_INC | TARG2_INC;
+#endif /* _NTIGHT_ */
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                if (dp_T0[arg] >= 0)
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+                else
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG2_INC;
+#endif
+
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                } else {
+                    if (coval >= 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg2];
+                }
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
                 /*--------------------------------------------------------------------------*/
             case cond_assign_s:                                  /* cond_assign_s */
                 arg   = get_locint_f();
@@ -4710,6 +4821,67 @@ int  hov_forward(
 #endif /* ALL_TOGETHER_AGAIN */
                 break;
 
+
+            case cond_eq_assign_s:                                  /* cond_eq_assign_s */
+                arg   = get_locint_f();
+                arg1  = get_locint_f();
+                res   = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
+
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+                /* olvo 980924 changed order to allow reflexive ops */
+#if defined(_INDO_)
+#if defined(_INDOPRO_)
+#ifdef _TIGHT_
+		if (dp_T0[arg] >= 0)
+		    copy_index_domain(res, arg1, ind_dom);
+#else
+		merge_2_index_domains(res, arg1, ind_dom);
+#endif
+#endif
+#if defined(_NONLIND_)
+                arg_index[res] = arg_index[arg1];		
+#endif
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres,  TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ1, TAYLOR_BUFFER[arg1])
+#endif /* ALL_TOGETHER_AGAIN */
+
+#ifdef _INT_FOR_
+#ifdef _TIGHT_
+                coval = get_val_f();
+
+                if (dp_T0[arg] >= 0)
+#endif /* _TIGHT_ */
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+
+#ifdef _TIGHT_
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                }
+#endif /* _TIGHT_ */
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                if (dp_T0[arg] >= 0)
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+#endif
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                }
+#endif
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
 
                 /*--------------------------------------------------------------------------*/
 		/* NEW CONDITIONALS */
@@ -4826,7 +4998,6 @@ int  hov_forward(
 #endif
 		get_val_f();
 		arg = get_locint_f();
-		res = get_locint_f();
 		{
 #if !defined(_NTIGHT_)
 		    size_t idx, numvar = (size_t)trunc(fabs(coval));
@@ -4834,6 +5005,7 @@ int  hov_forward(
 		    vectorloc = 
 #endif
 		    get_locint_f();
+                    res = get_locint_f();
 #if !defined(_NTIGHT_)
 		    idx = (size_t)trunc(fabs(dp_T0[arg]));
 		    if (idx >= numvar)
@@ -4870,7 +5042,6 @@ int  hov_forward(
 #endif
 		get_val_f();
 		arg = get_locint_f();
-		res = get_locint_f();
 		{
 #if !defined(_NTIGHT_)
 		    size_t idx, numvar = (size_t)trunc(fabs(coval));
@@ -4878,6 +5049,7 @@ int  hov_forward(
 		    vectorloc = 
 #endif
 		    get_locint_f();
+                    res = get_locint_f();
 #if !defined(_NTIGHT_)
 		    idx = (size_t)trunc(fabs(dp_T0[arg]));
 		    if (idx >= numvar)
@@ -5171,8 +5343,8 @@ int  hov_forward(
                 /*--------------------------------------------------------------------------*/
             case ref_eq_plus_p:            /* Add a floating point to an    eq_plus_p */
                 /* adouble. (+=) */
-                arg  = get_locint_f();
                 arg1  = get_locint_f();
+                arg  = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 #endif
@@ -5247,8 +5419,8 @@ int  hov_forward(
 
             case ref_eq_min_p:       /* Subtract a floating point from an    eq_min_p */
                 /* adouble. (-=) */
-                arg = get_locint_f();
                 arg1 = get_locint_f();
+                arg = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 #endif
@@ -5335,8 +5507,8 @@ int  hov_forward(
 
             case ref_eq_mult_p:              /* Multiply an adouble by a    eq_mult_p */
                 /* flaoting point. (*=) */
-                arg = get_locint_f();
                 arg1 = get_locint_f();
+                arg = get_locint_f();
 #if !defined(_NTIGHT_)
                 coval = ADOLC_CURRENT_TAPE_INFOS.pTapeInfos.paramstore[arg1];
 #endif
@@ -5423,9 +5595,9 @@ int  hov_forward(
                 break;
 
             case vec_copy:
-                res = get_locint_f();
                 arg = get_locint_f();
                 size = get_locint_f();
+                res = get_locint_f();
 
                 for(qq=0;qq<size;qq++) {
                     IF_KEEP_WRITE_TAYLOR(res+qq,keep,k,p);
@@ -5454,10 +5626,10 @@ int  hov_forward(
                 break;
 
             case vec_dot:
-                res = get_locint_f();
                 arg1 = get_locint_f();
                 arg2 = get_locint_f();
                 size = get_locint_f();
+                res = get_locint_f();
                 IF_KEEP_WRITE_TAYLOR(res,keep,k,p);
 #if !defined(_NTIGHT_)
                 dp_T0[res] = 0;
@@ -5544,11 +5716,11 @@ int  hov_forward(
                 break;
 
             case vec_axpy:
-                res = get_locint_f();
                 arg = get_locint_f();
                 arg1 = get_locint_f();
                 arg2 = get_locint_f();
                 size = get_locint_f();
+                res = get_locint_f();
                 
                 for(qq=0;qq<size;qq++) {
                     IF_KEEP_WRITE_TAYLOR(res+qq,keep,k,p);
@@ -5721,6 +5893,105 @@ int  hov_forward(
 		}
                 break;
 
+            case ref_cond_eq_assign:                                      /* cond_eq_assign */
+                arg   = get_locint_f();
+                arg1  = get_locint_f();
+                arg2  = get_locint_f();
+		{ 
+#if !defined(_NTIGHT_)
+		    locint ref = 
+#endif
+		    get_locint_f();
+#if !defined(_NTIGHT_)
+		    coval = 
+#endif
+		    get_val_f();
+#if !defined(_NTIGHT_)
+		    res   = (size_t)trunc(fabs(dp_T0[ref]));
+
+		    IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+                /* olvo 980924 changed order to allow reflexive ops */
+#if defined(_INDO_)
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+
+#if defined(_INDOPRO_)
+		    copy_index_domain(res, arg1, ind_dom);
+#endif
+#if defined(_NONLIND_)
+		    arg_index[res] = arg_index[arg1];
+#endif
+                } else {
+                    if (coval >= 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg2];
+
+#if defined(_INDOPRO_)
+		    copy_index_domain(res, arg2, ind_dom);
+#endif
+#if defined(_NONLIND_)
+		    arg_index[res] = arg_index[arg2];
+#endif
+                }
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres,  TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ1, TAYLOR_BUFFER[arg1])
+                ASSIGN_T(Targ2, TAYLOR_BUFFER[arg2])
+#endif /* ALL_TOGETHER_AGAIN */
+
+#ifdef _INT_FOR_
+                coval = get_val_f();
+
+                if (dp_T0[arg] >= 0)
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+                else
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG2_INC;
+
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                } else {
+                    if (coval >= 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg2];
+                }
+                FOR_0_LE_l_LT_pk
+                TRES_INC = TARG1_INC | TARG2_INC;
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                if (dp_T0[arg] >= 0)
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+                else
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG2_INC;
+#endif
+
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                } else {
+                    if (coval >= 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg2];
+                }
+#endif
+#endif
+#else
+		fprintf(DIAG_OUT, "ADOL-C error: active vector element referencing does not work in safe mode, please use tight mode\n");
+		adolc_exit(-2,"",__func__,__FILE__,__LINE__);
+#endif /* ALL_TOGETHER_AGAIN */
+		}
+                break;
+
             case ref_cond_assign_s:                                  /* cond_assign_s */
                 arg   = get_locint_f();
                 arg1  = get_locint_f();
@@ -5777,6 +6048,66 @@ int  hov_forward(
                 } else
                     if (dp_T0[arg] == 0)
                         MINDEC(ret_c,0);
+#endif
+#endif
+#else
+		fprintf(DIAG_OUT, "ADOL-C error: active vector element referencing does not work in safe mode, please use tight mode\n");
+		adolc_exit(-2,"",__func__,__FILE__,__LINE__);
+#endif /* ALL_TOGETHER_AGAIN */
+                break;
+
+            case ref_cond_eq_assign_s:                                  /* cond_eq_assign_s */
+                arg   = get_locint_f();
+                arg1  = get_locint_f();
+                arg2   = get_locint_f();
+#if !defined(_NTIGHT_)
+                coval = 
+#endif
+		get_val_f();
+
+#if !defined(_NTIGHT_)
+		res = (size_t)trunc(fabs(dp_T0[arg2]));
+                IF_KEEP_WRITE_TAYLOR(res,keep,k,p)
+
+                /* olvo 980924 changed order to allow reflexive ops */
+#if defined(_INDO_)
+		if (dp_T0[arg] >= 0) {
+#if defined(_INDOPRO_)
+                    copy_index_domain(res, arg1, ind_dom);
+#endif
+#if defined(_NONLIND_)
+		    arg_index[res] = arg_index[arg1];
+#endif
+		}
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                ASSIGN_T(Tres,  TAYLOR_BUFFER[res])
+                ASSIGN_T(Targ1, TAYLOR_BUFFER[arg1])
+#endif /* ALL_TOGETHER_AGAIN */
+
+#ifdef _INT_FOR_
+                coval = get_val_f();
+
+                if (dp_T0[arg] >= 0)
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                }
+#else
+#if !defined(_ZOS_) /* BREAK_ZOS */
+                if (dp_T0[arg] >= 0)
+                    FOR_0_LE_l_LT_pk
+                    TRES_INC = TARG1_INC;
+#endif
+                if (dp_T0[arg] >= 0) {
+                    if (coval < 0.0)
+                        MINDEC(ret_c,2);
+                    dp_T0[res] = dp_T0[arg1];
+                }
 #endif
 #endif
 #else
@@ -6073,7 +6404,22 @@ int  hov_forward(
                 ADOLC_CURRENT_TAPE_INFOS.lowestYLoc_ext_v2 = 0;
                 break;
 #endif
+#ifdef ADOLC_MEDIPACK_SUPPORT
+                /*--------------------------------------------------------------------------*/
+            case medi_call: {
+                locint mediIndex = get_locint_f();
+                short tapeId = ADOLC_CURRENT_TAPE_INFOS.tapeID;
 
+#if defined(_ZOS_)
+                mediCallHandlePrimal(tapeId, mediIndex, dp_T0);
+#elif defined(_FOS_)
+                mediCallHandleForward(tapeId, mediIndex, dp_T0, &TAYLOR_BUFFER, 1);
+#elif defined(_FOV_)
+                mediCallHandleForward(tapeId, mediIndex, dp_T0, TAYLOR_BUFFER, p);
+#endif
+                break;
+            }
+#endif
 #ifdef ADOLC_AMPI_SUPPORT
                 /*--------------------------------------------------------------------------*/
             case ampi_send: {

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     hov_reverse.c
- Revision: $Id: hov_reverse.c 42 2009-07-15 18:37:17Z awalther $
+ Revision: $Id$
  Contents: hov_reverse (higher-order-vector reverse mode)
  
  Copyright (c) Andrea Walther, Andreas Griewank, Andreas Kowarz, 

@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
 
- Revision: $Id: advector.cpp 659 2015-12-15 10:17:20Z kulshres $
+ Revision: $Id$
  Contents: advector.cpp contains a vector<adouble> implementation
            that is able to trace subscripting operations.
 
@@ -41,6 +41,14 @@ adubref::~adubref() {
     if (isInit)
         free_loc(location);
 #endif
+}
+
+adubref::operator adubref*() const {
+    locint locat = location;
+    locint refl = refloc;
+    const_cast<adubref&>(*this).isInit = false;
+    adubref *retp = new adubref(locat,refl);
+    return retp;
 }
 
 adubref::operator adub() const {
@@ -396,6 +404,49 @@ void condassign( adubref& res, const badouble &cond, const badouble &arg ) {
         ADOLC_GLOBAL_TAPE_VARS.store[res.refloc] = ADOLC_GLOBAL_TAPE_VARS.store[arg.loc()];
 }
 
+void condeqassign( adubref& res,         const badouble &cond,
+                   const badouble &arg1, const badouble &arg2 ) {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+    if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) { // old: write_condassign(res.location,cond.location,arg1.location,
+        //		     arg2.location);
+        put_op(ref_cond_eq_assign);
+        ADOLC_PUT_LOCINT(cond.loc()); // = arg
+        ADOLC_PUT_VAL(ADOLC_GLOBAL_TAPE_VARS.store[cond.loc()]);
+        ADOLC_PUT_LOCINT(arg1.loc()); // = arg1
+        ADOLC_PUT_LOCINT(arg2.loc()); // = arg2
+        ADOLC_PUT_LOCINT(res.location);  // = res
+
+        ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
+        if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
+            ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[res.refloc]);
+    }
+
+    if (ADOLC_GLOBAL_TAPE_VARS.store[cond.loc()] >= 0)
+        ADOLC_GLOBAL_TAPE_VARS.store[res.refloc] = ADOLC_GLOBAL_TAPE_VARS.store[arg1.loc()];
+    else
+        ADOLC_GLOBAL_TAPE_VARS.store[res.refloc] = ADOLC_GLOBAL_TAPE_VARS.store[arg2.loc()];
+}
+
+void condeqassign( adubref& res, const badouble &cond, const badouble &arg ) {
+    ADOLC_OPENMP_THREAD_NUMBER;
+    ADOLC_OPENMP_GET_THREAD_NUMBER;
+    if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) { // old: write_condassign2(res.location,cond.location,arg.location);
+        put_op(ref_cond_eq_assign_s);
+        ADOLC_PUT_LOCINT(cond.loc()); // = arg
+        ADOLC_PUT_VAL(ADOLC_GLOBAL_TAPE_VARS.store[cond.loc()]);
+        ADOLC_PUT_LOCINT(arg.loc());  // = arg1
+        ADOLC_PUT_LOCINT(res.location);  // = res
+
+        ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
+        if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
+            ADOLC_WRITE_SCAYLOR(ADOLC_GLOBAL_TAPE_VARS.store[res.refloc]);
+    }
+
+    if (ADOLC_GLOBAL_TAPE_VARS.store[cond.loc()] >= 0)
+        ADOLC_GLOBAL_TAPE_VARS.store[res.refloc] = ADOLC_GLOBAL_TAPE_VARS.store[arg.loc()];
+}
+
 advector::blocker::blocker(size_t n) {
     ensureContiguousLocations(n);
 }
@@ -420,9 +471,9 @@ adub advector::operator[](const badouble& index) const {
     if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
 	put_op(subscript);
 	ADOLC_PUT_LOCINT(index.loc());
-	ADOLC_PUT_LOCINT(locat);
 	ADOLC_PUT_VAL(n);
 	ADOLC_PUT_LOCINT(data[0].loc());
+	ADOLC_PUT_LOCINT(locat);
 
 	++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
 	if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors) 
@@ -445,9 +496,9 @@ adubref advector::operator[](const badouble& index) {
     if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
 	put_op(subscript_ref);
 	ADOLC_PUT_LOCINT(index.loc());
-	ADOLC_PUT_LOCINT(locat);
 	ADOLC_PUT_VAL(n);
 	ADOLC_PUT_LOCINT(data[0].loc());
+	ADOLC_PUT_LOCINT(locat);
 
 	++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
 	if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors) 
@@ -483,9 +534,9 @@ void adolc_vec_copy(adouble *const dest, const adouble *const src, locint n) {
   if (dest[n-1].loc() - dest[0].loc()!=(unsigned)n-1 || src[n-1].loc()-src[0].loc()!=(unsigned)n-1) fail(ADOLC_VEC_LOCATIONGAP);
   if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
       put_op(vec_copy);
-      ADOLC_PUT_LOCINT(dest[0].loc());
       ADOLC_PUT_LOCINT(src[0].loc());
       ADOLC_PUT_LOCINT(n);
+      ADOLC_PUT_LOCINT(dest[0].loc());
       for (locint i=0; i<n; i++) {
           ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
           if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
@@ -504,10 +555,10 @@ adub adolc_vec_dot(const adouble *const x, const adouble *const y, locint n) {
   locint res = next_loc();
   if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
       put_op(vec_dot);
-      ADOLC_PUT_LOCINT(res);
       ADOLC_PUT_LOCINT(x[0].loc());
       ADOLC_PUT_LOCINT(y[0].loc());
       ADOLC_PUT_LOCINT(n);
+      ADOLC_PUT_LOCINT(res);
       ADOLC_CURRENT_TAPE_INFOS.num_eq_prod += 2*n;
       ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;
       if (ADOLC_CURRENT_TAPE_INFOS.keepTaylors)
@@ -528,11 +579,11 @@ void adolc_vec_axpy(adouble *const res, const badouble& a, const adouble*const x
   locint a_loc = a.loc();
   if (ADOLC_CURRENT_TAPE_INFOS.traceFlag) {
       put_op(vec_axpy);
-      ADOLC_PUT_LOCINT(res[0].loc());
       ADOLC_PUT_LOCINT(a_loc);
       ADOLC_PUT_LOCINT(x[0].loc());
       ADOLC_PUT_LOCINT(y[0].loc());
       ADOLC_PUT_LOCINT(n);
+      ADOLC_PUT_LOCINT(res[0].loc());
       ADOLC_CURRENT_TAPE_INFOS.num_eq_prod += 2*n -1;
       for (locint i=0; i<n; i++) {
           ++ADOLC_CURRENT_TAPE_INFOS.numTays_Tape;

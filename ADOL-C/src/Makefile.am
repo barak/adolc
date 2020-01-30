@@ -1,6 +1,6 @@
 ##############################################################################
 ## Makefile.am -- Process this file with automake to produce Makefile.in
-## Revision: $Id: Makefile.am 639 2015-12-02 10:48:01Z kulshres $
+## Revision: $Id$
 ##
 ## Copyright (C) Andrea Walther, Andreas Kowarz
 ##
@@ -34,6 +34,12 @@ libadolcampi_la_SOURCES  = ampisupport.cpp ampisupportAdolc.cpp \
                            ampisupportAdolc.h
 endif
 
+if BUILD_ADOLC_MEDIPACK_SUPPORT
+noinst_LTLIBRARIES       += libadolcmedipack.la
+libadolcmedipack_la_SOURCES  = medipacksupport.cpp \
+                               medipacksupport_p.h
+endif
+
 
 libadolcsrc_la_SOURCES  = adalloc.c rpl_malloc.c adouble.cpp \
                        convolut.c fortutils.c \
@@ -49,7 +55,7 @@ libadolcsrc_la_SOURCES  = adalloc.c rpl_malloc.c adouble.cpp \
                        fos_pl_forward.c fov_pl_forward.c fos_pl_sig_forward.c \
                        fov_pl_sig_forward.c externfcts.cpp checkpointing.cpp \
                        fixpoint.cpp fov_offset_forward.c revolve.c \
-                       advector.cpp adouble_tl.cpp param.cpp externfcts2.cpp
+                       advector.cpp adouble_tl.cpp adouble_tl_indo.cpp adouble_tl_hov.cpp param.cpp externfcts2.cpp
 
 if SPARSE
 libadolcsrc_la_SOURCES  += int_forward_s.c int_forward_t.c \

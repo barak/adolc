@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------
  ADOL-C -- Automatic Differentiation by Overloading in C++
  File:     checkpointing.cpp
- Revision: $Id: checkpointing.cpp 711 2016-08-31 11:37:06Z kulshres $
+ Revision: $Id$
  Contents: checkpointing algorithms
  
  Copyright (c) Andreas Kowarz, Jean Utke
