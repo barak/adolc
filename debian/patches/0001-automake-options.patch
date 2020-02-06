@@ -8,7 +8,7 @@ Enable automake warnings.
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 5d57b71..33b7db5 100644
+index e6ed882..c5ccec4 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -22,7 +22,8 @@ AC_CONFIG_AUX_DIR([autoconf])
@@ -19,5 +19,5 @@ index 5d57b71..33b7db5 100644
 +AM_INIT_AUTOMAKE([1.11 dist-bzip2 foreign subdir-objects -Wall])
 +AM_MAINTAINER_MODE([disable])
  AM_SILENT_RULES([yes])
- 
+ AM_MAINTAINER_MODE([disable])
  
