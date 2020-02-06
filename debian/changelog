@@ -1,10 +1,11 @@
-adolc (2.7.1-1) unstable; urgency=medium
+adolc (2.7.2-1) unstable; urgency=medium
 
   * Use secure URI in debian/watch.
   * New Upstream Version
   * Bump policy
+  * Forward port quilt patches
 
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 30 Jan 2020 19:27:35 +0000
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 06 Feb 2020 23:35:27 +0000
 
 adolc (2.6.3-3) unstable; urgency=medium
 
