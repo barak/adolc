@@ -1,6 +1,6 @@
 Source: adolc
 Priority: optional
-Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
+Maintainer: Debian Science Maintainers <debian-science-maintainers@alioth-lists.debian.net>
 Uploaders: Barak A. Pearlmutter <bap@debian.org>
 Build-Depends: debhelper-compat (= 12),
 	autoconf-archive,
