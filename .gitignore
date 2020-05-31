@@ -6,6 +6,8 @@
 /.pc/
 /ADOL-C/adolc
 /ADOL-C/dummy.cpp
+/ADOL-C/src/config.h
+/ADOL-C/src/stamp-h1
 /ADOL-C/test/fminmax
 /ADOL-C/test/powexam
 /ADOL-C/test/speelpenning
