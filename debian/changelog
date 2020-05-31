@@ -4,8 +4,12 @@ adolc (2.7.2-1) unstable; urgency=medium
   * New Upstream Version
   * Bump policy
   * Forward port quilt patches
+  * Bump to debhelper 13
+  * Rules-Requires-Root: no
+  * Patch tiny upstream typo
+  * Bump policy
 
- -- Barak A. Pearlmutter <bap@debian.org>  Thu, 06 Feb 2020 23:35:27 +0000
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 31 May 2020 11:37:02 +0100
 
 adolc (2.6.3-3) unstable; urgency=medium
 
