@@ -6,6 +6,7 @@ Build-Depends: debhelper-compat (= 13),
 	autoconf-archive,
 	libcolpack-dev, libboost-system-dev
 Standards-Version: 4.5.0
+Rules-Requires-Root: no
 Section: libs
 Homepage: https://projects.coin-or.org/ADOL-C
 Vcs-Git: https://salsa.debian.org/science-team/adolc.git
