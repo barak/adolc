@@ -15,6 +15,7 @@ Vcs-Browser: https://salsa.debian.org/science-team/adolc
 Package: libadolc-dev
 Section: libdevel
 Architecture: any
+Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}, libadolc2 (= ${binary:Version}), libcolpack-dev
 Description: ADOLC development libs and headers
  The ADOLC system automatically calculates exact derivatives of a
