@@ -1,3 +1,10 @@
+adolc (2.7.2-2) unstable; urgency=medium
+
+  * multiarch fix
+  * uscan watch file version=4
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Thu, 10 Dec 2020 21:43:51 +0000
+
 adolc (2.7.2-1) unstable; urgency=medium
 
   * Use secure URI in debian/watch.
