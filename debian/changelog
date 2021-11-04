@@ -1,3 +1,10 @@
+adolc (2.7.2-4) unstable; urgency=medium
+
+  * Team upload.
+  * Use = with test, not == (bashism).
+
+ -- Andrej Shadura <andrewsh@debian.org>  Thu, 04 Nov 2021 13:50:51 +0100
+
 adolc (2.7.2-3) unstable; urgency=medium
 
   * bump policy
