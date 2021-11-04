@@ -1,3 +1,10 @@
+adolc (2.7.2-5) unstable; urgency=medium
+
+  * Team upload.
+  * Remove two more bashisms from configure.ac and .m4 files.
+
+ -- Andrej Shadura <andrewsh@debian.org>  Thu, 04 Nov 2021 15:28:25 +0100
+
 adolc (2.7.2-4) unstable; urgency=medium
 
   * Team upload.
