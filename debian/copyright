@@ -1,14 +1,13 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: adolc
 Source:
-    http://www.coin-or.org/projects/ADOL-C.xml
     http://www.coin-or.org/download/source/ADOL-C/
-    http://www.coin-or.org/download/source/ADOL-C/ADOL-C-2.1.0.tgz
-    SVN repository: https://projects.coin-or.org/svn/ADOL-C
+    http://www.coin-or.org/download/source/ADOL-C/ADOL-C-2.7.2.tgz
+    https://github.com/coin-or/ADOL-C
 
 Files: *
 Copyright:
- 2008-2016 Andrea Walther <andrea.walther@uni-paderborn.de>,
+ 2008-2020 Andrea Walther <andrea.walther@uni-paderborn.de>,
  Kshitij Kulshreshtha,
  Andreas Griewank <griewank@math.tu-dresden.de>,
  Andreas Kowarz,

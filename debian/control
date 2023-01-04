@@ -5,7 +5,7 @@ Uploaders: Barak A. Pearlmutter <bap@debian.org>
 Build-Depends: debhelper-compat (= 13),
 	autoconf-archive,
 	libcolpack-dev, libboost-system-dev
-Standards-Version: 4.5.1
+Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Section: libs
 Homepage: https://projects.coin-or.org/ADOL-C

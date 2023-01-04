@@ -1,3 +1,10 @@
+adolc (2.7.2-6) unstable; urgency=medium
+
+  * upstream URL updates
+  * bump policy
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Wed, 04 Jan 2023 09:58:22 +0000
+
 adolc (2.7.2-5) unstable; urgency=medium
 
   * Team upload.
