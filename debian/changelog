@@ -1,3 +1,10 @@
+adolc (2.7.2-7) unstable; urgency=medium
+
+  * enable colpack (closes: #1033472)
+  * bump policy
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Tue, 07 Jan 2025 10:27:06 +0000
+
 adolc (2.7.2-6.1) unstable; urgency=medium
 
   * Non-maintainer upload.
