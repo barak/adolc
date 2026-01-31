@@ -1,5 +1,7 @@
-version=4
-https://www.coin-or.org/download/source/ADOL-C/ ADOL-C-@ANY_VERSION@@ARCHIVE_EXT@
+Version: 5
+
+Source: https://www.coin-or.org/download/source/ADOL-C/
+Matching-Pattern: ADOL-C-@ANY_VERSION@@ARCHIVE_EXT@
 
 # Upstream development repo:
 #  https://github.com/coin-or/ADOL-C
