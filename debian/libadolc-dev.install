@@ -1,4 +1,4 @@
+usr/include/adolc
 usr/lib/*/lib*.a
 usr/lib/*/lib*.so
-usr/include/adolc
 usr/lib/*/pkgconfig/*.pc

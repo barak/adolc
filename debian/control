@@ -1,9 +1,12 @@
 Source: adolc
 Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.debian.org>
-Uploaders: Barak A. Pearlmutter <bap@debian.org>
-Build-Depends: dpkg-dev (>= 1.22.5), debhelper-compat (= 13),
-	autoconf-archive,
-	libcolpack-dev,
+Uploaders:
+ Barak A. Pearlmutter <bap@debian.org>,
+Build-Depends:
+ debhelper-compat (= 13),
+ dpkg-dev (>= 1.22.5),
+ autoconf-archive,
+ libcolpack-dev,
 Standards-Version: 4.7.3
 Section: libs
 Homepage: https://projects.coin-or.org/ADOL-C
@@ -14,7 +17,11 @@ Package: libadolc-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
-Depends: ${shlibs:Depends}, ${misc:Depends}, libadolc2t64 (= ${binary:Version}), libcolpack-dev
+Depends:
+ libadolc2t64 (= ${binary:Version}),
+ libcolpack-dev,
+ ${misc:Depends},
+ ${shlibs:Depends},
 Description: ADOLC development libs and headers
  The ADOLC system automatically calculates exact derivatives of a
  C/C++ function.  It uses C++ overloading to record arithmetic
@@ -25,13 +32,19 @@ Description: ADOLC development libs and headers
  and user's manual.
 
 Package: libadolc2t64
-Provides: ${t64:Provides}
-Replaces: libadolc2
-Breaks: libadolc2 (<< ${source:Version})
+Provides:
+ ${t64:Provides},
+Replaces:
+ libadolc2,
+Breaks:
+ libadolc2 (<< ${source:Version}),
 Architecture: any
 Multi-Arch: same
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends:
+ ${misc:Pre-Depends},
+Depends:
+ ${misc:Depends},
+ ${shlibs:Depends},
 Description: ADOLC automatic differentiation system, runtime libs
  The ADOLC system automatically calculates exact derivatives of a
  C/C++ function.  It uses C++ overloading to record arithmetic
