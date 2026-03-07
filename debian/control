@@ -3,7 +3,7 @@ Maintainer: Debian Science Maintainers <debian-science-maintainers@lists.alioth.
 Uploaders: Barak A. Pearlmutter <bap@debian.org>
 Build-Depends: dpkg-dev (>= 1.22.5), debhelper-compat (= 13),
 	autoconf-archive,
-	libcolpack-dev, libboost-system-dev
+	libcolpack-dev,
 Standards-Version: 4.7.3
 Section: libs
 Homepage: https://projects.coin-or.org/ADOL-C
