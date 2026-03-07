@@ -1,3 +1,15 @@
+adolc (2.7.2-8) unstable; urgency=medium
+
+  * Team Upload
+  * Fix Team email address
+  * Remove obsolete time64 lintian-override
+  * Drop build-dep on libboost-system-dev (Closes: #1127162)
+
+  [ Barak A. Pearlmutter ]
+  * minor packaging updates
+
+ -- Alexandre Detiste <tchet@debian.org>  Sat, 07 Mar 2026 13:28:11 +0100
+
 adolc (2.7.2-7) unstable; urgency=medium
 
   * enable colpack (closes: #1033472)
