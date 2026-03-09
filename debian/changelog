@@ -1,3 +1,16 @@
+adolc (2.7.2-9) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Alexandre Detiste ]
+  * sort d/control to make it less confusing
+  * re-add a dependency on minimal libboost-dev
+
+  [ Adrian Bunk ]
+  * Fix ABI breakage. Closes: #1130052.
+
+ -- Santiago Vila <sanvila@debian.org>  Mon, 09 Mar 2026 23:30:00 +0100
+
 adolc (2.7.2-8) unstable; urgency=medium
 
   * Team Upload
