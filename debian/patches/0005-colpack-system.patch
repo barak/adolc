@@ -1,0 +1,39 @@
+From: "Barak A. Pearlmutter" <barak+git@pearlmutter.net>
+Date: Sun, 8 Nov 2026 18:10:55 +0000
+Subject: Detect system ColPack without --with-colpack
+
+The POSIX rewrite of the library-directory loop in colpack.m4 iterates
+over an empty list when --with-colpack is not given, so a ColPack
+installed in the default search path was never detected.  Use a
+"system" placeholder so the link test runs once with plain -lColPack.
+
+This lets Debian drop --with-colpack=/usr, which added a bogus
+-Wl,-rpath,/usr/lib64 (lintian: custom-library-search-path).
+
+Forwarded: not-needed (upstream has replaced autotools with CMake)
+---
+ autoconf/colpack.m4 | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/autoconf/colpack.m4 b/autoconf/colpack.m4
+index e87f23a..a707d83 100644
+--- a/autoconf/colpack.m4
++++ b/autoconf/colpack.m4
+@@ -18,7 +18,7 @@ fi
+ [
+ COLPACK_CFLAGS=""
+ COLPACK_LIBS="-lColPack"
+-D=""
++D="system"
+ ])
+ 
+ AC_LANG_PUSH([C++])
+@@ -33,7 +33,7 @@ CPPFLAGS="$save_CPPFLAGS"
+ CXXFLAGS="$save_CXXFLAGS"
+ ])
+ for COLPACK_LIBDIR in $D; do
+-if test -n "$COLPACK_LIBDIR" ; then
++if test "x$COLPACK_LIBDIR" != xsystem ; then
+ COLPACK_LIBS="-L$COLPACK_LIBDIR -lColPack -Wl,-rpath,$COLPACK_LIBDIR"
+ fi
+ if test x$have_colpackheaders = xyes ; then

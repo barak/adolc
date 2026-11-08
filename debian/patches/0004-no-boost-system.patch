@@ -1,10 +1,17 @@
-Description: Boost::System has been removed in 1.89
-Author: Adrian Bunk <bunk@debian.org>
-Bug-Debian: https://bugs.debian.org/1130052
+From: Adrian Bunk <bunk@debian.org>
+Date: Mon, 9 Mar 2026 23:29:00 +0100
+Subject: Boost::System has been removed in 1.89
 
+Bug-Debian: https://bugs.debian.org/1130052
+---
+ configure.ac | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 17c9011..6625ec5 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -347,11 +347,9 @@
+@@ -347,11 +347,9 @@ CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
  AC_LANG_PUSH([C++])
  AC_CHECK_HEADERS([boost/pool/pool_alloc.hpp])
  AC_LANG_POP([C++])

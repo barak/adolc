@@ -1,3 +1,27 @@
+adolc (2.7.2-10) unstable; urgency=medium
+
+  * Bump to debhelper 14.
+  * Bump policy to 4.7.4, no changes needed.
+  * Drop versioned build-dependency on dpkg-dev, satisfied in all
+    supported releases.
+  * Point Homepage, debian/copyright Source, and debian/watch at the
+    GitHub repository; track its releases/X.Y.Z tags.
+  * Do not pass --with-colpack=/usr, which put a bogus RUNPATH
+    /usr/lib64 in libadolc.so (lintian custom-library-search-path);
+    patch colpack.m4 so system ColPack is still detected without it.
+  * Do not leak -Wl,-rpath and build LDFLAGS into adolc.pc; move ColPack
+    to Libs.private.
+  * Remove stale debian/shlibs.local.
+  * Add autopkgtest building and running a program using the dense and
+    sparse drivers.
+  * gbp.conf: set upstream-vcs-tag to upstream's releases/X.Y.Z tags.
+  * Drop Breaks/Replaces on pre-t64 libadolc2, no longer needed after
+    trixie.
+  * Drop substvars from debian/control that compat 14 applies
+    automatically.
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Sun, 08 Nov 2026 18:37:23 +0000
+
 adolc (2.7.2-9) unstable; urgency=medium
 
   * Team upload.

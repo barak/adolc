@@ -2,3 +2,5 @@
 0002-typos.patch
 0003-debash.patch
 0004-no-boost-system.patch
+0005-colpack-system.patch
+0006-pc-no-rpath.patch

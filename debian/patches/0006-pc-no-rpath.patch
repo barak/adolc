@@ -1,0 +1,26 @@
+From: "Barak A. Pearlmutter" <barak+git@pearlmutter.net>
+Date: Sun, 8 Nov 2026 18:11:56 +0000
+Subject: Do not leak rpath and build LDFLAGS into adolc.pc
+
+The pkg-config file added -Wl,-rpath,${libdir} and the LDFLAGS used to
+build ADOL-C itself to the link line of every program using it.  Drop
+both, and move the libraries ADOL-C itself links against (ColPack) to
+Libs.private, since they are only needed for static linking.
+
+Forwarded: not-needed (upstream has replaced autotools with CMake)
+---
+ adolclib.pc.in | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/adolclib.pc.in b/adolclib.pc.in
+index fe3341b..42ef161 100644
+--- a/adolclib.pc.in
++++ b/adolclib.pc.in
+@@ -7,5 +7,6 @@ Name: @adolclib@
+ Version: @PACKAGE_VERSION@
+ Description: Algorithmic Differentiation Library for C/C++
+ Requires: 
+-Libs: -L${libdir} -l@adolclib@ -Wl,-rpath,${libdir} @LDFLAGS@ @LIBS@
++Libs: -L${libdir} -l@adolclib@
++Libs.private: @LIBS@
+ Cflags: -I${includedir}

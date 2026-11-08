@@ -1,0 +1,71 @@
+#!/bin/sh
+# Build and run a small program against the installed libadolc,
+# exercising both the dense and the ColPack-based sparse drivers.
+set -eu
+
+WORKDIR=$(mktemp -d)
+trap 'rm -rf "$WORKDIR"' EXIT
+cd "$WORKDIR"
+
+cat > test.cpp <<'EOT'
+#include <adolc/adolc.h>
+#include <adolc/adolc_sparse.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+
+static int fail = 0;
+static void check(const char *what, double got, double want) {
+    if (std::fabs(got - want) > 1e-12 * (1 + std::fabs(want))) {
+        std::printf("FAIL %s: got %g, want %g\n", what, got, want);
+        fail = 1;
+    }
+}
+
+int main() {
+    /* f(x0,x1) = (x0*x1, sin(x0), x1*x1); Jacobian has 4 nonzeros. */
+    const int n = 2, m = 3;
+    double xp[2] = {1.5, -2.0}, yp[3];
+    trace_on(1);
+    adouble x[2], y[3];
+    x[0] <<= xp[0];
+    x[1] <<= xp[1];
+    y[0] = x[0] * x[1];
+    y[1] = sin(x[0]);
+    y[2] = x[1] * x[1];
+    for (int i = 0; i < m; i++) y[i] >>= yp[i];
+    trace_off();
+
+    double **J = myalloc2(m, n);
+    jacobian(1, m, n, xp, J);
+    check("J00", J[0][0], xp[1]);
+    check("J01", J[0][1], xp[0]);
+    check("J10", J[1][0], std::cos(xp[0]));
+    check("J11", J[1][1], 0.0);
+    check("J20", J[2][0], 0.0);
+    check("J21", J[2][1], 2 * xp[1]);
+
+    int nnz = 0, opt[4] = {0, 0, 0, 0};
+    unsigned int *rind = NULL, *cind = NULL;
+    double *val = NULL;
+    if (sparse_jac(1, m, n, 0, xp, &nnz, &rind, &cind, &val, opt) < 0) {
+        std::printf("FAIL sparse_jac returned error\n");
+        return 1;
+    }
+    if (nnz != 4) {
+        std::printf("FAIL sparse_jac nnz=%d, want 4\n", nnz);
+        fail = 1;
+    }
+    for (int k = 0; k < nnz; k++)
+        check("sparse", val[k], J[rind[k]][cind[k]]);
+
+    std::free(rind); std::free(cind); std::free(val);
+    myfree2(J);
+    if (!fail) std::printf("OK\n");
+    return fail;
+}
+EOT
+
+g++ -o test test.cpp $(pkgconf --cflags --libs adolc)
+echo "build: OK"
+./test

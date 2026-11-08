@@ -1,0 +1,6 @@
+Tests: build
+Depends:
+ g++,
+ libadolc-dev,
+ pkgconf,
+Restrictions: allow-stderr

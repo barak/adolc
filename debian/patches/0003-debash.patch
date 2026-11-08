@@ -19,13 +19,47 @@ Subject: Debash configure.ac and colpack.m4
     ./configure: 19924: D[0]=: not found
     checking for ColPack/ColPackHeaders.h... yes
     ./configure: 19952: Syntax error: Bad for loop variable
-
 ---
- configure.ac | 34 +++++++++++++++++-----------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ autoconf/colpack.m4 | 10 ++++------
+ configure.ac        | 36 ++++++++++++++++++------------------
+ 2 files changed, 22 insertions(+), 24 deletions(-)
 
+diff --git a/autoconf/colpack.m4 b/autoconf/colpack.m4
+index 9792786..e87f23a 100644
+--- a/autoconf/colpack.m4
++++ b/autoconf/colpack.m4
+@@ -10,16 +10,15 @@ AS_HELP_STRING([--with-colpack=DIR],[path to the colpack library and headers [de
+ colpack=$withval
+ COLPACK_CFLAGS="-I$colpack/include"
+ if test x${_lib} != xlib ; then
+-   D[[0]]="$colpack/${_lib}"
+-   D[[1]]="$colpack/lib"
++   D="$colpack/${_lib} $colpack/lib"
+ else
+-   D[[0]]="$colpack/${_lib}"
++   D="$colpack/${_lib}"
+ fi
+ ],
+ [
+ COLPACK_CFLAGS=""
+ COLPACK_LIBS="-lColPack"
+-D[[0]]=""
++D=""
+ ])
+ 
+ AC_LANG_PUSH([C++])
+@@ -33,8 +32,7 @@ have_colpackheaders=no
+ CPPFLAGS="$save_CPPFLAGS"
+ CXXFLAGS="$save_CXXFLAGS"
+ ])
+-for ((i=0; i < ${#D[@]} ; i++)); do
+-COLPACK_LIBDIR="${D[[$i]]}"
++for COLPACK_LIBDIR in $D; do
+ if test -n "$COLPACK_LIBDIR" ; then
+ COLPACK_LIBS="-L$COLPACK_LIBDIR -lColPack -Wl,-rpath,$COLPACK_LIBDIR"
+ fi
 diff --git a/configure.ac b/configure.ac
-index 6c2c6bb..f16fb59 100644
+index 6c2c6bb..17c9011 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -29,12 +29,12 @@ AM_MAINTAINER_MODE([disable])
@@ -156,35 +190,3 @@ index 6c2c6bb..f16fb59 100644
          echo -ne "\rPlease read the above messages carefully, continuing in ${i} seconds"
          sleep 1
      done
---- a/autoconf/colpack.m4
-+++ b/autoconf/colpack.m4
-@@ -10,16 +10,15 @@ AS_HELP_STRING([--with-colpack=DIR],[pat
- colpack=$withval
- COLPACK_CFLAGS="-I$colpack/include"
- if test x${_lib} != xlib ; then
--   D[[0]]="$colpack/${_lib}"
--   D[[1]]="$colpack/lib"
-+   D="$colpack/${_lib} $colpack/lib"
- else
--   D[[0]]="$colpack/${_lib}"
-+   D="$colpack/${_lib}"
- fi
- ],
- [
- COLPACK_CFLAGS=""
- COLPACK_LIBS="-lColPack"
--D[[0]]=""
-+D=""
- ])
- 
- AC_LANG_PUSH([C++])
-@@ -33,8 +32,7 @@ have_colpackheaders=no
- CPPFLAGS="$save_CPPFLAGS"
- CXXFLAGS="$save_CXXFLAGS"
- ])
--for ((i=0; i < ${#D[@]} ; i++)); do
--COLPACK_LIBDIR="${D[[$i]]}"
-+for COLPACK_LIBDIR in $D; do
- if test -n "$COLPACK_LIBDIR" ; then
- COLPACK_LIBS="-L$COLPACK_LIBDIR -lColPack -Wl,-rpath,$COLPACK_LIBDIR"
- fi
