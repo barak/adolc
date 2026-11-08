@@ -1,5 +1,8 @@
-adolc (2.7.2-10) unstable; urgency=medium
+adolc (2.7.2.git.1-1) unstable; urgency=medium
 
+  * Switch orig tarball to upstream git tag v2.7.2, as version
+    2.7.2.git.1.  The original release tarball has SVN keywords
+    expanded and so does not match upstream git, breaking git-debpush.
   * Bump to debhelper 14.
   * Bump policy to 4.7.4, no changes needed.
   * Drop versioned build-dependency on dpkg-dev, satisfied in all
